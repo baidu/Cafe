@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World!</string>
+    <string name="app_name">ARMS</string>
+    <string name="force_close">强行关闭</string>
+</resources>
