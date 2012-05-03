@@ -6,7 +6,7 @@
 # TODO: support multi-device on one pc
 
 SRC=`pwd`
-ANDROID_TOP=$SRC/../../
+ANDROID_TOP=$SRC/../
 SLEEP_TIME=5
 HAS_DEVICE=""
 
