@@ -185,7 +185,7 @@ function make_install_arms()
 	cd $SRC/testservice
 	rm -rf $ANDROID_TOP/out/target/common/obj/APPS/Arms_intermediates
 	rm -rf $ANDROID_TOP/out/target/common/obj/APPS/ArmsProxy_intermediates
-	mm clean-Arms
+	mm clean-Cafe
 	mm -j$CPU_NUMBER | grep Install | while read LINE
 do
 	apk=`echo "$LINE"`
