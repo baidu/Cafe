@@ -56,10 +56,6 @@ public class Arms extends Service {
     public void onCreate() {
         super.onCreate();
 
-        if (null == ServiceManager.checkService("cafe")) {
-            ServiceManager.addService("cafe", new ArmsBinder(this));
-        }
-
         keepAdb();
     }
 

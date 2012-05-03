@@ -38,7 +38,7 @@ public class UILib {
     private final static int     SCROLL_TIME_OUT       = 120000;
     private final static int     USE_INSTRUMENTATION   = 0;
     private final static int     USE_MONKEY            = 1;
-    private final static int     EVENT_SENDER          = USE_INSTRUMENTATION;
+    private final static int     EVENT_SENDER          = USE_MONKEY;
     private final static int     DOWN                  = 0;
     private final static int     UP                    = 1;
 
