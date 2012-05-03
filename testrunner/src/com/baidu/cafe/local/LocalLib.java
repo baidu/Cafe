@@ -71,13 +71,7 @@ import dalvik.system.DexFile;
  * @todo
  */
 
-/**
- * NOTICE: Non YiOperator user should close B line and open A line! And remove
- * YiOperator.java.
- */
-
-// public class LocalLib extends SoloEx { // A
-public class LocalLib extends YiOperator { // B
+public class LocalLib extends SoloEx { 
     public final static int      SEARCHMODE_COMPLETE_MATCHING = 1;
     public final static int      SEARCHMODE_DEFAULT           = 1;
     public final static int      SEARCHMODE_INCLUDE_MATCHING  = 2;
