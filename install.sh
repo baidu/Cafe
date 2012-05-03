@@ -9,6 +9,7 @@ SRC=`pwd`
 ANDROID_TOP=$SRC/../
 SLEEP_TIME=5
 HAS_DEVICE=""
+CPU_NUMBER=`cat /proc/cpuinfo|grep processor|wc -l`
 
 function usage()
 {
@@ -45,7 +46,7 @@ function run_testcase()
 	echo "run $1"
 	cd $SRC/$1
 	rm -rf .cafe_tmp
-	mm -j5 > .cafe_tmp 2>&1
+	mm -j$CPU_NUMBER > .cafe_tmp 2>&1
 	if [ ! 0 -eq $? ];then
 		cat .cafe_tmp
 		exit 0;
@@ -155,13 +156,13 @@ function make_cafe()
 	cd $SRC/testrunner
 	mm clean-cafe
 	rm -rf $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates
-	mm -j5
+	mm -j$CPU_NUMBER
 	#adb push cafexml.xml /system/etc/permissions
 	#adb push $ANDROID_TOP/out/target/product/generic/system/framework/cafe.jar /system/framework
 
 	# make android-web-driver.jar
 	cd $SRC/webapp
-	mm -j5
+	mm -j$CPU_NUMBER
 
 	# cp classes-jarjar.jar for development
 	cd $SRC
@@ -185,7 +186,7 @@ function make_install_arms()
 	rm -rf $ANDROID_TOP/out/target/common/obj/APPS/Arms_intermediates
 	rm -rf $ANDROID_TOP/out/target/common/obj/APPS/ArmsProxy_intermediates
 	mm clean-Arms
-	mm -j5 | grep Install | while read LINE
+	mm -j$CPU_NUMBER | grep Install | while read LINE
 do
 	apk=`echo "$LINE"`
 	apkPath=${apk#"Install: "};
