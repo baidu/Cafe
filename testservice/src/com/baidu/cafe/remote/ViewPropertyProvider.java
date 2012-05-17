@@ -59,6 +59,11 @@ public class ViewPropertyProvider {
         mIns = new ArrayList<BufferedReader>();
         init();
     }
+    
+    public void setStatusBarHeight(int height){
+        mHeightOfStatusBar = height;
+        Log.print("mHeightOfStatusBar:" + mHeightOfStatusBar);
+    }
 
     /**
      * check whether the given process alive or not

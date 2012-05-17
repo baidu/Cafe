@@ -1612,19 +1612,19 @@ public class SystemLib {
      * */
     public void installApk(String filename) {
         // systemLib.Installapk(filename);
-        if (isregister == false) {
-            isregister = true;
-            IntentFilter intentFilter = new IntentFilter(MyIntent.ACTION_INSTALL_BEGIN);
-            intentFilter.addAction(MyIntent.ACTION_INSTALL_END);
-            mContext.registerReceiver(mReceiver, intentFilter);
-        }
-        //start the service
-        Intent startservice = new Intent();
-        startservice.setAction(MyIntent.ACTION_PROXY);
-        startservice.putExtra(MyIntent.EXTRA_OPERATION, MyIntent.EXTRA_INSTALL);
-        startservice.putExtra(MyIntent.EXTRA_ARG1, filename);
-        Log.print("startservice intent is " + startservice);
-        mContext.startService(startservice);
+//        if (isregister == false) {
+//            isregister = true;
+//            IntentFilter intentFilter = new IntentFilter(MyIntent.ACTION_INSTALL_BEGIN);
+//            intentFilter.addAction(MyIntent.ACTION_INSTALL_END);
+//            mContext.registerReceiver(mReceiver, intentFilter);
+//        }
+//        //start the service
+//        Intent startservice = new Intent();
+//        startservice.setAction(MyIntent.ACTION_PROXY);
+//        startservice.putExtra(MyIntent.EXTRA_OPERATION, MyIntent.EXTRA_INSTALL);
+//        startservice.putExtra(MyIntent.EXTRA_ARG1, filename);
+//        Log.print("startservice intent is " + startservice);
+//        mContext.startService(startservice);
     }
 
     public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -1976,7 +1976,15 @@ public class SystemLib {
      * @return height of status bar
      */
     public int getStatusBarHeight() {
-        return mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+        int statusBarHeight = 0;
+        try {
+            statusBarHeight =  mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+        } catch (Exception e) {
+            // when com.android.internal.R.dimen.status_bar_height can not be found, eat the exception
+            // It will be handle by 
+        }
+        
+        return statusBarHeight;
     }
 
     public void recovery() {

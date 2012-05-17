@@ -3081,7 +3081,7 @@ public class Armser {
             e.printStackTrace();
         }
     }
-    
+
     public void recovery() {
         try {
             iArms.recovery();
@@ -3089,7 +3089,7 @@ public class Armser {
             e.printStackTrace();
         }
     }
-    
+
     public int getCurrentTaskActivitiesNumber() {
         int ret = 0;
         try {
@@ -3098,6 +3098,14 @@ public class Armser {
             e.printStackTrace();
         } finally {
             return ret;
+        }
+    }
+
+    public void setStatusBarHeight(int height) {
+        try {
+            iArms.setStatusBarHeight(height);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

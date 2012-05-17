@@ -24,7 +24,10 @@ import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
 import com.baidu.cafe.local.Log;
 import com.baidu.cafe.local.LocalLib;
 import android.app.Activity;
+import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
+import android.view.View;
+import android.view.Window;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -60,11 +63,18 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         Log.init(this, Log.DEFAULT);
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
+        remote.setStatusBarHeight(getStatusBarHeight());
         local = new LocalLib(getInstrumentation(), getActivity());
         orignal = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new CafeExceptionHandler(orignal, this));
         // Log.printBuildVersion(arms);
         mTearDownHelper = new TearDownHelper(remote);
+    }
+
+    private int getStatusBarHeight() {
+        Rect rect = new Rect();
+        getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getWindowVisibleDisplayFrame(rect);
+        return rect.top;
     }
 
     @Override

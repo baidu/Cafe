@@ -804,4 +804,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public int getCurrentTaskActivitiesNumber() {
         return mSystemLib.getCurrentTaskActivitiesNumber();
     }
+    
+    public void setStatusBarHeight(int height){
+        mViewPropertyProvider.setStatusBarHeight(height);
+    }
 }
