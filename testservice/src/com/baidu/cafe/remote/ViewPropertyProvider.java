@@ -58,6 +58,7 @@ public class ViewPropertyProvider {
         mSystemLib = systemLib;
         mIns = new ArrayList<BufferedReader>();
         init();
+        // for test git
     }
     
     public void setStatusBarHeight(int height){
