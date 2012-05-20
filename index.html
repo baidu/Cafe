@@ -35,9 +35,34 @@
 
 <p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<pre><code>
+public class QuickStart extends CafeTestCase<MainActivity> {
+    public QuickStart() {
+        super(MainActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    public void test_casename() {
+        remote.setWifiEnabled();
+        local.clickOnText("enter");
+        assertTrue(local.searchText("welcome"));
+
+        local.clickOnButton("Call");
+        // Phone process has been launched, so we should
+        // use remote.XXX() to operate oject of other processes.
+        remote.clickViewByText("End Call");
+        remote.waitForViewByText("Call", 5000);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+}
 </code></pre>
 
 <p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
