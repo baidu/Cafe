@@ -63,7 +63,7 @@ public class SocketClient {
     /**
      * send msg here
      * 
-     * @param msg
+     * @param msgs
      * @return
      * @throws UnknownHostException
      * @throws IOException

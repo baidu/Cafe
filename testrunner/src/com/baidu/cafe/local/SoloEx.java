@@ -67,7 +67,7 @@ public class SoloEx extends Solo {
     /**
      * Constructor that takes in the instrumentation and the start activity.
      * 
-     * @param inst
+     * @param instrumentation
      *            the {@link Instrumentation} instance.
      * @param activity
      *            {@link Activity} the start activity
@@ -187,7 +187,7 @@ public class SoloEx extends Solo {
      *            This field's owner object
      * @param name
      *            Field name
-     * @return
+     * @return field object
      */
     protected Object getField(Object owner, String name) {
         try {
@@ -222,12 +222,14 @@ public class SoloEx extends Solo {
     /**
      * Invoke the method
      * 
-     * @param receiver
+     * @param owner
      *            This method's owner object
      * @param name
      *            Method name
-     * @param args
-     *            Arguments
+     * @param parameterTypes
+     *            types array of parameters
+     * @param parameters
+     *            objects array of parameters
      */
     protected Object invoke(Object owner, String name, Class[] parameterTypes, Object[] parameters) {
         try {

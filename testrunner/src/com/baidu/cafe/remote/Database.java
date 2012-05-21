@@ -121,8 +121,8 @@ public class Database {
      * @throws NullPointerException
      *             if uri or values are null
      */
-    public int update(Uri url, ContentValues values, String where, String[] selectionArgs) {
-        return mContentResolver.update(url, values, where, selectionArgs);
+    public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
+        return mContentResolver.update(uri, values, where, selectionArgs);
     }
 
     /**

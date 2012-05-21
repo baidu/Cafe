@@ -807,7 +807,7 @@ public class LocalLib extends SoloEx {
      * 
      * @param filePath
      * @param caseId
-     * @return
+     * @return 
      * @throws IOException
      * @throws UnknownHostException
      */
@@ -1087,7 +1087,7 @@ public class LocalLib extends SoloEx {
      *            the delay millisecond
      * @param scroll
      *            true you want to scroll
-     * @param onlyvisiable
+     * @param onlyVisible
      *            true we only deal with the view visible
      * @return true we get it
      */

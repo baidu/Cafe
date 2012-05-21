@@ -2,7 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="D:/android-sdk-windows/platforms/android-2.3.3/android.jar"/>
+	<classpathentry kind="lib" path="D:/android-sdk-windows/platforms/android-2.3.3/android.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/D:/android-sdk-windows/docs/sdk/1.6_r1/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="D:/Source/Cafe/src/testrunner/third/robotium-solo-3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
