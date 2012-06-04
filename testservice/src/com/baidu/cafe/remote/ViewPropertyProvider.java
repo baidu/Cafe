@@ -840,7 +840,8 @@ public class ViewPropertyProvider {
      * init process include: 1. set the height of the status bar
      */
     private void init() {
-        mHeightOfStatusBar = mSystemLib.getStatusBarHeight();
+        // set by setStatusBarHeight()
+//        mHeightOfStatusBar = mSystemLib.getStatusBarHeight();
         Log.print("mHeightOfStatusBar:" + mHeightOfStatusBar);
     }
 
