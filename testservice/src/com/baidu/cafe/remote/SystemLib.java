@@ -971,11 +971,13 @@ public class SystemLib {
         boolean force = true;
         IMountService mountService = getMountService();
         String extStoragePath = Environment.getExternalStorageDirectory().toString();
+		/*
         try {
             mountService.unmountVolume(extStoragePath, force);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+		*/
     }
 
     /**
@@ -1580,7 +1582,7 @@ public class SystemLib {
      */
     public void setScreenUnlockSecurityNone() {
         LockPatternUtils mLockPatternUtils = new LockPatternUtils(mContext);
-        mLockPatternUtils.clearLock();
+        //mLockPatternUtils.clearLock();
     }
 
     /**

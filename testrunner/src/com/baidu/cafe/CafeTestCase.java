@@ -52,10 +52,11 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         super(activityClass);
     }
 
+	/*
     public CafeTestCase(String packageName, Class<T> activityClass) {
         super(packageName, activityClass);
     }
-
+*/
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -74,6 +75,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private int getStatusBarHeight() {
         Rect rect = new Rect();
         getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getWindowVisibleDisplayFrame(rect);
+		Log.d("" + rect.top);
         return rect.top;
     }
 
