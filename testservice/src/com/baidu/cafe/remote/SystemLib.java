@@ -101,7 +101,6 @@ import java.util.regex.Pattern;
  */
 public class SystemLib {
 
-    private static final String  LOG_TAG         = "SystemLib";
     private final String         PREFERENCE_NAME = "arms";
     private static final boolean DEBUG           = false;
 

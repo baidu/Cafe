@@ -34,8 +34,6 @@ public class ArmsBinder extends IRemoteArms.Stub {
     private UILib                mUILib                = null;
 
     ArmsBinder(Context context) {
-        // open ViewServer
-        ShellExecute.execute(new String[] { "service", "call", "window", "1", "i32", "4939" }, "/");
         mSystemLib = new SystemLib(context);
         mContext = context;
         mViewPropertyProvider = new ViewPropertyProvider(mSystemLib);

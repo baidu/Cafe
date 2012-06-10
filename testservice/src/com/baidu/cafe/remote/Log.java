@@ -26,7 +26,8 @@ public class Log {
     public final static boolean DEBUG = true;
 
     public static void print(String msg) {
-        String className = Thread.currentThread().getStackTrace()[2].getClassName();
+        // get the classname of invoker 
+        String className = Thread.currentThread().getStackTrace()[3].getClassName();
         String shortName = className.substring(className.lastIndexOf(".") + 1);
         android.util.Log.i(shortName, msg);
     }
