@@ -733,6 +733,20 @@ public class LocalLib extends SoloEx {
     }
 
     /**
+     * zoom screen 
+     * 
+     * @param start
+     *            the start position e.g. new int[]{0,0,1,2}; means two pointers
+     *            start at {0,0} and {1,2}
+     * @param end
+     *            the end position e.g. new int[]{100,110,200,220}; means two
+     *            pointers end at {100,110} and {200,220}
+     */
+    public void zoom(int[] start, int[] end){
+        sendMultiTouchMotionEvent(2, start, end, 10, 0, 0, 0);
+    }
+    
+    /**
      * send a Multi-Touch Motion Event
      * 
      * @param pointerNumber
