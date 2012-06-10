@@ -1986,7 +1986,7 @@ public class SystemLib {
                 statusBarHeight =  mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
             }
         } catch (Exception e) {
-            // when com.android.internal.R.dimen.status_bar_height can not be found, eat the exception
+            // When com.android.internal.R.dimen.status_bar_height can not be found at Android 4.0, eat the exception
             // It will be handle by 
         }
         
