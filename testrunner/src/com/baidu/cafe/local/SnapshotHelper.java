@@ -32,11 +32,11 @@ import android.graphics.Bitmap;
  * @todo
  */
 public class SnapshotHelper {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private static void print(String message) {
         if (DEBUG && message != null) {
-            Log.d("SnapshotHelper", message);
+            Log.i("SnapshotHelper", message);
         }
     }
 

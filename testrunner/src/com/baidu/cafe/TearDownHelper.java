@@ -47,7 +47,7 @@ public class TearDownHelper {
     }
 
     private void print(String msg) {
-        Log.d("TearDownHelper", msg);
+        Log.i("TearDownHelper", msg);
     }
 
     public void backToHome() {

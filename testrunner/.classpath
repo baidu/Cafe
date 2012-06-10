@@ -8,5 +8,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="D:/Source/Cafe/src/testrunner/third/robotium-solo-3.1.jar"/>
+	<classpathentry kind="lib" path="D:/android-sdk-windows/platforms/android-10/android.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -28,6 +28,6 @@ public class Log {
     public static void print(String msg) {
         String className = Thread.currentThread().getStackTrace()[2].getClassName();
         String shortName = className.substring(className.lastIndexOf(".") + 1);
-        android.util.Log.d(shortName, msg);
+        android.util.Log.i(shortName, msg);
     }
 }

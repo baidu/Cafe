@@ -71,11 +71,12 @@ import dalvik.system.DexFile;
  * @todo
  */
 
-public class LocalLib extends SoloEx { 
+public class LocalLib extends SoloEx {
     public final static int      SEARCHMODE_COMPLETE_MATCHING = 1;
     public final static int      SEARCHMODE_DEFAULT           = 1;
     public final static int      SEARCHMODE_INCLUDE_MATCHING  = 2;
     public final static int      WAIT_INTERVAL                = 1000;
+    private final static boolean DEBUG                        = true;
 
     private boolean              mHasBegin                    = false;
     private ArrayList<View>      mViews                       = null;
@@ -87,9 +88,6 @@ public class LocalLib extends SoloEx {
     private Activity             mActivity;
     private Context              mContext                     = null;
 
-    private final static String  TAG                          = "LocalLib";
-    private final static boolean DEBUG                        = false;
-
     public LocalLib(Instrumentation instrumentation, Activity activity) {
         super(instrumentation, activity);
         mInstrumentation = instrumentation;
@@ -99,7 +97,7 @@ public class LocalLib extends SoloEx {
 
     private void print(String message) {
         if (DEBUG) {
-            Log.d(TAG, message);
+            Log.i("LocalLib", message);
         }
     }
 
@@ -733,7 +731,7 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * zoom screen 
+     * zoom screen
      * 
      * @param start
      *            the start position e.g. new int[]{0,0,1,2}; means two pointers
@@ -742,10 +740,10 @@ public class LocalLib extends SoloEx {
      *            the end position e.g. new int[]{100,110,200,220}; means two
      *            pointers end at {100,110} and {200,220}
      */
-    public void zoom(int[] start, int[] end){
+    public void zoom(int[] start, int[] end) {
         sendMultiTouchMotionEvent(2, start, end, 10, 0, 0, 0);
     }
-    
+
     /**
      * send a Multi-Touch Motion Event
      * 
@@ -821,7 +819,7 @@ public class LocalLib extends SoloEx {
      * 
      * @param filePath
      * @param caseId
-     * @return 
+     * @return
      * @throws IOException
      * @throws UnknownHostException
      */
@@ -1121,8 +1119,8 @@ public class LocalLib extends SoloEx {
             }
 
             if (scroll
-                    && !(Boolean) invoke(mScroller, "scroll", new Class[] { int.class }, new Object[] { getField(
-                            mScroller, "DOWN") })) { // mScroller.scroll(mScroller.DOWN)
+                    && !(Boolean) invoke(mScroller, "scroll", new Class[] { int.class },
+                            new Object[] { getField(mScroller, "DOWN") })) { // mScroller.scroll(mScroller.DOWN)
                 continue;
             }
             invoke(mSleeper, "sleep"); // mSleeper.sleep();
@@ -1346,8 +1344,8 @@ public class LocalLib extends SoloEx {
         }
 
         if (scroll
-                && (Boolean) invoke(mScroller, "scroll", new Class[] { int.class }, new Object[] { getField(mScroller,
-                        "DOWN") })) {//scroller.scroll(Scroller.DOWN)
+                && (Boolean) invoke(mScroller, "scroll", new Class[] { int.class },
+                        new Object[] { getField(mScroller, "DOWN") })) {//scroller.scroll(Scroller.DOWN)
             return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class, int.class,
                     Boolean.class }, new Object[] { line, index, scroll }); // mClicker.clickInList(line,
             // index, scroll);

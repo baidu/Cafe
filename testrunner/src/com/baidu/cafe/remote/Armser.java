@@ -109,7 +109,7 @@ public class Armser {
     }
 
     private void print(String message) {
-        Log.d("Armser", "" + message);
+        Log.i("Armser", "" + message);
     }
 
     /**

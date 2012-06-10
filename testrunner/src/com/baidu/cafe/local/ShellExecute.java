@@ -42,7 +42,7 @@ public class ShellExecute {
      */
     public static String execute(String[] command, String directory) {
         StringBuilder result = new StringBuilder("");
-        Log.d("ShellExecute", arrayToString(command));
+        Log.i("ShellExecute", arrayToString(command));
 
         BufferedReader in = null;
         try {

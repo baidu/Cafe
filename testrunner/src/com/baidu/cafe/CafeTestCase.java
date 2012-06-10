@@ -26,7 +26,6 @@ import com.baidu.cafe.local.LocalLib;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
-import android.view.View;
 import android.view.Window;
 
 /**
@@ -75,7 +74,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private int getStatusBarHeight() {
         Rect rect = new Rect();
         getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getWindowVisibleDisplayFrame(rect);
-		Log.d("" + rect.top);
+		Log.i("" + rect.top);
         return rect.top;
     }
 
@@ -114,7 +113,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
      */
     @Override
     public void callWhenExceptionHappen() {
-        Log.d(TAG, "XXXXXXXXXX--my exceptionhandler callback--XXXXXXXXXXXXXXXXXXXX");
+        Log.i(TAG, "XXXXXXXXXX--my exceptionhandler callback--XXXXXXXXXXXXXXXXXXXX");
     }
 
     private static String getAddress() {
@@ -126,7 +125,6 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             if (!methodName.startsWith("assert") && !methodName.startsWith("fail")) {
                 break;
             }
-            //Log.d(methodName);
             distance++;
             if (distance > 10) {
                 Log.d("distance > 10");
@@ -134,10 +132,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             }
         }
 
-        String address = mPackageName + "." + methodName;
-        //Log.d(address);
-
-        return address;
+        return mPackageName + "." + methodName;
     }
 
     /**
