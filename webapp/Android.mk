@@ -3,6 +3,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := android-web-driver
+LOCAL_DEX_PREOPT := false
 
 LOCAL_SRC_FILES := $(call all-subdir-java-files,../testrunner/src/)
 LOCAL_JAVA_LIBRARIES := android.test.runner
