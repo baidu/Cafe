@@ -46,9 +46,11 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Checkable;
 import android.widget.CheckedTextView;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TabWidget;
 import android.widget.TextView;
@@ -409,8 +411,7 @@ public class LocalLib extends SoloEx {
      * @return string value
      */
     public String getTestRString(String stringName) {
-        Context context = mInstrumentation.getContext();
-        return context.getResources().getString(getRStringId(context.getPackageName(), stringName));
+        return mContext.getResources().getString(getRStringId(mContext.getPackageName(), stringName));
     }
 
     /**
@@ -1411,6 +1412,17 @@ public class LocalLib extends SoloEx {
             e.printStackTrace();
         }
         return classes;
+    }
+    
+    public void hideInputMethod(){
+        for (EditText editText : getCurrentViews(EditText.class)){
+            hideInputMethod(editText);
+        }
+    }
+
+    public void hideInputMethod(EditText editText) {
+        InputMethodManager inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
     }
 
 }
