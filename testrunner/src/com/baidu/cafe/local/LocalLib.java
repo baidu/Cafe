@@ -1413,16 +1413,28 @@ public class LocalLib extends SoloEx {
         }
         return classes;
     }
-    
-    public void hideInputMethod(){
-        for (EditText editText : getCurrentViews(EditText.class)){
+
+    public void hideInputMethod() {
+        for (EditText editText : getCurrentViews(EditText.class)) {
             hideInputMethod(editText);
         }
     }
 
     public void hideInputMethod(EditText editText) {
-        InputMethodManager inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) mContext
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
+    public ActivityInfo[] getActivitiesFromPackage(String packageName) {
+        ActivityInfo[] activities = null;
+        try {
+            activities = mContext.getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES).activities;
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return activities;
     }
 
 }
