@@ -113,7 +113,15 @@ public class UILib {
      *            the text you wanna to enter
      */
     public void enterText(String text) {
-        mInstrumentation.sendStringSync(text);
+        
+        switch (EVENT_SENDER) {
+        case USE_INSTRUMENTATION:
+            mInstrumentation.sendStringSync(text);
+            break;
+        case USE_MONKEY:
+            new MonkeyNetwork().type(text);
+            break;
+        }
     }
 
     /**

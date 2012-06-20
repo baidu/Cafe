@@ -79,6 +79,11 @@ public class MonkeyNetwork {
         sendCommand(command);
     }
     
+    public void type(String str){
+        String command = String.format("%s %s %s", "type", str);
+        sendCommand(command);
+    }
+    
     public void done(){
         sendCommand("done");
     }
