@@ -80,7 +80,7 @@ public class MonkeyNetwork {
     }
     
     public void type(String str){
-        String command = String.format("%s %s %s", "type", str);
+        String command = String.format("%s %s", "type", str);
         sendCommand(command);
     }
     
