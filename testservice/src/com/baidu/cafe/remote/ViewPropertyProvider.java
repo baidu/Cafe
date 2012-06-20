@@ -60,8 +60,8 @@ public class ViewPropertyProvider {
         init();
         // for test git
     }
-    
-    public void setStatusBarHeight(int height){
+
+    public void setStatusBarHeight(int height) {
         mHeightOfStatusBar = height;
         Log.print("mHeightOfStatusBar:" + mHeightOfStatusBar);
     }
@@ -278,8 +278,7 @@ public class ViewPropertyProvider {
                 while (true) {
                     if (System.currentTimeMillis() - begin > DUMP_TIMEOUT) {
                         isTimeout = true;
-                        Log
-                                .print("Dump time is over than DUMP_TIMEOUT!\nSocket to ViewServer will be closed And it will throw [java.net.SocketException: Broken pipe].");
+                        Log.print("Dump time is over than DUMP_TIMEOUT!\nSocket to ViewServer will be closed And it will throw [java.net.SocketException: Broken pipe].");
                         break;
                     }
 
@@ -741,13 +740,17 @@ public class ViewPropertyProvider {
      * @return the matched value
      */
     private String getPropertyValue(String line, String searchKey) {
-        if (searchKey.length() != 0 && line.indexOf(searchKey) != -1) {
-            int beginIndex = line.indexOf(searchKey) + searchKey.length() + 1;
-            int endIndex = beginIndex + getLengthNumberWidth(line, beginIndex);
-            int length = new Integer(line.substring(beginIndex, endIndex));
-            beginIndex = endIndex + 1;
-            endIndex = beginIndex + length;
-            return line.substring(beginIndex, endIndex);
+        try {
+            if (searchKey.length() != 0 && line.indexOf(searchKey + "=") != -1) {
+                int beginIndex = line.indexOf(searchKey) + searchKey.length() + 1;
+                int endIndex = beginIndex + getLengthNumberWidth(line, beginIndex);
+                int length = new Integer(line.substring(beginIndex, endIndex));
+                beginIndex = endIndex + 1;
+                endIndex = beginIndex + length;
+                return line.substring(beginIndex, endIndex);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         // Log.print(property + " has not be found at " + line);
         return null;
@@ -841,7 +844,7 @@ public class ViewPropertyProvider {
      */
     private void init() {
         // set by setStatusBarHeight()
-//        mHeightOfStatusBar = mSystemLib.getStatusBarHeight();
+        //        mHeightOfStatusBar = mSystemLib.getStatusBarHeight();
         Log.print("mHeightOfStatusBar:" + mHeightOfStatusBar);
     }
 
