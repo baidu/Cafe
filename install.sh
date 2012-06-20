@@ -204,12 +204,12 @@ fi
 function start_monkey_server()
 {
 	cd $SRC
-	monkey=`adb shell "ps | grep monkey "`
+	monkey=`adb shell ps | grep monkey`
 	pid=`echo $monkey | awk -F " " '{print $2}'`
 	if [ ! -z "$pid" ]; then 
 		adb shell "kill -9 $pid"
 	fi
-	adb shell monkey --port 4938 --ignore-crashes --ignore-security-exceptions --ignore-native-crashes -v -v > monkey.log &
+	adb shell monkey --port 4938 --ignore-crashes --ignore-security-exceptions --ignore-native-crashes -v -v > .monkey.log &
 	sleep $SLEEP_TIME
 	echo ""
 }
