@@ -603,10 +603,6 @@ public class ArmsBinder extends IRemoteArms.Stub {
         mSystemLib.setScreenOn();
     }
 
-    public void launchAcitivityFromService(String packageName, String className) {
-        mSystemLib.launchAcitivityFromService(packageName, className);
-    }
-
     public void sendKeyEvent(int keyCode) {
         mUILib.pressKey(keyCode);
     }

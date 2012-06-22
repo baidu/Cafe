@@ -1443,23 +1443,6 @@ public class SystemLib {
     }
 
     /**
-     * launch an activity from service
-     * 
-     * @param packageName
-     *            className of activity
-     *            e.g."com.android.mms/.ui.ConversationList"
-     * @return whether the activity launched succeed
-     */
-    public void launchAcitivityFromService(String packageName, String className) {
-        Intent mIntent = new Intent();
-        mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-        mIntent.setAction(Intent.ACTION_MAIN);
-        mIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mIntent.setComponent(new ComponentName(packageName, className));
-        mContext.startActivity(mIntent);
-    }
-
-    /**
      * get top activity
      * 
      * @return the name of top activity. ex. "com.baidu.baiduclock.BaiduClock"

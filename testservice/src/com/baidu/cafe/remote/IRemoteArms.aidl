@@ -111,7 +111,6 @@ interface IRemoteArms {
     void waitForAllDumpCompleted();
     String getTopActivity();
     void setScreenOn();
-    void launchAcitivityFromService(String packageName,String className);
     void sendKeyEvent(int keyCode);
     boolean waitforTopActivity(String className,long timeout);
     void factoryResetWithEraseSD();

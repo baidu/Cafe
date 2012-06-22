@@ -440,24 +440,6 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * LaunchActivity for sync, the flag is
-     * android.content.Intent.FLAG_ACTIVITY_NEW_TASK, the action is
-     * Intent.ACTION_MAIN the category is Intent.CATEGORY_LAUNCHER
-     * 
-     * @param packageName
-     * @param activityName
-     * @return activity
-     */
-    public Activity launchAcitvity(String packageName, String activityName) {
-        Intent mIntent = new Intent();
-        mIntent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-        mIntent.setAction(Intent.ACTION_MAIN);
-        mIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mIntent.setComponent(new ComponentName(packageName, packageName + "." + activityName));
-        return mInstrumentation.startActivitySync(mIntent);
-    }
-
-    /**
      * run shell command with tested app's permission
      * 
      * @param command

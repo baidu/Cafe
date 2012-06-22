@@ -1299,81 +1299,6 @@ public class Armser {
 
     private static final int     TIMEOUT_DEFAULT_VALUE = 10000;
 
-    public static final int      APP_LAUNCHER          = 0;
-    public static final int      APP_APPSTORE          = 1;
-    public static final int      APP_BAIDU_ACCOUNT     = 2;
-    public static final int      APP_BAIDU_INPUT       = 3;
-    public static final int      APP_BAIDU_MAP         = 4;
-    public static final int      APP_BAIDU_SHENBIAN    = 5;
-    public static final int      APP_BROWSER           = 6;
-    public static final int      APP_CALCULATOR        = 7;
-    public static final int      APP_CALENDAR          = 8;
-    public static final int      APP_CAMERA            = 9;
-    public static final int      APP_CLOCK             = 10;
-    public static final int      APP_CONTACTS          = 11;
-    public static final int      APP_DEV_TOOLS         = 12;
-    public static final int      APP_DOWNLOAD          = 13;
-    public static final int      APP_EMAIL             = 14;
-    public static final int      APP_FLY_FLOW          = 15;
-    public static final int      APP_FOLDER            = 16;
-    public static final int      APP_GALLERY           = 17;
-    public static final int      APP_KAI_XIN           = 18;
-    public static final int      APP_LOG_SAVE_TOOL     = 19;
-    public static final int      APP_MESSAGING         = 20;
-    public static final int      APP_MOBILE_QQ         = 21;
-    public static final int      APP_MUSIC_BOX         = 22;
-    public static final int      APP_NOTEPAD           = 23;
-    public static final int      APP_PHONE             = 24;
-    public static final int      APP_PHONE_REFILLER    = 25;
-    public static final int      APP_POWERWORD         = 26;
-    public static final int      APP_READER            = 27;
-    public static final int      APP_REN_REN           = 28;
-    public static final int      APP_SETTINGS          = 29;
-    public static final int      APP_SIM_TOOLKIT       = 30;
-    public static final int      APP_TIE_BA            = 31;
-    public static final int      APP_WEATHER           = 32;
-    public static final int      APP_WEI_BO            = 33;
-    public static final int      APP_WIDGET_WATCH      = 34;
-    public static final int      APP_ZHANG_BAI         = 35;
-
-    public static final String[] appClassName          = { "com.baidu.home/.Launcher", //APP_LAUNCHER = 0
-            "com.baidu.appstore/.ui.AppStoreTabActivity", //APP_APPSTORE = 1
-            "com.baidu.account/.BaiduAccount", //APP_BAIDU_ACCOUNT = 2
-            "com.baidu.input/.ConfigActivity", //APP_BAIDU_INPUT = 3            
-            "com.baidu.BaiduMap/.BaiduMap", //APP_BAIDU_MAP = 4;
-            "com.baidu.shenbian/.IndexActivity", //APP_BAIDU_SHENBIAN = 5
-            "com.android.browser/.BrowserActivity", //APP_BROWSER = 6
-            "com.baidu.calculator2/.Calculator", //APP_CALCULATOR = 7
-            "com.android.calendar/.LaunchActivity", //APP_CALENDAR = 8
-            "com.baidu.camera/.Camera", //APP_CAMERA = 9
-            "com.baidu.baiduclock/.BaiduClock", //APP_CLOCK = 10
-            "com.android.contacts/.DialtactsContactsEntryActivity", //APP_CONTACTS = 11
-            "com.android.development/.Development", //APP_DEV_TOOLS = 12
-            "com.android.providers.downloads.ui/.DownloadList", //APP_DOWNLOAD = 13
-            "com.android.email/.activity.setup.AccountSetupFirst", //APP_EMAIL = 14
-            "com.baidu.browser.apps/.BrowserActivity", //APP_FLY_FLOW = 15
-            "com.baidu.resmanager.filemanager/.FileManagerActivity", //APP_FOLDER = 16
-            "com.baidu.gallery3D.media/.Gallery", //APP_GALLERY = 17
-            "com.kaixin001.activity/.LoginActivity", //APP_KAI_XIN = 18
-            "com.baidu.freetest.log/.SaveLog", //APP_LOG_SAVE_TOOL = 19
-            "com.android.mms/.ui.ConversationList", //APP_MESSAGING = 20
-            "com.tencent.qq/.LoginActivity", //APP_MOBILE_QQ = 21
-            "com.baidu.mp3.android/.activity.LocalTabActivity", //APP_MUSIC_BOX = 22
-            "com.baidu.notepad/.NotesList", //APP_NOTEPAD = 23
-            "com.android.contacts/.DialtactsContactsEntryActivity", //APP_PHONE = 24
-            "com.baidu.PhonePay/.PhoneRechargeActivity", //APP_PHONE_REFILLER = 25
-            "com.kingsoft.android/.bin.Launch", //APP_POWERWORD = 26
-            "com.baidu.BaiduReader/.local.LocalListActivity", //APP_READER = 27
-            "com.renren.mobile.android/.ui.Login", //APP_REN_REN = 28
-            "com.android.settings/.Settings", //APP_SETTINGS = 29
-            "com.android.stk/.StkMenuActivity", //APP_SIM_TOOLKIT = 30
-            "bdmobile.android.app/.SplashActivity", //APP_TIE_BA = 31
-            "com.baidu.weather/.ui.WeatherApp", //APP_WEATHER = 32
-            "com.sina.weibo/.SplashActivity", //APP_WEI_BO = 33
-            "com.baidu.widgets/.WidgetWatch", //APP_WIDGET_WATCH = 34
-            "bdmobile.android.app/.SplashActivity", //APP_ZHANG_BAI = 35
-                                                       };
-
     /**
      * press home key
      */
@@ -1412,15 +1337,6 @@ public class Armser {
         }
     }
 
-    public void launchAcitivityFromService(String packageName, String className) {
-        try {
-            iArms.launchAcitivityFromService(packageName, className);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } finally {
-        }
-    }
-
     /**
      * @param className
      *            className of activity
@@ -1450,19 +1366,6 @@ public class Armser {
 
         final String[] classShortName = className.split("\\.");
         return waitForActivity(classShortName[classShortName.length - 1], TIMEOUT_DEFAULT_VALUE);
-    }
-
-    /**
-     * @param app
-     *            e.g.remote.APP_CALENDAR
-     * @return whether the application launched succeed
-     */
-    public boolean launchApplication(int app) {
-        if (0 > app || appClassName.length - 1 < app) {
-            return false;
-        } else {
-            return launchActivity(appClassName[app]);
-        }
     }
 
     /**
