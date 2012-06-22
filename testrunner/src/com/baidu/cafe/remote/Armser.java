@@ -1359,7 +1359,7 @@ public class Armser {
      */
     public boolean launchActivity(String className, int flags) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+//        intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.setComponent(ComponentName.unflattenFromString(className));
         intent.setFlags(flags);
         mContext.startActivity(intent);
