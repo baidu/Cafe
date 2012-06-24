@@ -1386,7 +1386,9 @@ public class LocalLib extends SoloEx {
             Enumeration<String> entries = dexfile.entries();
             while (entries.hasMoreElements()) {
                 String name = (String) entries.nextElement();
-                classes.add(name);
+                if (name.indexOf('$') == -1){
+                    classes.add(name);
+                }
             }
         } catch (NameNotFoundException e) {
             e.printStackTrace();
