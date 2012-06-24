@@ -1344,7 +1344,7 @@ public class Armser {
      * @return whether the activity launched succeed
      */
     public boolean launchActivity(String className) {
-        return launchActivity(className, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        return launchActivity(className, Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
     /**
