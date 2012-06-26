@@ -136,6 +136,8 @@ do
 	apkPath=${apk#"Install: "};
 	cp ${ANDROID_TOP}/${apkPath} $SRC/out
 done
+	cp $SRC/cafe_setup.bat $SRC/out
+	cp $SRC/cafe_setup.sh $SRC/out
 }
 
 HAS_DEVICE=`adb devices | grep -v ^$ | grep -v List`
@@ -157,8 +159,6 @@ do
 		y)
 			generate_yi_arms
 			mv out/Cafe.apk out/Cafe_Yi.apk
-			cp cafe_setup.bat out
-			cp cafe_setup.sh out
 			exit 0
 			;;  
 	esac
