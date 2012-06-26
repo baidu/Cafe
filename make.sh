@@ -157,6 +157,8 @@ do
 		y)
 			generate_yi_arms
 			mv out/Cafe.apk out/Cafe_Yi.apk
+			cp cafe_setup.bat out
+			cp cafe_setup.sh out
 			exit 0
 			;;  
 	esac
