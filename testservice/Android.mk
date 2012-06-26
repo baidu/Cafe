@@ -11,6 +11,8 @@ LOCAL_SRC_FILES += \
 
 LOCAL_PACKAGE_NAME := Cafe
 
+#LOCAL_CERTIFICATE := platform
+
 include $(BUILD_PACKAGE)
 
 include $(call all-makefiles-under, $(LOCAL_PATH))
