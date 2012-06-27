@@ -227,7 +227,11 @@ public class LocalLib extends SoloEx {
         print(code);
     }
 
-    private Object getListener(View view, int level, String fieldName) {
+    public Object getListener(View view, String fieldName) {
+        int level = countLevelFromView(view);
+        if (-1 == level) {
+            return null;
+        }
         try {
             return PrivateOperator.getObjectProperty(view, level, fieldName);
         } catch (SecurityException e) {
@@ -243,13 +247,7 @@ public class LocalLib extends SoloEx {
     }
 
     private void setAutoGenerateCodeListenerOnView(View view) {
-        int level = countLevelFromView(view);
-        print("level:" + level);
-        if (-1 == level) {
-            return;
-        }
-
-        mOnClickListener = (OnClickListener) getListener(view, level, "mOnClickListener");
+        mOnClickListener = (OnClickListener) getListener(view, "mOnClickListener");
         view.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (null != mOnClickListener) {
@@ -260,7 +258,7 @@ public class LocalLib extends SoloEx {
             }
         });
 
-        mOnLongClickListener = (OnLongClickListener) getListener(view, level, "mOnLongClickListener");
+        mOnLongClickListener = (OnLongClickListener) getListener(view, "mOnLongClickListener");
         view.setOnLongClickListener(new View.OnLongClickListener() {
             public boolean onLongClick(View v) {
                 if (null != mOnLongClickListener) {
@@ -271,7 +269,7 @@ public class LocalLib extends SoloEx {
             }
         });
 
-        mOnTouchListener = (OnTouchListener) getListener(view, level, "mOnTouchListener");
+        mOnTouchListener = (OnTouchListener) getListener(view, "mOnTouchListener");
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 if (null != mOnTouchListener) {
@@ -282,7 +280,7 @@ public class LocalLib extends SoloEx {
             }
         });
 
-        mOnKeyListener = (OnKeyListener) getListener(view, level, "mOnKeyListener");
+        mOnKeyListener = (OnKeyListener) getListener(view, "mOnKeyListener");
         view.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (null != mOnKeyListener) {
