@@ -227,6 +227,18 @@ public class LocalLib extends SoloEx {
         print(code);
     }
 
+    /**
+     * Get listener from view. e.g. (OnClickListener) getListener(view,
+     * "mOnClickListener"); means get click listener. Listener is a private
+     * property of a view, that's why this function is created.
+     * 
+     * @param view
+     *            target view
+     * @param fieldName
+     *            target listener. e.g. mOnClickListener, mOnLongClickListener,
+     *            mOnTouchListener, mOnKeyListener
+     * @return listener object; null means no listeners has been found
+     */
     public Object getListener(View view, String fieldName) {
         int level = countLevelFromView(view);
         if (-1 == level) {
@@ -1384,7 +1396,7 @@ public class LocalLib extends SoloEx {
             Enumeration<String> entries = dexfile.entries();
             while (entries.hasMoreElements()) {
                 String name = (String) entries.nextElement();
-                if (name.indexOf('$') == -1){
+                if (name.indexOf('$') == -1) {
                     classes.add(name);
                 }
             }
