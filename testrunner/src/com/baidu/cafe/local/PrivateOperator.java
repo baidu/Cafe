@@ -136,11 +136,11 @@ public class PrivateOperator {
      *            target object
      * @param classLevel
      *            0 means itself, 1 means it's father, and so on...
-     * @param typeString
-     *            e.g. java.lang.String
+     * @param type
+     *            e.g. String.class
      * @return ArrayList<String> of property's name
      */
-    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, String typeString) {
+    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, Class type) {
         ArrayList<String> names = new ArrayList<String>();
         // get class
         Class ownerclass = getOwnerclass(owner, classLevel);
@@ -151,16 +151,50 @@ public class PrivateOperator {
                 field.setAccessible(true);
             }
 
-            String type = field.getType().toString();
-            if (type.startsWith("class ")) {
-                type = type.substring("class ".length());
-            }
-
-            if (type.equals(typeString)) {
+            if (getClassName(field.getType()).equals(getClassName(type))) {
                 names.add(field.getName());
             }
         }
 
+        return names;
+    }
+
+    private static String getClassName(Class type) {
+        String fieldString = type.toString();
+        if (fieldString.startsWith("class ")) {
+            fieldString = fieldString.substring("class ".length());
+        }
+        return fieldString;
+    }
+
+    /**
+     * @param owner
+     *            target object
+     * @param classLevel
+     *            0 means itself, 1 means it's father, and so on...
+     * @param valueType
+     *            e.g. String.class
+     * @param value
+     *            value of the target fields
+     * @return ArrayList<String> of property's name
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     */
+    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel, Class valueType, Object value)
+            throws IllegalArgumentException, IllegalAccessException {
+        ArrayList<String> names = new ArrayList<String>();
+        Class ownerclass = getOwnerclass(owner, classLevel);
+
+        // get type
+        for (Field field : ownerclass.getDeclaredFields()) {
+            if (!field.isAccessible()) {
+                field.setAccessible(true);
+            }
+
+            if (getClassName(field.getType()).equals(getClassName(valueType)) && field.get(owner).equals(value)) {
+                names.add(field.getName());
+            }
+        }
         return names;
     }
 

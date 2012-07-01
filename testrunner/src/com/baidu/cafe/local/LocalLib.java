@@ -182,8 +182,26 @@ public class LocalLib extends SoloEx {
      *            e.g. java.lang.String
      * @return ArrayList<String> of property's name
      */
-    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, String typeString) {
-        return PrivateOperator.getPropertyNameByType(owner, classLevel, typeString);
+    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, Class type) {
+        return PrivateOperator.getPropertyNameByType(owner, classLevel, type);
+    }
+
+    /**
+     * @param owner
+     *            target object
+     * @param classLevel
+     *            0 means itself, 1 means it's father, and so on...
+     * @param valueType
+     *            e.g. String.class
+     * @param value
+     *            value of the target fields
+     * @return ArrayList<String> of property's name
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     */
+    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel, Class valueType, Object value)
+            throws IllegalArgumentException, IllegalAccessException {
+        return PrivateOperator.getPropertyNameByValue(owner, classLevel, valueType, value);
     }
 
     /**
