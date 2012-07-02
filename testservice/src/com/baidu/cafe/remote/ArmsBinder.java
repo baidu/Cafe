@@ -802,4 +802,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public void setStatusBarHeight(int height){
         mViewPropertyProvider.setStatusBarHeight(height);
     }
+    
+    public boolean isViewServerOpen(){
+        return ViewPropertyProvider.isViewServerOpen();
+    }
 }

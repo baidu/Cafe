@@ -3012,4 +3012,14 @@ public class Armser {
         }
     }
 
+    public boolean isViewServerOpen() {
+        boolean ret = 0;
+        try {
+            ret = iArms.isViewServerOpen();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return ret;
+        }
+    }
 }

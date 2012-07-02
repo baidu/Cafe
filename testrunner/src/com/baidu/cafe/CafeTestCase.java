@@ -46,16 +46,18 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private static String                   mPackageName                 = null;
     private Thread.UncaughtExceptionHandler orignal                      = null;
     private TearDownHelper                  mTearDownHelper              = null;
+    private boolean                         mIsViewServerOpen            = false;
 
     public CafeTestCase(Class<T> activityClass) {
         super(activityClass);
     }
 
-	/*
+    /*
     public CafeTestCase(String packageName, Class<T> activityClass) {
         super(packageName, activityClass);
     }
-*/
+    */
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -68,23 +70,30 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         orignal = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new CafeExceptionHandler(orignal, this));
         // Log.printBuildVersion(arms);
-        mTearDownHelper = new TearDownHelper(remote);
+        if (remote.isViewServerOpen()) {
+            mIsViewServerOpen = true;
+            mTearDownHelper = new TearDownHelper(remote);
+        } else {
+            mIsViewServerOpen = false;
+            Log.i("View server is not open !!!");
+        }
     }
 
     private int getStatusBarHeight() {
         Rect rect = new Rect();
         getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getWindowVisibleDisplayFrame(rect);
-		Log.i("" + rect.top);
+        Log.i("" + rect.top);
         return rect.top;
     }
 
     @Override
     protected void tearDown() throws Exception {
-        mTearDownHelper.backToHome();
-        mTearDownHelper.killWindowsFromBirthToNow();
-        mTearDownHelper = null;
-
-        remote.waitForAllDumpCompleted();
+        if (mIsViewServerOpen) {
+            mTearDownHelper.backToHome();
+            mTearDownHelper.killWindowsFromBirthToNow();
+            mTearDownHelper = null;
+            remote.waitForAllDumpCompleted();
+        }
 
         try {
             local.finalize();

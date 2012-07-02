@@ -37,6 +37,7 @@ public class ViewPropertyProvider {
     public final static int           SEARCHMODE_INCLUDE_MATCHING  = 2;
 
     private final static int          DUMP_TIMEOUT                 = 30000;
+    private final static int          VIEWSERVER_PORT              = 4939;
 
     private int                       mHeight                      = 0;
     private int                       mHeightOfStatusBar           = 0;
@@ -574,6 +575,26 @@ public class ViewPropertyProvider {
         return targetLines;
     }
 
+    @SuppressWarnings("finally")
+    public static boolean isViewServerOpen() {
+        boolean open = true;
+        Socket socket = new Socket();
+        try {
+            socket.connect(new InetSocketAddress("127.0.0.1", VIEWSERVER_PORT));
+        } catch (IOException e) {
+            //            e.printStackTrace();
+            open = false;
+        } finally {
+            try {
+                socket.close();
+                socket = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return open;
+        }
+    }
+
     /**
      * dump lines from view server by the given dumping command
      * 
@@ -599,7 +620,7 @@ public class ViewPropertyProvider {
 
         try {
             mSocket = new Socket();
-            mSocket.connect(new InetSocketAddress("127.0.0.1", 4939));
+            mSocket.connect(new InetSocketAddress("127.0.0.1", VIEWSERVER_PORT));
             mOut = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream()));
             mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), "utf-8"));
 
