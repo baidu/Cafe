@@ -76,6 +76,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         } else {
             mIsViewServerOpen = false;
             Log.i("View server is not open !!!");
+            Log.i("remote.clickXXX() can not work !!!");
         }
     }
 
