@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # DESCRIPTION: make, install and run testcase for Cafe
-# USAGE: put Cafe/ at ANDROID_TOP and ./install.sh
+# USAGE: put Cafe/ at ANDROID_TOP and ./make.sh
 # REPORTING BUGS: luxiaoyu01@baidu.com
-# TODO: support multi-device on one pc
 
 SRC=`pwd`
 ANDROID_TOP=$SRC/../
@@ -34,7 +33,7 @@ function run_testcase()
 	cd $SRC/$1
 	rm -rf .cafe_tmp
 	mm -j$CPU_NUMBER > .cafe_tmp 2>&1
-	if [ ! 0 -eq $? ];then
+	if [ 0 -ne $? ];then
 		cat .cafe_tmp
 		exit 0;
 	fi
@@ -107,12 +106,18 @@ function make_cafe()
 	mm clean-cafe
 	rm -rf $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates
 	mm -j$CPU_NUMBER
+	if [ 0 -ne $? ];then
+		exit 1;
+	fi
 	#adb push cafexml.xml /system/etc/permissions
 	#adb push $ANDROID_TOP/out/target/product/generic/system/framework/cafe.jar /system/framework
 
 	# make android-web-driver.jar
 	cd $SRC/webapp
 	mm -j$CPU_NUMBER
+	if [ 0 -ne $? ];then
+		exit 1;
+	fi
 
 	# cp classes-jarjar.jar for development
 	cd $SRC
