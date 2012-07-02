@@ -3013,7 +3013,7 @@ public class Armser {
     }
 
     public boolean isViewServerOpen() {
-        boolean ret = 0;
+        boolean ret = false;
         try {
             ret = iArms.isViewServerOpen();
         } catch (Exception e) {
