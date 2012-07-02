@@ -9,7 +9,7 @@ SRC=`pwd`
 ANDROID_TOP=$SRC/../
 SLEEP_TIME=5
 HAS_DEVICE=""
-CPU_NUMBER=`cat /proc/cpuinfo|grep processor|wc -l`
+CPU_NUMBER=`cat /proc/cpuinfo | grep processor | wc -l`
 
 function usage()
 {
