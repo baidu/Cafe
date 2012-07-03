@@ -56,7 +56,8 @@ public class Arms extends Service {
     public void onCreate() {
         super.onCreate();
 
-        keepAdb();
+        // close for android.provider.Settings$SettingNotFoundException: adb_enabled
+//        keepAdb();
     }
 
     private void keepAdb() {
