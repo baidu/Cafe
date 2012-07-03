@@ -17,10 +17,8 @@
 package com.baidu.cafe.remote;
 
 import android.app.Service;
-import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.ServiceManager;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 
