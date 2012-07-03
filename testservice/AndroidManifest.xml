@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.baidu.cafe.remote" >
+	<uses-sdk android:minSdkVersion="7" />
+
 	<uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" />
 	<uses-permission android:name="android.permission.SHUTDOWN" />
 	<uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
