@@ -52,11 +52,9 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         super(activityClass);
     }
 
-    /*
     public CafeTestCase(String packageName, Class<T> activityClass) {
         super(packageName, activityClass);
     }
-    */
 
     @Override
     protected void setUp() throws Exception {
