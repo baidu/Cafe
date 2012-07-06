@@ -240,7 +240,7 @@ public class LocalLib extends SoloEx {
     }
 
     private void generateCodeForClick(View view) {
-        String code = "//view.text=" + getTextFromView(view) + "\n" + "clickOnView(findViewById(new Integer("
+        String code = "//view.text=" + getViewText(view) + "\n" + "clickOnView(findViewById(new Integer("
                 + view.getId() + ")));";
         print(code);
     }
@@ -322,7 +322,7 @@ public class LocalLib extends SoloEx {
         });
     }
 
-    private String getTextFromView(View view) {
+    public String getViewText(View view) {
         try {
             Method method = view.getClass().getMethod("getText");
             return (String) (method.invoke(view));
@@ -356,7 +356,7 @@ public class LocalLib extends SoloEx {
 
         for (int i = 0; i < viewNumber; i++) {
             View view = allViews.get(i);
-            String t = getTextFromView(view);
+            String t = getViewText(view);
             if (t.indexOf(text) != -1) {
                 views.add(view);
             }

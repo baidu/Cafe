@@ -48,10 +48,21 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private TearDownHelper                  mTearDownHelper              = null;
     private boolean                         mIsViewServerOpen            = false;
 
+    /**
+     * For Android version number > 2.1
+     * 
+     * @param activityClass
+     */
     public CafeTestCase(Class<T> activityClass) {
         super(activityClass);
     }
 
+    /**
+     * For Android version number <= 2.1
+     * 
+     * @param packageName
+     * @param activityClass
+     */
     public CafeTestCase(String packageName, Class<T> activityClass) {
         super(packageName, activityClass);
     }
