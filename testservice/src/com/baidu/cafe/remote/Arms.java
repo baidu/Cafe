@@ -18,22 +18,15 @@ package com.baidu.cafe.remote;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.IBinder;
-import android.widget.Toast;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 
 /**
  * This class provides autotest assistance by AIDL+Service, including the
- * following features: 
- * 1. file system 
- * 2. power 
- * 3. connectivity 
- * 4. telephony 
- * 5.storage 
- * 6. system 
- * 7. appbasic 
- * 8. media
+ * following features: 1. file system 2. power 3. connectivity 4. telephony
+ * 5.storage 6. system 7. appbasic 8. media
  * 
  * @author luxiaoyu01@baidu.com
  * @date 2011-06-20
@@ -41,8 +34,9 @@ import android.provider.Settings.SettingNotFoundException;
  * @todo
  */
 public class Arms extends Service {
-    public Arms() {
+    private final static String CMD_GET_ORIENTATION = "CMD_GET_ORIENTATION";
 
+    public Arms() {
     }
 
     @Override
@@ -56,16 +50,27 @@ public class Arms extends Service {
         super.onCreate();
 
         // close for android.provider.Settings$SettingNotFoundException: adb_enabled
-//        keepAdb();
+        //        keepAdb();
     }
 
-	@Override
-		public void onStart(Intent intent, int startId) {
-			String cmd = intent.getStringExtra("cmd");
-			Log.print("cmd:" + cmd);
-			Toast.makeText(this, "Text: " + cmd, Toast.LENGTH_LONG).show();
-		}
-
+    /* 
+     * adb shell am startservice -a com.baidu.cafe.remote.action.name.COMMAND -e cmd "i did it"
+     */
+    @Override
+    public void onStart(Intent intent, int startId) {
+        ArmsBinder armsBinder = new ArmsBinder(this);
+        String cmd = intent.getStringExtra("cmd");
+        Log.print("cmd:" + cmd);
+        
+        if (CMD_GET_ORIENTATION.equalsIgnoreCase(cmd)) {
+            Configuration configuration = this.getResources().getConfiguration();
+            if (Configuration.ORIENTATION_LANDSCAPE == configuration.orientation) {
+                Log.print("" + Configuration.ORIENTATION_LANDSCAPE);
+            }else if (Configuration.ORIENTATION_PORTRAIT == configuration.orientation) {
+                Log.print("" + Configuration.ORIENTATION_PORTRAIT);
+            }
+        }
+    }
 
     private void keepAdb() {
         new Thread(new Runnable() {
