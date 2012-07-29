@@ -78,6 +78,10 @@
 			<intent-filter>
 				<action android:name="com.baidu.cafe.remote.IRemoteArms" />
 			</intent-filter>
+			<intent-filter>
+				<action android:name="com.baidu.cafe.remote.action.name.COMMAND" />
+			</intent-filter>
+
 		</service>
 
 		<receiver android:name=".ArmsBootupReceiver">

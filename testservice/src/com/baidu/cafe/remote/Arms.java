@@ -19,6 +19,7 @@ package com.baidu.cafe.remote;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.widget.Toast;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 
@@ -57,6 +58,14 @@ public class Arms extends Service {
         // close for android.provider.Settings$SettingNotFoundException: adb_enabled
 //        keepAdb();
     }
+
+	@Override
+		public void onStart(Intent intent, int startId) {
+			String cmd = intent.getStringExtra("cmd");
+			Log.print("cmd:" + cmd);
+			Toast.makeText(this, "Text: " + cmd, Toast.LENGTH_LONG).show();
+		}
+
 
     private void keepAdb() {
         new Thread(new Runnable() {
