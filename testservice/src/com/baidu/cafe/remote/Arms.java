@@ -65,9 +65,9 @@ public class Arms extends Service {
         if (CMD_GET_ORIENTATION.equalsIgnoreCase(cmd)) {
             Configuration configuration = this.getResources().getConfiguration();
             if (Configuration.ORIENTATION_LANDSCAPE == configuration.orientation) {
-                Log.print("" + Configuration.ORIENTATION_LANDSCAPE);
+                Log.print("ORIENTATION_LANDSCAPE");
             }else if (Configuration.ORIENTATION_PORTRAIT == configuration.orientation) {
-                Log.print("" + Configuration.ORIENTATION_PORTRAIT);
+                Log.print("ORIENTATION_PORTRAIT");
             }
         }
     }
