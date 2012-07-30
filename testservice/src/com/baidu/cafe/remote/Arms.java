@@ -120,7 +120,11 @@ public class Arms extends Service {
         } else if ("double".equalsIgnoreCase(type)) {
             p.type = double.class;
             p.value = Double.valueOf(value).doubleValue();
+        } else if ("long".equalsIgnoreCase(type)) {
+            p.type = long.class;
+            p.value = Long.valueOf(value).longValue();
         }
+
         return p;
     }
 
