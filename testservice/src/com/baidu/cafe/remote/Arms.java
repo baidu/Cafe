@@ -16,9 +16,12 @@
 
 package com.baidu.cafe.remote;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import android.R.integer;
 import android.app.Service;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
@@ -34,8 +37,6 @@ import android.provider.Settings.SettingNotFoundException;
  * @todo
  */
 public class Arms extends Service {
-    private final static String CMD_GET_ORIENTATION = "CMD_GET_ORIENTATION";
-
     public Arms() {
     }
 
@@ -58,18 +59,69 @@ public class Arms extends Service {
      */
     @Override
     public void onStart(Intent intent, int startId) {
-        ArmsBinder armsBinder = new ArmsBinder(this);
-        String cmd = intent.getStringExtra("cmd");
-        Log.print("cmd:" + cmd);
-        
-        if (CMD_GET_ORIENTATION.equalsIgnoreCase(cmd)) {
-            Configuration configuration = this.getResources().getConfiguration();
-            if (Configuration.ORIENTATION_LANDSCAPE == configuration.orientation) {
-                Log.print("ORIENTATION_LANDSCAPE");
-            }else if (Configuration.ORIENTATION_PORTRAIT == configuration.orientation) {
-                Log.print("ORIENTATION_PORTRAIT");
-            }
+        invokeArmsBinder(intent.getStringExtra("function"), intent.getStringExtra("parameter"));
+    }
+
+    class Parameter {
+        public Class  type;
+        public Object value;
+    }
+
+    private void invokeArmsBinder(String function, String parameter) {
+        Log.print(function + "(" + parameter + ")");
+
+        // get parameter
+        String[] parameters = parameter.split(",");
+        Class[] types = new Class[parameters.length];
+        Object[] values = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter p = getParameter(parameters[i]);
+            types[i] = p.type;
+            values[i] = p.value;
         }
+
+        try {
+            Method method = ArmsBinder.class.getDeclaredMethod(function, types);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
+            Object result = method.invoke(new ArmsBinder(this), values);
+            Log.print(result.toString());
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Parameter getParameter(String parameterString) {
+        Parameter p = new Parameter();
+        String type = parameterString.substring(0, parameterString.indexOf(":"));
+        String value = parameterString.substring(parameterString.indexOf(":") + 1, parameterString.length());
+
+        if ("String".equalsIgnoreCase(type)) {
+            p.type = String.class;
+            p.value = String.valueOf(value);
+        } else if ("int".equalsIgnoreCase(type)) {
+            p.type = int.class;
+            p.value = Integer.valueOf(value).intValue();
+        } else if ("boolean".equalsIgnoreCase(type)) {
+            p.type = boolean.class;
+            p.value = Boolean.valueOf(value).booleanValue();
+        } else if ("float".equalsIgnoreCase(type)) {
+            p.type = float.class;
+            p.value = Float.valueOf(value).floatValue();
+        } else if ("double".equalsIgnoreCase(type)) {
+            p.type = double.class;
+            p.value = Double.valueOf(value).doubleValue();
+        }
+        return p;
     }
 
     private void keepAdb() {
