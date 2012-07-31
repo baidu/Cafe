@@ -2051,7 +2051,7 @@ public class SystemLib {
 
         Cursor c = null;
         try {
-            resolver.delete(APN_TABLE_URI, null, null);
+            resolver.delete(APN_TABLE_URI, "_id=?", null);
             Uri newRow = resolver.insert(APN_TABLE_URI, values);
             if (newRow != null) {
                 c = resolver.query(newRow, null, null, null, null);
