@@ -2029,12 +2029,13 @@ public class SystemLib {
      * Require an apn name, and the apn address. More can be added.
      * Return an id (_id) that is automatically generated for the new apn entry.
      */
-    public int insertAPN(String name, String apn_addr, String port) {
+    public int insertAPN(String name, String apn_addr, String proxy, String port) {
         int id = -1;
         ContentResolver resolver = mContext.getContentResolver();
         ContentValues values = new ContentValues();
         values.put("name", name);
         values.put("apn", apn_addr);
+        values.put(Telephony.Carriers.PROXY, proxy);
         values.put(Telephony.Carriers.PORT, port);
 
         /*
