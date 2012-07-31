@@ -55,7 +55,8 @@ public class Arms extends Service {
     }
 
     /* 
-     * adb shell am startservice -a com.baidu.cafe.remote.action.name.COMMAND -e cmd "i did it"
+     * adb shell am startservice -a com.baidu.cafe.remote.action.name.COMMAND 
+     * -e function "waitforTopActivity" -e parameter "String:com.baidu.calculator2.Calculator,long:5000"
      */
     @Override
     public void onStart(Intent intent, int startId) {

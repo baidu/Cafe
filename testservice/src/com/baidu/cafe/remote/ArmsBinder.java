@@ -806,4 +806,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public boolean isViewServerOpen(){
         return ViewPropertyProvider.isViewServerOpen();
     }
+    
+    public int insertAPN(String name, String apn_addr) {
+        return mSystemLib.insertAPN(name, apn_addr);
+    }
 }

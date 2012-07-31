@@ -63,6 +63,7 @@ import android.os.SystemProperties;
 import android.provider.Contacts;
 import android.provider.Settings;
 import android.provider.Contacts.People;
+import android.provider.Telephony;
 import android.provider.Settings.SettingNotFoundException;
 import android.telephony.TelephonyManager;
 import android.text.format.Formatter;
@@ -74,6 +75,9 @@ import com.android.internal.os.storage.ExternalStorageFormatter;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.widget.LockPatternUtils;
 import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.SQLException;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -519,7 +523,8 @@ public class SystemLib {
     /**
      * @param command
      *            "rm mnt/sdcard/2.txt" "cp data/app/*.* mnt/sdcard/."
-     *            "dumpsys cpuinfo" "cat /proc/version""am instrument -w com.example.android.apis.tests/android.test.InstrumentationTestRunner"
+     *            "dumpsys cpuinfo" "cat /proc/version"
+     *            "am instrument -w com.example.android.apis.tests/android.test.InstrumentationTestRunner"
      * 
      * @return
      */
@@ -970,13 +975,13 @@ public class SystemLib {
         boolean force = true;
         IMountService mountService = getMountService();
         String extStoragePath = Environment.getExternalStorageDirectory().toString();
-		/*
+        /*
         try {
             mountService.unmountVolume(extStoragePath, force);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-		*/
+        */
     }
 
     /**
@@ -1596,19 +1601,19 @@ public class SystemLib {
      * */
     public void installApk(String filename) {
         // systemLib.Installapk(filename);
-//        if (isregister == false) {
-//            isregister = true;
-//            IntentFilter intentFilter = new IntentFilter(MyIntent.ACTION_INSTALL_BEGIN);
-//            intentFilter.addAction(MyIntent.ACTION_INSTALL_END);
-//            mContext.registerReceiver(mReceiver, intentFilter);
-//        }
-//        //start the service
-//        Intent startservice = new Intent();
-//        startservice.setAction(MyIntent.ACTION_PROXY);
-//        startservice.putExtra(MyIntent.EXTRA_OPERATION, MyIntent.EXTRA_INSTALL);
-//        startservice.putExtra(MyIntent.EXTRA_ARG1, filename);
-//        Log.print("startservice intent is " + startservice);
-//        mContext.startService(startservice);
+        //        if (isregister == false) {
+        //            isregister = true;
+        //            IntentFilter intentFilter = new IntentFilter(MyIntent.ACTION_INSTALL_BEGIN);
+        //            intentFilter.addAction(MyIntent.ACTION_INSTALL_END);
+        //            mContext.registerReceiver(mReceiver, intentFilter);
+        //        }
+        //        //start the service
+        //        Intent startservice = new Intent();
+        //        startservice.setAction(MyIntent.ACTION_PROXY);
+        //        startservice.putExtra(MyIntent.EXTRA_OPERATION, MyIntent.EXTRA_INSTALL);
+        //        startservice.putExtra(MyIntent.EXTRA_ARG1, filename);
+        //        Log.print("startservice intent is " + startservice);
+        //        mContext.startService(startservice);
     }
 
     public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -1964,15 +1969,16 @@ public class SystemLib {
         try {
             Log.print("Build.VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
             if (Build.VERSION.SDK_INT >= 14) {// API Level: 14. Android 4.0
-                
-            }else{
-                statusBarHeight =  mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+
+            } else {
+                statusBarHeight = mContext.getResources().getDimensionPixelSize(
+                        com.android.internal.R.dimen.status_bar_height);
             }
         } catch (Exception e) {
             // When com.android.internal.R.dimen.status_bar_height can not be found at Android 4.0, eat the exception
             // It will be handle by 
         }
-        
+
         return statusBarHeight;
     }
 
@@ -1999,21 +2005,133 @@ public class SystemLib {
                 }
             }
         }
-        
+
         mPowerManager.reboot("recovery");
         //        mContext.sendBroadcast(new Intent("android.intent.action.MASTER_CLEAR"));
-        
+
         // non-android env
-//        IPowerManager pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE));
-//        try {
-//            pm.reboot("recovery");
-//        } catch (RemoteException e) {
-//            e.printStackTrace();
-//        }
+        //        IPowerManager pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE));
+        //        try {
+        //            pm.reboot("recovery");
+        //        } catch (RemoteException e) {
+        //            e.printStackTrace();
+        //        }
     }
-    
+
     public int getCurrentTaskActivitiesNumber() {
         return mActivityManager.getRunningTasks(1).get(0).numActivities;
     }
 
+    public static final Uri APN_TABLE_URI = Uri.parse("content://telephony/carriers");
+
+    /*
+     * Insert a new APN entry into the system APN table
+     * Require an apn name, and the apn address. More can be added.
+     * Return an id (_id) that is automatically generated for the new apn entry.
+     */
+    public int insertAPN(String name, String apn_addr) {
+        int id = -1;
+        ContentResolver resolver = mContext.getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put("name", name);
+        values.put("apn", apn_addr);
+
+        /*
+         * The following three field values are for testing in Android emulator only
+         * The APN setting page UI will ONLY display APNs whose 'numeric' filed is
+         * TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC.
+         * On Android emulator, this value is 310260, where 310 is mcc, and 260 mnc.
+         * With these field values, the newly added apn will appear in system UI.
+         */
+        values.put("mcc", "310");
+        values.put("mnc", "260");
+        values.put("numeric", "310260");
+
+        Cursor c = null;
+        try {
+            Uri newRow = resolver.insert(APN_TABLE_URI, values);
+            if (newRow != null) {
+                c = resolver.query(newRow, null, null, null, null);
+                Log.print("Newly added APN:");
+//                printAllData(c); //Print the entire result set
+
+                // Obtain the apn id
+                int idindex = c.getColumnIndex("_id");
+                c.moveToFirst();
+                id = c.getShort(idindex);
+                Log.print("New ID: " + id + ": Inserting new APN succeeded!");
+            }
+        } catch (SQLException e) {
+            Log.print(e.getMessage());
+        }
+
+        if (c != null)
+            c.close();
+        return id;
+    }
+
+    //    private boolean validateAndSave(String name, String apn, String mcc, String mnc,boolean force) {
+    //
+    ////        if (getErrorMsg() != null && !force) {
+    ////            showDialog(ERROR_DIALOG_ID);
+    ////            return false;
+    ////        }
+    //        boolean mNewApn = true;
+    ////        if (!mCursor.moveToFirst()) {
+    ////            Log.w(TAG,
+    ////                    "Could not go to the first row in the Cursor when saving data.");
+    ////            return false;
+    ////        }
+    //
+    //        // If it's a new APN and a name or apn haven't been entered, then erase the entry
+    //        if (force && mNewApn && name.length() < 1 && apn.length() < 1) {
+    //            mContext.getContentResolver().delete(mUri, null, null);
+    //            return false;
+    //        }
+    //
+    //        ContentValues values = new ContentValues();
+    //        
+    //        // Add a dummy name "Untitled", if the user exits the screen without adding a name but 
+    //        // entered other information worth keeping.
+    //        values.put(Telephony.Carriers.NAME,
+    //                name.length() < 1 ? getResources().getString(R.string.untitled_apn) : name);
+    //        values.put(Telephony.Carriers.APN, apn);
+    //        values.put(Telephony.Carriers.PROXY, checkNotSet(mProxy.getText()));
+    //        values.put(Telephony.Carriers.PORT, checkNotSet(mPort.getText()));
+    //        values.put(Telephony.Carriers.MMSPROXY, checkNotSet(mMmsProxy.getText()));
+    //        values.put(Telephony.Carriers.MMSPORT, checkNotSet(mMmsPort.getText()));
+    //        values.put(Telephony.Carriers.USER, checkNotSet(mUser.getText()));
+    //        values.put(Telephony.Carriers.SERVER, checkNotSet(mServer.getText()));
+    //        values.put(Telephony.Carriers.PASSWORD, checkNotSet(mPassword.getText()));
+    //        values.put(Telephony.Carriers.MMSC, checkNotSet(mMmsc.getText()));
+    //
+    //        String authVal = mAuthType.getValue();
+    //        if (authVal != null) {
+    //            values.put(Telephony.Carriers.AUTH_TYPE, Integer.parseInt(authVal));
+    //        }
+    //
+    //        values.put(Telephony.Carriers.PROTOCOL, checkNotSet(mProtocol.getValue()));
+    //        values.put(Telephony.Carriers.ROAMING_PROTOCOL, checkNotSet(mRoamingProtocol.getValue()));
+    //
+    //        values.put(Telephony.Carriers.TYPE, checkNotSet(mApnType.getText()));
+    //
+    //        values.put(Telephony.Carriers.MCC, mcc);
+    //        values.put(Telephony.Carriers.MNC, mnc);
+    //
+    //        values.put(Telephony.Carriers.NUMERIC, mcc + mnc);
+    //
+    //        if (mCurMnc != null && mCurMcc != null) {
+    //            if (mCurMnc.equals(mnc) && mCurMcc.equals(mcc)) {
+    //                values.put(Telephony.Carriers.CURRENT, 1);
+    //            }
+    //        }
+    //        String bearerVal = mBearer.getValue();
+    //        if (bearerVal != null) {
+    //            values.put(Telephony.Carriers.BEARER, Integer.parseInt(bearerVal));
+    //        }
+    //
+    //        getContentResolver().update(mUri, values, null, null);
+    //
+    //        return true;
+    //    }
 }
