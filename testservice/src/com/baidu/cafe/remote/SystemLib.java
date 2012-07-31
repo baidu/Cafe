@@ -2044,9 +2044,9 @@ public class SystemLib {
          * On Android emulator, this value is 310260, where 310 is mcc, and 260 mnc.
          * With these field values, the newly added apn will appear in system UI.
          */
-        //        values.put("mcc", "310");
-        //        values.put("mnc", "260");
-        //        values.put("numeric", "310260");
+        values.put("mcc", "310");
+        values.put("mnc", "260");
+        values.put("numeric", "310260");
 
         Cursor c = null;
         try {
