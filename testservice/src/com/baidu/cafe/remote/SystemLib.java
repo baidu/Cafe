@@ -62,8 +62,8 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.provider.Contacts;
 import android.provider.Settings;
-import android.provider.Contacts.People;
 import android.provider.Telephony;
+import android.provider.Contacts.People;
 import android.provider.Settings.SettingNotFoundException;
 import android.telephony.TelephonyManager;
 import android.text.format.Formatter;
@@ -2029,12 +2029,13 @@ public class SystemLib {
      * Require an apn name, and the apn address. More can be added.
      * Return an id (_id) that is automatically generated for the new apn entry.
      */
-    public int insertAPN(String name, String apn_addr) {
+    public int insertAPN(String name, String apn_addr, String port) {
         int id = -1;
         ContentResolver resolver = mContext.getContentResolver();
         ContentValues values = new ContentValues();
         values.put("name", name);
         values.put("apn", apn_addr);
+        values.put(Telephony.Carriers.PORT, port);
 
         /*
          * The following three field values are for testing in Android emulator only
@@ -2043,9 +2044,9 @@ public class SystemLib {
          * On Android emulator, this value is 310260, where 310 is mcc, and 260 mnc.
          * With these field values, the newly added apn will appear in system UI.
          */
-        values.put("mcc", "310");
-        values.put("mnc", "260");
-        values.put("numeric", "310260");
+        //        values.put("mcc", "310");
+        //        values.put("mnc", "260");
+        //        values.put("numeric", "310260");
 
         Cursor c = null;
         try {
@@ -2053,13 +2054,18 @@ public class SystemLib {
             if (newRow != null) {
                 c = resolver.query(newRow, null, null, null, null);
                 Log.print("Newly added APN:");
-//                printAllData(c); //Print the entire result set
+                //                printAllData(c); //Print the entire result set
 
                 // Obtain the apn id
                 int idindex = c.getColumnIndex("_id");
                 c.moveToFirst();
                 id = c.getShort(idindex);
                 Log.print("New ID: " + id + ": Inserting new APN succeeded!");
+                if (setDefaultAPN(id)) {
+                    Log.print("Set apn to default success!");
+                } else {
+                    Log.print("Set apn to default fail!");
+                }
             }
         } catch (SQLException e) {
             Log.print(e.getMessage());
@@ -2070,68 +2076,30 @@ public class SystemLib {
         return id;
     }
 
-    //    private boolean validateAndSave(String name, String apn, String mcc, String mnc,boolean force) {
-    //
-    ////        if (getErrorMsg() != null && !force) {
-    ////            showDialog(ERROR_DIALOG_ID);
-    ////            return false;
-    ////        }
-    //        boolean mNewApn = true;
-    ////        if (!mCursor.moveToFirst()) {
-    ////            Log.w(TAG,
-    ////                    "Could not go to the first row in the Cursor when saving data.");
-    ////            return false;
-    ////        }
-    //
-    //        // If it's a new APN and a name or apn haven't been entered, then erase the entry
-    //        if (force && mNewApn && name.length() < 1 && apn.length() < 1) {
-    //            mContext.getContentResolver().delete(mUri, null, null);
-    //            return false;
-    //        }
-    //
-    //        ContentValues values = new ContentValues();
-    //        
-    //        // Add a dummy name "Untitled", if the user exits the screen without adding a name but 
-    //        // entered other information worth keeping.
-    //        values.put(Telephony.Carriers.NAME,
-    //                name.length() < 1 ? getResources().getString(R.string.untitled_apn) : name);
-    //        values.put(Telephony.Carriers.APN, apn);
-    //        values.put(Telephony.Carriers.PROXY, checkNotSet(mProxy.getText()));
-    //        values.put(Telephony.Carriers.PORT, checkNotSet(mPort.getText()));
-    //        values.put(Telephony.Carriers.MMSPROXY, checkNotSet(mMmsProxy.getText()));
-    //        values.put(Telephony.Carriers.MMSPORT, checkNotSet(mMmsPort.getText()));
-    //        values.put(Telephony.Carriers.USER, checkNotSet(mUser.getText()));
-    //        values.put(Telephony.Carriers.SERVER, checkNotSet(mServer.getText()));
-    //        values.put(Telephony.Carriers.PASSWORD, checkNotSet(mPassword.getText()));
-    //        values.put(Telephony.Carriers.MMSC, checkNotSet(mMmsc.getText()));
-    //
-    //        String authVal = mAuthType.getValue();
-    //        if (authVal != null) {
-    //            values.put(Telephony.Carriers.AUTH_TYPE, Integer.parseInt(authVal));
-    //        }
-    //
-    //        values.put(Telephony.Carriers.PROTOCOL, checkNotSet(mProtocol.getValue()));
-    //        values.put(Telephony.Carriers.ROAMING_PROTOCOL, checkNotSet(mRoamingProtocol.getValue()));
-    //
-    //        values.put(Telephony.Carriers.TYPE, checkNotSet(mApnType.getText()));
-    //
-    //        values.put(Telephony.Carriers.MCC, mcc);
-    //        values.put(Telephony.Carriers.MNC, mnc);
-    //
-    //        values.put(Telephony.Carriers.NUMERIC, mcc + mnc);
-    //
-    //        if (mCurMnc != null && mCurMcc != null) {
-    //            if (mCurMnc.equals(mnc) && mCurMcc.equals(mcc)) {
-    //                values.put(Telephony.Carriers.CURRENT, 1);
-    //            }
-    //        }
-    //        String bearerVal = mBearer.getValue();
-    //        if (bearerVal != null) {
-    //            values.put(Telephony.Carriers.BEARER, Integer.parseInt(bearerVal));
-    //        }
-    //
-    //        getContentResolver().update(mUri, values, null, null);
-    //
-    //        return true;
-    //    }
+    public static final Uri PREFERRED_APN_URI = Uri.parse("content://telephony/carriers/preferapn");
+
+    /*
+     * Set an apn to be the default apn for web traffic
+     * Require an input of the apn id to be set
+     */
+    public boolean setDefaultAPN(int id) {
+        boolean res = false;
+        ContentResolver resolver = mContext.getContentResolver();
+        ContentValues values = new ContentValues();
+
+        //See /etc/apns-conf.xml. The TelephonyProvider uses this file to provide
+        //content://telephony/carriers/preferapn URI mapping
+        values.put("apn_id", id);
+        try {
+            resolver.update(PREFERRED_APN_URI, values, null, null);
+            Cursor c = resolver.query(PREFERRED_APN_URI, new String[] { "name", "apn" }, "_id=" + id, null, null);
+            if (c != null) {
+                res = true;
+                c.close();
+            }
+        } catch (SQLException e) {
+            Log.print(e.getMessage());
+        }
+        return res;
+    }
 }

@@ -798,16 +798,16 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public int getCurrentTaskActivitiesNumber() {
         return mSystemLib.getCurrentTaskActivitiesNumber();
     }
-    
-    public void setStatusBarHeight(int height){
+
+    public void setStatusBarHeight(int height) {
         mViewPropertyProvider.setStatusBarHeight(height);
     }
-    
-    public boolean isViewServerOpen(){
+
+    public boolean isViewServerOpen() {
         return ViewPropertyProvider.isViewServerOpen();
     }
-    
-    public int insertAPN(String name, String apn_addr) {
-        return mSystemLib.insertAPN(name, apn_addr);
+
+    public int insertAPN(String name, String apn_addr, String port) {
+        return mSystemLib.insertAPN(name, apn_addr, port);
     }
 }
