@@ -27,7 +27,6 @@ import junit.framework.Assert;
 
 import android.app.Activity;
 import android.app.Instrumentation;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -127,7 +126,7 @@ public class LocalLib extends SoloEx {
     public Object invokeObjectMethod(Object owner, int classLevel, String methodName, Class[] parameterTypes,
             Object[] parameters) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
-        return PrivateOperator.invokeObjectMethod(owner, classLevel, methodName, parameterTypes, parameters);
+        return ReflectHelper.invoke(owner, classLevel, methodName, parameterTypes, parameters);
     }
 
     /**
@@ -148,7 +147,7 @@ public class LocalLib extends SoloEx {
      */
     public void setObjectProperty(Object owner, int classLevel, String fieldName, Object value)
             throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        PrivateOperator.setObjectProperty(owner, classLevel, fieldName, value);
+        ReflectHelper.setObjectProperty(owner, classLevel, fieldName, value);
     }
 
     /**
@@ -168,7 +167,7 @@ public class LocalLib extends SoloEx {
      */
     public static Object getObjectProperty(Object owner, int classLevel, String fieldName) throws SecurityException,
             NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        return PrivateOperator.getObjectProperty(owner, classLevel, fieldName);
+        return ReflectHelper.getObjectProperty(owner, classLevel, fieldName);
     }
 
     /**
@@ -183,7 +182,7 @@ public class LocalLib extends SoloEx {
      * @return ArrayList<String> of property's name
      */
     public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, Class type) {
-        return PrivateOperator.getPropertyNameByType(owner, classLevel, type);
+        return ReflectHelper.getPropertyNameByType(owner, classLevel, type);
     }
 
     /**
@@ -201,7 +200,7 @@ public class LocalLib extends SoloEx {
      */
     public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel, Class valueType, Object value)
             throws IllegalArgumentException, IllegalAccessException {
-        return PrivateOperator.getPropertyNameByValue(owner, classLevel, valueType, value);
+        return ReflectHelper.getPropertyNameByValue(owner, classLevel, valueType, value);
     }
 
     /**
@@ -263,7 +262,7 @@ public class LocalLib extends SoloEx {
             return null;
         }
         try {
-            return PrivateOperator.getObjectProperty(view, level, fieldName);
+            return ReflectHelper.getObjectProperty(view, level, fieldName);
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {

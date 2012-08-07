@@ -59,80 +59,20 @@ public class Arms extends Service {
      */
     @Override
     public void onStart(Intent intent, int startId) {
-        invokeArmsBinder(intent.getStringExtra("function"), intent.getStringExtra("parameter"));
-    }
-
-    class Parameter {
-        public Class  type;
-        public Object value;
-    }
-
-    private void invokeArmsBinder(String function, String parameter) {
-        Log.print(function + "(" + parameter + ")");
-        Class[] types = null;
-        Object[] values = null;
-
-        // get parameter
-        if (null == parameter) {
-            types = new Class[] {};
-            values = new Object[] {};
-        } else {
-            String[] parameters = parameter.split(",");
-            types = new Class[parameters.length];
-            values = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                Parameter p = getParameter(parameters[i]);
-                types[i] = p.type;
-                values[i] = p.value;
-            }
-        }
-
         try {
-            Method method = ArmsBinder.class.getDeclaredMethod(function, types);
-            if (!method.isAccessible()) {
-                method.setAccessible(true);
-            }
-            Object result = method.invoke(new ArmsBinder(this), values);
-            Log.print(result.toString());
+            ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
+                    intent.getStringExtra("parameter"));
         } catch (SecurityException e) {
             e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-    }
-
-    private Parameter getParameter(String parameterString) {
-        Parameter p = new Parameter();
-        String type = parameterString.substring(0, parameterString.indexOf(":"));
-        String value = parameterString.substring(parameterString.indexOf(":") + 1, parameterString.length());
-
-        if ("String".equalsIgnoreCase(type)) {
-            p.type = String.class;
-            p.value = String.valueOf(value);
-        } else if ("int".equalsIgnoreCase(type)) {
-            p.type = int.class;
-            p.value = Integer.valueOf(value).intValue();
-        } else if ("boolean".equalsIgnoreCase(type)) {
-            p.type = boolean.class;
-            p.value = Boolean.valueOf(value).booleanValue();
-        } else if ("float".equalsIgnoreCase(type)) {
-            p.type = float.class;
-            p.value = Float.valueOf(value).floatValue();
-        } else if ("double".equalsIgnoreCase(type)) {
-            p.type = double.class;
-            p.value = Double.valueOf(value).doubleValue();
-        } else if ("long".equalsIgnoreCase(type)) {
-            p.type = long.class;
-            p.value = Long.valueOf(value).longValue();
-        }
-
-        return p;
     }
 
     private void keepAdb() {

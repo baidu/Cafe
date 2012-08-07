@@ -233,7 +233,7 @@ public class SoloEx extends Solo {
      */
     protected Object invoke(Object owner, String name, Class[] parameterTypes, Object[] parameters) {
         try {
-            return PrivateOperator.invokeObjectMethod(owner, 0, name, parameterTypes, parameters);
+            return ReflectHelper.invoke(owner, 0, name, parameterTypes, parameters);
         } catch (Exception e) {
             print("invoke error:");
             print("name: " + name);
