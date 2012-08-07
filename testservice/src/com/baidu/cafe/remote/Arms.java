@@ -19,7 +19,6 @@ package com.baidu.cafe.remote;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import android.R.integer;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -70,15 +69,22 @@ public class Arms extends Service {
 
     private void invokeArmsBinder(String function, String parameter) {
         Log.print(function + "(" + parameter + ")");
+        Class[] types = null;
+        Object[] values = null;
 
         // get parameter
-        String[] parameters = parameter.split(",");
-        Class[] types = new Class[parameters.length];
-        Object[] values = new Object[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            Parameter p = getParameter(parameters[i]);
-            types[i] = p.type;
-            values[i] = p.value;
+        if ("null".equals(parameter)) {
+            types = new Class[] {};
+            values = new Object[] {};
+        } else {
+            String[] parameters = parameter.split(",");
+            types = new Class[parameters.length];
+            values = new Object[parameters.length];
+            for (int i = 0; i < parameters.length; i++) {
+                Parameter p = getParameter(parameters[i]);
+                types[i] = p.type;
+                values[i] = p.value;
+            }
         }
 
         try {
