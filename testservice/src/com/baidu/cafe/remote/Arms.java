@@ -73,7 +73,7 @@ public class Arms extends Service {
         Object[] values = null;
 
         // get parameter
-        if ("null".equals(parameter)) {
+        if (null == parameter) {
             types = new Class[] {};
             values = new Object[] {};
         } else {
