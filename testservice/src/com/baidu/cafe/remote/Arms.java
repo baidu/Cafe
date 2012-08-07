@@ -60,8 +60,9 @@ public class Arms extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         try {
-            ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
+            Object result = ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
                     intent.getStringExtra("parameter"));
+            Log.print(result.toString());
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
