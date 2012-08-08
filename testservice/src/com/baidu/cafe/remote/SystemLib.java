@@ -2127,9 +2127,6 @@ public class SystemLib {
                         setAdbEnabled(true);
                         setNonMarketAppsAllowed(true);
                         setScreenStayAwake(true);
-                        if (isScreenLocked()) {
-                            setScreenUnlockSecurityNone();
-                        }
                         if (!isScreenOn()) {
                             setScreenOn();
                         }
