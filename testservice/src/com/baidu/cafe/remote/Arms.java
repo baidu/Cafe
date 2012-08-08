@@ -62,7 +62,7 @@ public class Arms extends Service {
         try {
             Object result = ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
                     intent.getStringExtra("parameter"));
-            Log.print(result.toString());
+            Log.print(null == result ? "" : result.toString());
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
