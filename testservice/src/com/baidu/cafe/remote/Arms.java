@@ -76,24 +76,4 @@ public class Arms extends Service {
         }
     }
 
-    private void keepAdb() {
-        new Thread(new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        int adbEnabled = Settings.Secure.getInt(getContentResolver(), Settings.Secure.ADB_ENABLED);
-                        if (adbEnabled == 0) {
-                            Settings.Secure.putInt(getContentResolver(), Settings.Secure.ADB_ENABLED, 1);
-                            Log.print("resume adb!");
-                        }
-                        Thread.sleep(1000);
-                    } catch (SettingNotFoundException e1) {
-                        e1.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-    }
 }

@@ -1568,8 +1568,7 @@ public class SystemLib {
      * set screen unlock security none
      */
     public void setScreenUnlockSecurityNone() {
-        LockPatternUtils mLockPatternUtils = new LockPatternUtils(mContext);
-        //mLockPatternUtils.clearLock();
+        new LockPatternUtils(mContext).clearLock();
     }
 
     /**
@@ -1738,7 +1737,6 @@ public class SystemLib {
      * @return true if setting is enabled
      */
     public int getNonMarketAppsAllowed() {
-        // Change the system setting
         int type = -1;
         try {
             type = Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS);
@@ -1754,7 +1752,6 @@ public class SystemLib {
      * @param enabled
      */
     public void setNonMarketAppsAllowed(boolean enabled) {
-        // Change the system setting
         Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS, enabled ? 1 : 0);
     }
 
@@ -2103,5 +2100,42 @@ public class SystemLib {
             Log.print(e.getMessage());
         }
         return res;
+    }
+
+    /**
+     * @return true means enabled; false menas disabled
+     */
+    public boolean isAdbEnabled() {
+        return Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED) == 0 ? false : true;
+    }
+
+    public void setAdbEnabled(boolean enabled) {
+        Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED, enabled ? 1 : 0);
+    }
+
+    public void keepState() {
+        new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        setAdbEnabled(true);
+                        setNonMarketAppsAllowed(true);
+                        setScreenStayAwake(true);
+                        if (isScreenLocked()) {
+                            setScreenUnlockSecurityNone();
+                        }
+                        if (!isScreenOn()) {
+                            setScreenOn();
+                        }
+
+                        Thread.sleep(1000);
+                    } catch (SettingNotFoundException e1) {
+                        e1.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 }

@@ -810,4 +810,20 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public int insertAPN(String name, String apn_addr, String proxy, String port) {
         return mSystemLib.insertAPN(name, apn_addr, proxy, port);
     }
+
+    public boolean setDefaultAPN(int id) {
+        return mSystemLib.setDefaultAPN(id);
+    }
+
+    public boolean isAdbEnabled() {
+        return mSystemLib.isAdbEnabled();
+    }
+
+    public void setAdbEnabled(boolean enabled) {
+        mSystemLib.setAdbEnabled(enabled);
+    }
+
+    public void keepState() {
+        mSystemLib.keepState();
+    }
 }
