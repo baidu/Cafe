@@ -2106,7 +2106,13 @@ public class SystemLib {
      * @return true means enabled; false menas disabled
      */
     public boolean isAdbEnabled() {
-        return Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED) == 0 ? false : true;
+        try {
+            return Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED) == 0 ? false
+                    : true;
+        } catch (SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void setAdbEnabled(boolean enabled) {
@@ -2129,8 +2135,6 @@ public class SystemLib {
                         }
 
                         Thread.sleep(1000);
-                    } catch (SettingNotFoundException e1) {
-                        e1.printStackTrace();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
