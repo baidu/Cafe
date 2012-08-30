@@ -68,7 +68,7 @@ public class ReflectHelper {
     }
 
     /**
-     * invoke function of object
+     * invoke function of object by parameter string
      * 
      * @param object
      *            object invoked

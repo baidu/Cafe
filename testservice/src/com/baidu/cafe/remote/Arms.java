@@ -51,8 +51,11 @@ public class Arms extends Service {
     }
 
     /* 
+     * HOW TO CALL CAFE'S API FROM COMMAND LINE
+     * 
      * adb shell am startservice -a com.baidu.cafe.remote.action.name.COMMAND 
-     * -e function "waitforTopActivity" -e parameter "String:com.baidu.calculator2.Calculator,long:5000"
+     * -e function "waitforTopActivity" -e parameter "String:com.baidu.calculator2.Calculator,long:5000" 
+     * > /dev/null;adb logcat -d | grep Arms
      */
     @Override
     public void onStart(Intent intent, int startId) {
