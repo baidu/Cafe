@@ -160,4 +160,5 @@ interface IRemoteArms {
     int getCurrentTaskActivitiesNumber();
     void setStatusBarHeight(int height);
     boolean isViewServerOpen();
+    boolean isHome();
 }

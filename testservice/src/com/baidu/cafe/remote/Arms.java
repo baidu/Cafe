@@ -17,13 +17,10 @@
 package com.baidu.cafe.remote;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.provider.Settings;
-import android.provider.Settings.SettingNotFoundException;
 
 /**
  * This class provides autotest assistance by AIDL+Service, including the

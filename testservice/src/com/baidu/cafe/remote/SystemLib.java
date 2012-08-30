@@ -24,6 +24,7 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityManagerNative;
 import android.app.backup.BackupManager;
 import android.app.IActivityManager;
@@ -40,6 +41,7 @@ import android.content.pm.IPackageDataObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
@@ -2138,5 +2140,27 @@ public class SystemLib {
                 }
             }
         }).start();
+    }
+
+    /**
+     * @return list of package names
+     */
+    private List<String> getHomePackageNames() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        List<String> names = new ArrayList<String>();
+
+        for (ResolveInfo resolveInfo : mPackageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)) {
+            names.add(resolveInfo.activityInfo.packageName);
+            Log.print(resolveInfo.activityInfo.packageName);
+        }
+        return names;
+    }
+
+    /**
+     * Judge whether top activity is home.
+     */
+    public boolean isHome() {
+        return getHomePackageNames().contains(mActivityManager.getRunningTasks(1).get(0).topActivity.getPackageName());
     }
 }

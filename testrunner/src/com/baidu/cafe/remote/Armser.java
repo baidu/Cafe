@@ -3022,4 +3022,18 @@ public class Armser {
             return ret;
         }
     }
+    
+    /**
+     * Judge whether top activity is home.
+     */
+    public boolean isHome() {
+        boolean ret = false;
+        try {
+            ret = iArms.isHome();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return ret;
+        }
+    }
 }

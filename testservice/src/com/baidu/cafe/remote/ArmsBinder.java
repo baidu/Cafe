@@ -826,4 +826,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public void keepState() {
         mSystemLib.keepState();
     }
+
+    public boolean isHome() {
+        return mSystemLib.isHome();
+    }
 }
