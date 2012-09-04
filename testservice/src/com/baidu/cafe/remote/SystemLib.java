@@ -2152,7 +2152,7 @@ public class SystemLib {
 
         for (ResolveInfo resolveInfo : mPackageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)) {
             names.add(resolveInfo.activityInfo.packageName);
-            Log.print(resolveInfo.activityInfo.packageName);
+//            Log.print(resolveInfo.activityInfo.packageName);
         }
         return names;
     }
