@@ -103,9 +103,6 @@
 	<uses-permission android:name="android.permission.RECEIVE_SMS" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-	<uses-permission android:name="com.baidu.permission.ACCESS_DOWNLOAD_MANAGER" />
-	<uses-permission android:name="com.baidu.permission.ACCESS_CACHE_FILESYSTEM" />
-	<uses-permission android:name="com.baidu.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" />
-	<uses-permission android:name="com.baidu.permission.SEND_DOWNLOAD_COMPLETED_INTENTS" />
+	<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
 
 </manifest>
