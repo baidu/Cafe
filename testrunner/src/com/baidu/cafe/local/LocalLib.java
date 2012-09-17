@@ -1448,4 +1448,8 @@ public class LocalLib extends SoloEx {
         return activities;
     }
 
+    public View[] getWindowDecorViews() {
+        return (View[]) invoke(mViewFetcher, "getWindowDecorViews"); // mViewFetcher.getActiveDecorView();
+    }
+
 }
