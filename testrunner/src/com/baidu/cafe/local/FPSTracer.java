@@ -38,7 +38,7 @@ public class FPSTracer {
 
                     View decorView = local.getWindowDecorViews()[0];
                     if (!decorViews.contains(decorView)) {
-                        Log.i("FPS", "add listener at " + decorView);
+                        print("add listener at " + decorView);
                         ViewTreeObserver observer = decorView.getViewTreeObserver();
                         observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
 
@@ -53,7 +53,7 @@ public class FPSTracer {
 
                     // print fps average 1s
                     float averageFPS = 0 == mFpsCount ? 0 : mTotalFps / mFpsCount;
-                    Log.d("FPS", time + "s: " + averageFPS);
+                    print(time + "s: " + averageFPS);
                     modifyFPS(-1);
                     modifyFPSCount(0);
                 }
@@ -69,12 +69,12 @@ public class FPSTracer {
             mFpsNumFrames = 0;
         } else {
             long frameTime = nowTime - mFpsPrevTime;
-            //            Log.d("FPS", "Frame time:\t" + frameTime);
+            //            print("Frame time:\t" + frameTime);
             mFpsPrevTime = nowTime;
             int interval = 1000;
             if (frameTime < interval) {
                 float fps = (float) 1000 / frameTime;
-                //                Log.d("FPS", "FPS:\t" + fps);
+                //                print("FPS:\t" + fps);
                 modifyFPS(fps);
                 modifyFPSCount(-1);
             } else {
@@ -106,5 +106,9 @@ public class FPSTracer {
         } else {
             mFpsCount = count;
         }
+    }
+
+    private static void print(String msg) {
+        Log.i("FPS", msg);
     }
 }
