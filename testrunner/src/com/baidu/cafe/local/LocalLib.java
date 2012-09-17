@@ -1452,4 +1452,10 @@ public class LocalLib extends SoloEx {
         return (View[]) invoke(mViewFetcher, "getWindowDecorViews"); // mViewFetcher.getActiveDecorView();
     }
 
+    /**
+     * print FPS of current activity at logcat with TAG FPS
+     */
+    public void traceFPS() {
+        FPSTracer.trace(this);
+    }
 }
