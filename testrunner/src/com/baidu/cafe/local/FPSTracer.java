@@ -36,7 +36,11 @@ public class FPSTracer {
                         // eat it
                     }
 
-                    View decorView = local.getWindowDecorViews()[0];
+                    View[] windowDecorViews = local.getWindowDecorViews();
+                    if (0 == windowDecorViews.length) {
+                        continue;
+                    }
+                    View decorView = windowDecorViews[0];
                     if (!decorViews.contains(decorView)) {
                         print("add listener at " + decorView);
                         ViewTreeObserver observer = decorView.getViewTreeObserver();
