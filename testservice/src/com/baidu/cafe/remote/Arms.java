@@ -65,7 +65,7 @@ public class Arms extends Service {
      */
     @Override
     public void onStart(Intent intent, int startId) {
-        invokeArmsBinder(intent);
+//        invokeArmsBinder(intent);
     }
 
     private void invokeArmsBinder(Intent intent) {
