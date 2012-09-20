@@ -2128,9 +2128,9 @@ public class SystemLib {
                     try {
                         // setAdbEnabled(true); // need android.permission.WRITE_SECURE_SETTINGS
                         // setNonMarketAppsAllowed(true); // android.permission.WRITE_SECURE_SETTINGS
-                        if (isAirplaneModeOn()) {
-                            setAirplaneMode(false);
-                        }
+                        //                        if (isAirplaneModeOn()) {
+                        setAirplaneMode(false);
+                        //                        }
                         if (!isWifiEnabled()) {
                             setWifiEnabled();
                         }
