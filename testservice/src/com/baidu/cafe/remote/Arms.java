@@ -69,6 +69,10 @@ public class Arms extends Service {
     }
 
     private void invokeArmsBinder(Intent intent) {
+        if (null == intent) {
+            Log.print("null == intent at invokeArmsBinder");
+            return;
+        }
         try {
             Object result = ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
                     intent.getStringExtra("parameter"));
