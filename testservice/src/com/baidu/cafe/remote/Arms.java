@@ -43,6 +43,12 @@ public class Arms extends Service {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        invokeArmsBinder(intent);
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
 
@@ -59,6 +65,10 @@ public class Arms extends Service {
      */
     @Override
     public void onStart(Intent intent, int startId) {
+        invokeArmsBinder(intent);
+    }
+
+    private void invokeArmsBinder(Intent intent) {
         try {
             Object result = ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
                     intent.getStringExtra("parameter"));
