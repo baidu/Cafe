@@ -145,6 +145,8 @@ public class SystemLib {
      * light up the screen
      */
     public void setScreenOn() {
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK,
+                "Test Acquired!");
         mWakeLock.acquire();
         mWakeLock.release();
     }
@@ -2124,12 +2126,24 @@ public class SystemLib {
             public void run() {
                 while (true) {
                     try {
-                        setAdbEnabled(true);
-                        setNonMarketAppsAllowed(true);
-                        setScreenStayAwake(true);
+                        // setAdbEnabled(true); // need android.permission.WRITE_SECURE_SETTINGS
+                        // setNonMarketAppsAllowed(true); // android.permission.WRITE_SECURE_SETTINGS
+                        if (isAirplaneModeOn()) {
+                            setAirplaneMode(false);
+                        }
+                        if (!isWifiEnabled()) {
+                            setWifiEnabled();
+                        }
+                        if (isScreenLocked()) {
+                            setScreenUnlocked();
+                        }
                         if (!isScreenOn()) {
                             setScreenOn();
                         }
+                        if (isLockPatternEnabled()) {
+                            setScreenUnlockSecurityNone();
+                        }
+                        setScreenStayAwake(true);
 
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -2138,6 +2152,16 @@ public class SystemLib {
                 }
             }
         }).start();
+    }
+
+    public boolean isAirplaneModeOn() {
+        try {
+            return Settings.Secure.getInt(mContext.getContentResolver(), Settings.System.AIRPLANE_MODE_ON) == 0 ? false
+                    : true;
+        } catch (SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -2160,5 +2184,9 @@ public class SystemLib {
      */
     public boolean isHome() {
         return getHomePackageNames().contains(mActivityManager.getRunningTasks(1).get(0).topActivity.getPackageName());
+    }
+
+    public boolean isLockPatternEnabled() {
+        return new LockPatternUtils(mContext).isLockPatternEnabled();
     }
 }
