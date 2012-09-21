@@ -65,7 +65,7 @@ public class Arms extends Service {
      */
     @Override
     public void onStart(Intent intent, int startId) {
-//        invokeArmsBinder(intent);
+        //        invokeArmsBinder(intent);
     }
 
     private void invokeArmsBinder(Intent intent) {
@@ -77,15 +77,7 @@ public class Arms extends Service {
             Object result = ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
                     intent.getStringExtra("parameter"));
             Log.print(null == result ? "" : result.toString());
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
