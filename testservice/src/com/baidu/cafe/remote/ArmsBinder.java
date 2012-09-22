@@ -831,7 +831,7 @@ public class ArmsBinder extends IRemoteArms.Stub {
         return mSystemLib.isHome();
     }
     
-    public void processAppUsage() {
-        mSystemLib.processAppUsage();
+    public void processAppBatteryUsage() {
+        mSystemLib.processAppBatteryUsage();
     }
 }

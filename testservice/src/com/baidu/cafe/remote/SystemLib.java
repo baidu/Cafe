@@ -2216,7 +2216,7 @@ public class SystemLib {
         load();
     }
     
-    public void processAppUsage() {
+    public void processAppBatteryUsage() {
         create();
         
         SensorManager sensorManager = (SensorManager)mContext.getSystemService(
