@@ -31,12 +31,12 @@ public class PowerTutorConnector {
         public void onServiceDisconnected(ComponentName className) {
             counterService = null;
             mContext.unbindService(conn);
-            mContext.bindService(serviceIntent, conn, 0);
+//            mContext.bindService(serviceIntent, conn, 0);
         }
     }
 
     public void connectToPowerTutor() {
-        serviceIntent.setClassName(mContext, "edu.umich.PowerTutor.service.UMLoggerService");
+        serviceIntent.setClassName(mContext, ICounterService.class.getName());
         mContext.startService(serviceIntent);
         conn = new CounterServiceConnection();
         mContext.bindService(serviceIntent, conn, 0);
