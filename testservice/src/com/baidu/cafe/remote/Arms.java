@@ -16,8 +16,6 @@
 
 package com.baidu.cafe.remote;
 
-import java.lang.reflect.InvocationTargetException;
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;

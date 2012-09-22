@@ -8,6 +8,7 @@ LOCAL_DEX_PREOPT := false
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
 LOCAL_SRC_FILES += \
         /src/com/baidu/cafe/remote/IRemoteArms.aidl
+        /src/edu/umich/PowerTutor/service/ICounterService.aidl
 
 LOCAL_PACKAGE_NAME := Cafe
 
