@@ -19,7 +19,7 @@ public class PowerTutorConnector {
     private Context                  mContext;
     private ICounterService          counterService = null;
     private CounterServiceConnection conn;
-    private Intent                   serviceIntent = new Intent();
+    private Intent                   serviceIntent  = new Intent();
 
     public PowerTutorConnector(Context context) {
         mContext = context;
@@ -28,7 +28,7 @@ public class PowerTutorConnector {
 
     private class CounterServiceConnection implements ServiceConnection {
         public void onServiceConnected(ComponentName className, IBinder boundService) {
-            counterService = ICounterService.Stub.asInterface((IBinder) boundService);
+            counterService = ICounterService.Stub.asInterface(boundService);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -40,10 +40,7 @@ public class PowerTutorConnector {
 
     public void connectToPowerTutor() {
         //        mContext.bindService(new Intent("edu.umich.PowerTutor.service.UMLoggerService"), conn, Context.BIND_AUTO_CREATE);
-        //        mContext.bindService(new Intent(ICounterService.class.getName()), conn, Context.BIND_AUTO_CREATE);
-        serviceIntent.setClassName(mContext, "edu.umich.PowerTutor.service.UMLoggerService");
-        mContext.startService(serviceIntent);
-        mContext.bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
+        mContext.bindService(new Intent(ICounterService.class.getName()), conn, Context.BIND_AUTO_CREATE);
         int count = 0;
         try {
             while (null == counterService) {
