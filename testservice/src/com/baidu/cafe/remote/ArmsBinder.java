@@ -830,4 +830,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public boolean isHome() {
         return mSystemLib.isHome();
     }
+    
+    public void processAppUsage() {
+        mSystemLib.processAppUsage();
+    }
 }
