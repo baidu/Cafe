@@ -19,7 +19,7 @@ public class PowerTutorConnector {
     private Context                  mContext;
     private ICounterService          counterService = null;
     private CounterServiceConnection conn;
-    private Intent                   serviceIntent;
+    private Intent                   serviceIntent = new Intent();
 
     public PowerTutorConnector(Context context) {
         mContext = context;
