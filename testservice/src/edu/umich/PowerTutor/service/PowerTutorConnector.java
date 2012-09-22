@@ -1,5 +1,8 @@
 package edu.umich.PowerTutor.service;
 
+import com.baidu.cafe.remote.IRemoteArms;
+import com.baidu.cafe.remote.Log;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +24,7 @@ public class PowerTutorConnector {
 
     public PowerTutorConnector(Context context) {
         mContext = context;
+        conn = new CounterServiceConnection();
     }
 
     private class CounterServiceConnection implements ServiceConnection {
@@ -31,15 +35,28 @@ public class PowerTutorConnector {
         public void onServiceDisconnected(ComponentName className) {
             counterService = null;
             mContext.unbindService(conn);
-//            mContext.bindService(serviceIntent, conn, 0);
+            //            mContext.bindService(serviceIntent, conn, 0);
         }
     }
 
     public void connectToPowerTutor() {
-        serviceIntent.setClassName(mContext, ICounterService.class.getName());
-        mContext.startService(serviceIntent);
-        conn = new CounterServiceConnection();
-        mContext.bindService(serviceIntent, conn, 0);
+        mContext.bindService(new Intent(ICounterService.class.getName()), conn, Context.BIND_AUTO_CREATE);
+        int count = 0;
+        try {
+            while (null == conn) {
+                Thread.sleep(200);
+                count++;
+                if (count == 20) { //timeout = 4 seconds
+                    Log.print("timeout 4 seconds!!!");
+                    mContext.unbindService(conn);
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //        serviceIntent.setClassName(mContext, ICounterService.class.getName());
+        //        mContext.startService(serviceIntent);
+        //        mContext.bindService(serviceIntent, conn, 0);
         try {
             counterService.hello();
         } catch (RemoteException e) {
