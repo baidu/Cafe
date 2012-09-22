@@ -1,6 +1,5 @@
 package edu.umich.PowerTutor.service;
 
-import com.baidu.cafe.remote.IRemoteArms;
 import com.baidu.cafe.remote.Log;
 
 import android.content.ComponentName;
@@ -18,7 +17,7 @@ import android.os.RemoteException;
  */
 public class PowerTutorConnector {
     private Context                  mContext;
-    private ICounterService          counterService;
+    private ICounterService          counterService = null;
     private CounterServiceConnection conn;
     private Intent                   serviceIntent;
 
@@ -43,7 +42,7 @@ public class PowerTutorConnector {
         mContext.bindService(new Intent("edu.umich.PowerTutor.service.UMLoggerService"), conn, Context.BIND_AUTO_CREATE);
         int count = 0;
         try {
-            while (null == conn) {
+            while (null == counterService) {
                 Thread.sleep(200);
                 count++;
                 if (count == 20) { //timeout = 4 seconds
