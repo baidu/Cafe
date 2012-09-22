@@ -39,8 +39,11 @@ public class PowerTutorConnector {
     }
 
     public void connectToPowerTutor() {
-//        mContext.bindService(new Intent("edu.umich.PowerTutor.service.UMLoggerService"), conn, Context.BIND_AUTO_CREATE);
-        mContext.bindService(new Intent(ICounterService.class.getName()), conn, Context.BIND_AUTO_CREATE);
+        //        mContext.bindService(new Intent("edu.umich.PowerTutor.service.UMLoggerService"), conn, Context.BIND_AUTO_CREATE);
+        //        mContext.bindService(new Intent(ICounterService.class.getName()), conn, Context.BIND_AUTO_CREATE);
+        serviceIntent.setClassName(mContext, "edu.umich.PowerTutor.service.UMLoggerService");
+        mContext.startService(serviceIntent);
+        mContext.bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
         int count = 0;
         try {
             while (null == counterService) {
@@ -54,9 +57,6 @@ public class PowerTutorConnector {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //        serviceIntent.setClassName(mContext, ICounterService.class.getName());
-        //        mContext.startService(serviceIntent);
-        //        mContext.bindService(serviceIntent, conn, 0);
         try {
             counterService.hello();
         } catch (RemoteException e) {
