@@ -2216,6 +2216,9 @@ public class SystemLib {
         load();
     }
     
+    /**
+     * Battery capacity in milliAmpHour (mAh).
+     */
     public void processAppBatteryUsage() {
         create();
         
@@ -2348,7 +2351,8 @@ public class SystemLib {
                 power += (multiplier * sensorTime) / 1000;
             }
 
-            Log.print("UID " + u.getUid() + ": power=" + power);
+//            Log.print("UID " + u.getUid() + ": power=" + power);
+            Log.print("PACKAGE " + packageWithHighestDrain + ": power=" + power);
 
 //            // Add the app to the list if it is consuming power
 //            if (power != 0 || u.getUid() == 0) {
