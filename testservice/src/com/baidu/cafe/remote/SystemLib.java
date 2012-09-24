@@ -1582,7 +1582,11 @@ public class SystemLib {
      * set screen unlock security none
      */
     public void setScreenUnlockSecurityNone() {
-        new LockPatternUtils(mContext).clearLock();
+        try{
+            new LockPatternUtils(mContext).clearLock();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
