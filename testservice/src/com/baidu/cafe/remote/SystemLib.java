@@ -89,8 +89,6 @@ import com.android.internal.os.storage.ExternalStorageFormatter;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.widget.LockPatternUtils;
 
-import edu.umich.PowerTutor.service.PowerTutorConnector;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -2438,7 +2436,7 @@ public class SystemLib {
     }
 
     public void printPackagePowerUsage() {
-        PowerTutorConnector ptc = new PowerTutorConnector(mContext);
-        ptc.connectToPowerTutor();
+        //PowerTutorConnector ptc = new PowerTutorConnector(mContext);
+        //ptc.connectToPowerTutor();
     }
 }
