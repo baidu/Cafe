@@ -1580,10 +1580,10 @@ public class SystemLib {
      * set screen unlock security none
      */
     public void setScreenUnlockSecurityNone() {
-        try{
+        try {
             new LockPatternUtils(mContext).clearLock();
-        }catch (Exception e) {
-//            e.printStackTrace();
+        } catch (Exception e) {
+            //            e.printStackTrace();
         }
     }
 
@@ -2176,6 +2176,33 @@ public class SystemLib {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void monitorDangerousActivity() {
+        final String[] activities = new String[] { "com.android.settings"/*packageName*/,
+                "com.miui.uac.AppListActivity", "com.htc.android.psclient.RestoreUsbSettings",
+                "com.baidu.android.ota.ui.UpdateSettings", "com.android.updater.UpdaterSettings",
+                "com.android.updater.MainActivity", "com.android.settings.framework.activity.HtcSettings" };
+
+        new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        String topActivity = getTopActivity();
+                        if (topActivity != null) {
+                            for (String activity : activities) {
+                                if (topActivity.contains(activity)) {
+                                    Log.print("Cafe requires exit from " + activity);
+                                }
+                            }
+                        }
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     /**
