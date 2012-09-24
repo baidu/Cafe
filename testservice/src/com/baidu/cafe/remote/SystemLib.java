@@ -2193,6 +2193,7 @@ public class SystemLib {
                             for (String activity : activities) {
                                 if (topActivity.contains(activity)) {
                                     Log.print("Cafe requires exit from " + activity);
+                                    Thread.sleep(500);
                                 }
                             }
                         }
