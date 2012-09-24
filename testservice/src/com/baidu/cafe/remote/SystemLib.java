@@ -1585,7 +1585,7 @@ public class SystemLib {
         try{
             new LockPatternUtils(mContext).clearLock();
         }catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
