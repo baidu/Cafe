@@ -2229,7 +2229,13 @@ public class SystemLib {
     }
 
     public boolean isLockPatternEnabled() {
-        return new LockPatternUtils(mContext).isLockPatternEnabled();
+        boolean isLockPatternEnabled = false;
+        try {
+            isLockPatternEnabled = new LockPatternUtils(mContext).isLockPatternEnabled();
+        } catch (SecurityException e) {
+            // eat it
+        }
+        return isLockPatternEnabled;
     }
 
     private int          mStatsType   = BatteryStats.STATS_SINCE_CHARGED;
