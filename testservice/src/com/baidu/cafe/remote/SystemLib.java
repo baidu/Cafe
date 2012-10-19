@@ -2232,7 +2232,7 @@ public class SystemLib {
         boolean isLockPatternEnabled = false;
         try {
             isLockPatternEnabled = new LockPatternUtils(mContext).isLockPatternEnabled();
-        } catch (SecurityException e) {
+        } catch (Exception e) {
             // eat it
         }
         return isLockPatternEnabled;
