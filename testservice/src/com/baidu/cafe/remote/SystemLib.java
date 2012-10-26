@@ -2130,8 +2130,8 @@ public class SystemLib {
         try {
             return Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED) == 0 ? false
                     : true;
-        } catch (SettingNotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // eat it
         }
         return false;
     }
@@ -2149,8 +2149,10 @@ public class SystemLib {
             public void run() {
                 while (true) {
                     try {
-                        setAdbEnabled(true); // need android.permission.WRITE_SECURE_SETTINGS
-                        setNonMarketAppsAllowed(true); // android.permission.WRITE_SECURE_SETTINGS
+                        if (!isAdbEnabled()) {
+                            setAdbEnabled(true); // need android.permission.WRITE_SECURE_SETTINGS
+                        }
+                        //                        setNonMarketAppsAllowed(true); // android.permission.WRITE_SECURE_SETTINGS
                         //                        if (isAirplaneModeOn()) {
                         setAirplaneMode(false);
                         //                        }
@@ -2181,8 +2183,8 @@ public class SystemLib {
         try {
             return Settings.Secure.getInt(mContext.getContentResolver(), Settings.System.AIRPLANE_MODE_ON) == 0 ? false
                     : true;
-        } catch (SettingNotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // eat it
         }
         return false;
     }
