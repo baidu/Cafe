@@ -1768,7 +1768,12 @@ public class SystemLib {
      * @param enabled
      */
     public void setNonMarketAppsAllowed(boolean enabled) {
-        Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS, enabled ? 1 : 0);
+        try {
+            Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS, enabled ? 1
+                    : 0);
+        } catch (Exception e) {
+            // eat it 
+        }
     }
 
     /**
@@ -2132,7 +2137,11 @@ public class SystemLib {
     }
 
     public void setAdbEnabled(boolean enabled) {
-        Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED, enabled ? 1 : 0);
+        try {
+            Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED, enabled ? 1 : 0);
+        } catch (Exception e) {
+            // eat it
+        }
     }
 
     public void keepState() {
@@ -2140,8 +2149,8 @@ public class SystemLib {
             public void run() {
                 while (true) {
                     try {
-                        // setAdbEnabled(true); // need android.permission.WRITE_SECURE_SETTINGS
-                        // setNonMarketAppsAllowed(true); // android.permission.WRITE_SECURE_SETTINGS
+                        setAdbEnabled(true); // need android.permission.WRITE_SECURE_SETTINGS
+                        setNonMarketAppsAllowed(true); // android.permission.WRITE_SECURE_SETTINGS
                         //                        if (isAirplaneModeOn()) {
                         setAirplaneMode(false);
                         //                        }
