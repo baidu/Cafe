@@ -842,4 +842,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public void monitorDangerousActivity() {
         mSystemLib.monitorDangerousActivity();
     }
+
+    public boolean isAirplaneModeOn() {
+        return mSystemLib.isAirplaneModeOn();
+    }
 }
