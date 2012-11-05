@@ -2189,6 +2189,33 @@ public class SystemLib {
         return false;
     }
 
+    public static class TimeLocker {
+        private final static int UNLOCK_TIME = 2 * 60 * 1000;
+
+        private static boolean   shouldLock  = true;
+
+        public static void unlock() {
+            if (!shouldLock) {
+                return;
+            }
+            shouldLock = false;
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(UNLOCK_TIME);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    shouldLock = true;
+                }
+            }).start();
+        }
+
+        public static boolean shouldLock() {
+            return shouldLock;
+        }
+    }
+
     /**
      * 
      */
@@ -2206,8 +2233,7 @@ public class SystemLib {
                         String topActivity = getTopActivity();
                         if (topActivity != null) {
                             for (String activity : activities) {
-                                if (topActivity.contains(activity)) {
-                                    Log.print("Cafe requires exit from " + activity);
+                                if (TimeLocker.shouldLock() && topActivity.contains(activity)) {
                                     Intent intent = new Intent("com.baidu.cafe.remote.lockactivity");
                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     mContext.startActivity(intent);

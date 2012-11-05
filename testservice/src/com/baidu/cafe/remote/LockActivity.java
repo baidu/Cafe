@@ -1,5 +1,7 @@
 package com.baidu.cafe.remote;
 
+import com.baidu.cafe.remote.SystemLib.TimeLocker;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.View;
@@ -22,10 +24,11 @@ public class LockActivity extends Activity {
                 String input = editTextPassword.getText().toString();
                 if (unlockPassword != null && unlockPassword.equals(input)) {
                     Log.print("Unlock!");
+                    TimeLocker.unlock();
                     finish();
                 }
             }
         });
     }
-    
+
 }
