@@ -19,9 +19,9 @@
         android:id="@+id/button_unlock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/editText1"
-        android:layout_marginTop="42dp"
-		android:text="@string/button_unlock" />
+        android:layout_below="@+id/editTextPassword"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="53dp"
+        android:text="@string/button_unlock" />
 
 </RelativeLayout>

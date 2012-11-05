@@ -2,7 +2,6 @@ package com.baidu.cafe.remote;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,4 +27,15 @@ public class LockActivity extends Activity {
             }
         });
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+    
 }
