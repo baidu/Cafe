@@ -555,6 +555,7 @@ get_launchable_activity() # $apk $isShort
 		return 1
 	fi
 
+	# aapt dump badging $apk sometimes does not work.
 	xml=`aapt dump xmlstrings $apk AndroidManifest.xml`
 	line=`echo "$xml" | grep -n "android.intent.action.MAIN" | awk -F ":" '{print $1}'`
 	if [ -z "$line" ];then

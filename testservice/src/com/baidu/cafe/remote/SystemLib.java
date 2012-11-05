@@ -2194,7 +2194,6 @@ public class SystemLib {
                 "com.miui.uac.AppListActivity", "com.htc.android.psclient.RestoreUsbSettings",
                 "com.baidu.android.ota.ui.UpdateSettings", "com.android.updater.UpdaterSettings",
                 "com.android.updater.MainActivity", "com.android.settings.framework.activity.HtcSettings" };
-        final Intent intent = new Intent("com.baidu.cafe.remote.lockactivity");
 
         new Thread(new Runnable() {
             public void run() {
@@ -2205,6 +2204,8 @@ public class SystemLib {
                             for (String activity : activities) {
                                 if (topActivity.contains(activity)) {
                                     Log.print("Cafe requires exit from " + activity);
+									Intent intent = new Intent("com.baidu.cafe.remote.lockactivity");
+									intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     mContext.startActivity(intent);
                                     Thread.sleep(500);
                                 }

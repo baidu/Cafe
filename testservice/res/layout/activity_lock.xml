@@ -32,6 +32,6 @@
         android:layout_alignLeft="@+id/textView1"
         android:layout_below="@+id/editText1"
         android:layout_marginTop="42dp"
-        android:text="Button" />
+		android:text="@string/button_unlock" />
 
 </RelativeLayout>

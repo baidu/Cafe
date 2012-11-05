@@ -5,7 +5,8 @@
     <string name="app_name">ARMS</string>
     <string name="force_close">强行关闭</string>
     <string name="hello_world">Hello world!</string>
+    <string name="button_unlock">Unlock</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_lock">LockActivity</string>
+    <string name="title_activity_lock">ActivityLock</string>
 
 </resources>
