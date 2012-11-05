@@ -22,20 +22,10 @@ public class LockActivity extends Activity {
                 String input = editTextPassword.getText().toString();
                 if (unlockPassword != null && unlockPassword.equals(input)) {
                     Log.print("Unlock!");
-                    onStop();
+                    finish();
                 }
             }
         });
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
     
 }
