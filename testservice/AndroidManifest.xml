@@ -1,110 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.baidu.cafe.remote" >
-	<uses-sdk android:minSdkVersion="7" />
+    package="com.baidu.cafe.remote" >
 
-	<uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
-	<uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" />
-	<uses-permission android:name="android.permission.SHUTDOWN" />
-	<uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
-	<uses-permission android:name="android.permission.ACCESS_DRM" />
-	<uses-permission android:name="android.permission.DOWNLOAD_CACHE_NON_PURGEABLE" />
-	<uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
-	<uses-permission android:name="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS" />
-	<uses-permission android:name="android.permission.MOVE_PACKAGE" />
-	<uses-permission android:name="android.permission.ACCESS_CHECKIN_PROPERTIES" />
-	<uses-permission android:name="android.permission.READ_INPUT_STATE" />
-	<uses-permission android:name="android.permission.DEVICE_POWER" />
-	<uses-permission android:name="android.permission.DELETE_PACKAGES" />
-	<uses-permission android:name="android.permission.ACCESS_CACHE_FILESYSTEM" />
-	<uses-permission android:name="android.permission.REBOOT" />
-	<uses-permission android:name="android.permission.STATUS_BAR" />
-	<uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" />
-	<uses-permission android:name="android.permission.ACCESS_ALL_DOWNLOADS" />
-	<uses-permission android:name="android.permission.STOP_APP_SWITCHES" />
-	<uses-permission android:name="android.permission.CONTROL_LOCATION_UPDATES" />
-	<uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
-	<uses-permission android:name="android.permission.MANAGE_APP_TOKENS" />
-	<uses-permission android:name="android.permission.DELETE_CACHE_FILES" />
-	<uses-permission android:name="android.permission.BATTERY_STATS" />
-	<uses-permission android:name="android.permission.COPY_PROTECTED_DATA" />
-	<uses-permission android:name="com.android.email.permission.ACCESS_PROVIDER" />
-	<uses-permission android:name="android.permission.INSTALL_DRM" />
-	<uses-permission android:name="android.permission.MASTER_CLEAR" />
-	<uses-permission android:name="android.permission.SET_ACTIVITY_WATCHER" />
-	<uses-permission android:name="android.permission.BRICK" />
-	<uses-permission android:name="android.permission.BACKUP" />
-	<uses-permission android:name="android.permission.SET_TIME" />
-	<uses-permission android:name="android.permission.STATUS_BAR_SERVICE" />
-	<uses-permission android:name="android.permission.INSTALL_PACKAGES" />
-	<uses-permission android:name="android.permission.PERFORM_CDMA_PROVISIONING" />
-	<uses-permission android:name="android.permission.INJECT_EVENTS" />
-	<uses-permission android:name="android.permission.ACCESS_BLUETOOTH_SHARE" />
-	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
-	<uses-permission android:name="android.permission.INSTALL_LOCATION_PROVIDER" />
-	<uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
-	<uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
-	<uses-permission android:name="android.permission.CALL_PRIVILEGED" />
-	<uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
-	<uses-permission android:name="android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE" />
-	<uses-permission android:name="android.permission.WRITE_GSERVICES" />
-	<uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
-	<uses-permission android:name="android.permission.FORCE_BACK" />
-	<uses-permission android:name="android.permission.UPDATE_DEVICE_STATS" />
-	<uses-permission android:name="android.permission.BIND_WALLPAPER" />
-	<uses-permission android:name="android.permission.SET_ORIENTATION" />
-	<uses-permission android:name="android.permission.FACTORY_TEST" />
-	<uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
-	<uses-permission android:name="android.permission.GET_TASKS" />
-	<uses-permission android:name="android.permission.READ_CALENDAR" />
-	<uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-sdk android:minSdkVersion="7" />
 
-	<uses-permission android:name="android.permission.READ_CONTACTS" />
-	<uses-permission android:name="android.permission.WRITE_CONTACTS" />
-	<uses-permission android:name="android.permission.READ_SMS" />
-	<uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" />
+    <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" />
+    <uses-permission android:name="android.permission.SHUTDOWN" />
+    <uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
+    <uses-permission android:name="android.permission.ACCESS_DRM" />
+    <uses-permission android:name="android.permission.DOWNLOAD_CACHE_NON_PURGEABLE" />
+    <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
+    <uses-permission android:name="android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS" />
+    <uses-permission android:name="android.permission.MOVE_PACKAGE" />
+    <uses-permission android:name="android.permission.ACCESS_CHECKIN_PROPERTIES" />
+    <uses-permission android:name="android.permission.READ_INPUT_STATE" />
+    <uses-permission android:name="android.permission.DEVICE_POWER" />
+    <uses-permission android:name="android.permission.DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.ACCESS_CACHE_FILESYSTEM" />
+    <uses-permission android:name="android.permission.REBOOT" />
+    <uses-permission android:name="android.permission.STATUS_BAR" />
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" />
+    <uses-permission android:name="android.permission.ACCESS_ALL_DOWNLOADS" />
+    <uses-permission android:name="android.permission.STOP_APP_SWITCHES" />
+    <uses-permission android:name="android.permission.CONTROL_LOCATION_UPDATES" />
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
+    <uses-permission android:name="android.permission.MANAGE_APP_TOKENS" />
+    <uses-permission android:name="android.permission.DELETE_CACHE_FILES" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" />
+    <uses-permission android:name="android.permission.COPY_PROTECTED_DATA" />
+    <uses-permission android:name="com.android.email.permission.ACCESS_PROVIDER" />
+    <uses-permission android:name="android.permission.INSTALL_DRM" />
+    <uses-permission android:name="android.permission.MASTER_CLEAR" />
+    <uses-permission android:name="android.permission.SET_ACTIVITY_WATCHER" />
+    <uses-permission android:name="android.permission.BRICK" />
+    <uses-permission android:name="android.permission.BACKUP" />
+    <uses-permission android:name="android.permission.SET_TIME" />
+    <uses-permission android:name="android.permission.STATUS_BAR_SERVICE" />
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.PERFORM_CDMA_PROVISIONING" />
+    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.ACCESS_BLUETOOTH_SHARE" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.INSTALL_LOCATION_PROVIDER" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
+    <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
+    <uses-permission android:name="android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.permission.WRITE_GSERVICES" />
+    <uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
+    <uses-permission android:name="android.permission.FORCE_BACK" />
+    <uses-permission android:name="android.permission.UPDATE_DEVICE_STATS" />
+    <uses-permission android:name="android.permission.BIND_WALLPAPER" />
+    <uses-permission android:name="android.permission.SET_ORIENTATION" />
+    <uses-permission android:name="android.permission.FACTORY_TEST" />
+    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.DUMP" />
 
-	<uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
-	<uses-permission android:name="android.permission.WAKE_LOCK" />
-	<uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.DUMP" />
-	<application android:icon="@drawable/icon" android:label="@string/app_name">
-		<service android:name=".Arms">
-			<intent-filter>
-				<action android:name="com.baidu.cafe.remote.IRemoteArms" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="com.baidu.cafe.remote.action.name.COMMAND" />
-			</intent-filter>
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name" >
+        <service android:name=".Arms" >
+            <intent-filter>
+                <action android:name="com.baidu.cafe.remote.IRemoteArms" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.baidu.cafe.remote.action.name.COMMAND" />
+            </intent-filter>
+        </service>
 
-		</service>
+        <receiver android:name=".ArmsBootupReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
-		<receiver android:name=".ArmsBootupReceiver">
-			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
-			</intent-filter>
-		</receiver>
-	</application>
-	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
-	<uses-permission android:name="android.permission.READ_LOGS" />
-	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
-	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
-	<uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-	<uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
-	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
-	<uses-permission android:name="android.permission.RECEIVE_SMS" />
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-	<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        <activity
+            android:name=".LockActivity"
+            android:label="@string/title_activity_lock" >
+            <intent-filter>  
+                <action android:name="com.baidu.cafe.remote.lockactivity"/>  
+                <category android:name="android.intent.category.DEFAULT"/>  
+            </intent-filter>  
+        </activity>
+    </application>
+
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
 </manifest>

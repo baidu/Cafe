@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="hello">Hello World!</string>
     <string name="app_name">ARMS</string>
     <string name="force_close">强行关闭</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_lock">LockActivity</string>
+
 </resources>
