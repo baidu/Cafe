@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class LockActivity extends Activity {
-    public final static String unlockPassword = null;
+    public static String unlockPassword = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -21,7 +21,7 @@ public class LockActivity extends Activity {
             public void onClick(View v) {
                 EditText editTextPassword = (EditText) findViewById(R.id.editTextPassword);
                 String input = editTextPassword.getText().toString();
-                if(unlockPassword !=null && unlockPassword.equals(input)){
+                if (unlockPassword != null && unlockPassword.equals(input)) {
                     Log.print("Unlock!");
                     onStop();
                 }
