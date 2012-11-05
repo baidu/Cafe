@@ -2189,11 +2189,15 @@ public class SystemLib {
         return false;
     }
 
-    public void monitorDangerousActivity() {
+    /**
+     * 
+     */
+    public void lockDangerousActivity(String unlockPassword) {
         final String[] activities = new String[] { "com.android.settings"/*packageName*/,
                 "com.miui.uac.AppListActivity", "com.htc.android.psclient.RestoreUsbSettings",
                 "com.baidu.android.ota.ui.UpdateSettings", "com.android.updater.UpdaterSettings",
                 "com.android.updater.MainActivity", "com.android.settings.framework.activity.HtcSettings" };
+        LockActivity.unlockPassword = unlockPassword;
 
         new Thread(new Runnable() {
             public void run() {
@@ -2204,8 +2208,8 @@ public class SystemLib {
                             for (String activity : activities) {
                                 if (topActivity.contains(activity)) {
                                     Log.print("Cafe requires exit from " + activity);
-									Intent intent = new Intent("com.baidu.cafe.remote.lockactivity");
-									intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    Intent intent = new Intent("com.baidu.cafe.remote.lockactivity");
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     mContext.startActivity(intent);
                                     Thread.sleep(500);
                                 }
