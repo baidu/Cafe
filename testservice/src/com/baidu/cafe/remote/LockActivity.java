@@ -9,7 +9,9 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class LockActivity extends Activity {
-    public static String unlockPassword = null;
+    public static String  unlockPassword       = null;
+    public static boolean lock_activity_enable = false;
+    public static boolean keep_state_enable    = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

