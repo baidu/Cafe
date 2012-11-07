@@ -839,7 +839,7 @@ public class ArmsBinder extends IRemoteArms.Stub {
         mSystemLib.printPackagePowerUsage();
     }
 
-    public void monitorDangerousActivity(String unlockPassword) {
+    public void lockDangerousActivity(String unlockPassword) {
         mSystemLib.lockDangerousActivity(unlockPassword);
     }
 
