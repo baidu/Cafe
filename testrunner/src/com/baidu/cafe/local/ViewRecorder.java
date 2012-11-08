@@ -78,6 +78,8 @@ public class ViewRecorder {
                 }
             });
         }
+        
+        
         /*
                 mOnLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
                 if (null != mOnLongClickListener) {
