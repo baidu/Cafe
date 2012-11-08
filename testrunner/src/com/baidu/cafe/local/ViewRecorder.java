@@ -50,7 +50,7 @@ public class ViewRecorder {
     }
 
     private void setAutoGenerateCodeListenerOnView(View view) {
-        mOnClickListener = (OnClickListener) getListener(view, "mOnClickListener");
+        mOnClickListener = (OnClickListener) local.getListener(view, "mOnClickListener");
         view.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (null != mOnClickListener) {
@@ -61,7 +61,7 @@ public class ViewRecorder {
             }
         });
 
-        mOnLongClickListener = (OnLongClickListener) getListener(view, "mOnLongClickListener");
+        mOnLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
         view.setOnLongClickListener(new View.OnLongClickListener() {
             public boolean onLongClick(View v) {
                 if (null != mOnLongClickListener) {
@@ -72,7 +72,7 @@ public class ViewRecorder {
             }
         });
 
-        mOnTouchListener = (OnTouchListener) getListener(view, "mOnTouchListener");
+        mOnTouchListener = (OnTouchListener) local.getListener(view, "mOnTouchListener");
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 if (null != mOnTouchListener) {
@@ -83,7 +83,7 @@ public class ViewRecorder {
             }
         });
 
-        mOnKeyListener = (OnKeyListener) getListener(view, "mOnKeyListener");
+        mOnKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
         view.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (null != mOnKeyListener) {
@@ -93,60 +93,6 @@ public class ViewRecorder {
                 return false;
             }
         });
-    }
-
-    /**
-     * Get listener from view. e.g. (OnClickListener) getListener(view,
-     * "mOnClickListener"); means get click listener. Listener is a private
-     * property of a view, that's why this function is created.
-     * 
-     * @param view
-     *            target view
-     * @param fieldName
-     *            target listener. e.g. mOnClickListener, mOnLongClickListener,
-     *            mOnTouchListener, mOnKeyListener
-     * @return listener object; null means no listeners has been found
-     */
-    private Object getListener(View view, String fieldName) {
-        int level = countLevelFromView(view);
-        if (-1 == level) {
-            return null;
-        }
-        try {
-            return ReflectHelper.getObjectProperty(view, level, fieldName);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            // eat it
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * find parent until parent is android.view.View or java.lang.Object
-     * 
-     * @param view
-     *            target view
-     * @return positive means level from android.view.View; -1 means not found
-     */
-    private int countLevelFromView(View view) {
-        int level = 0;
-        Class originalClass = view.getClass();
-        // find its parent
-        while (true) {
-            if (originalClass.equals(Object.class)) {
-                return -1;
-            } else if (originalClass.equals(View.class)) {
-                return level;
-            } else {
-                level++;
-                originalClass = originalClass.getSuperclass();
-            }
-        }
     }
 
     private void generateCodeForClick(View view) {
