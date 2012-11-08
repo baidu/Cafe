@@ -45,7 +45,11 @@ public class ViewRecorder {
         int viewNumber = allViews.size();
         print("viewNumber=" + viewNumber);
         for (int i = 0; i < viewNumber; i++) {
-            setAutoGenerateCodeListenerOnView(allViews.get(i));
+            try {
+                setAutoGenerateCodeListenerOnView(allViews.get(i));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -93,6 +97,7 @@ public class ViewRecorder {
                 return false;
             }
         });
+
     }
 
     private void generateCodeForClick(View view) {
