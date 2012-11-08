@@ -67,7 +67,8 @@ public class ViewRecorder {
                 public void onClick(View v) {
                     generateCodeForClick(v);
                     print("id:" + v.getId() + "\t click");
-                    mOnClickListener.onClick(v);
+                    OnClickListener onClickListener = (OnClickListener) local.getListener(v, "mOnClickListener");
+                    onClickListener.onClick(v);
                 }
             });
         }
