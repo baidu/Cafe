@@ -81,10 +81,6 @@ public class LocalLib extends SoloEx {
 
     private boolean              mHasBegin                    = false;
     private ArrayList<View>      mViews                       = null;
-    private OnClickListener      mOnClickListener;
-    private OnLongClickListener  mOnLongClickListener;
-    private OnTouchListener      mOnTouchListener;
-    private OnKeyListener        mOnKeyListener;
     private Instrumentation      mInstrumentation;
     private Activity             mActivity;
     private Context              mContext                     = null;
@@ -206,119 +202,8 @@ public class LocalLib extends SoloEx {
     /**
      * add listeners on all views for generating robotium code automatically
      */
-    public void beginRecordRobotiumCode() {
-        ArrayList<View> allViews = getViews();
-        int viewNumber = allViews.size();
-        print("viewNumber=" + viewNumber);
-        for (int i = 0; i < viewNumber; i++) {
-            setAutoGenerateCodeListenerOnView(allViews.get(i));
-        }
-    }
-
-    /**
-     * find parent until parent is android.view.View or java.lang.Object
-     * 
-     * @param view
-     *            target view
-     * @return positive means level from android.view.View; -1 means not found
-     */
-    private int countLevelFromView(View view) {
-        int level = 0;
-        Class originalClass = view.getClass();
-        // find its parent
-        while (true) {
-            if (originalClass.equals(Object.class)) {
-                return -1;
-            } else if (originalClass.equals(View.class)) {
-                return level;
-            } else {
-                level++;
-                originalClass = originalClass.getSuperclass();
-            }
-        }
-    }
-
-    private void generateCodeForClick(View view) {
-        String code = "//view.text=" + getViewText(view) + "\n" + "clickOnView(findViewById(new Integer("
-                + view.getId() + ")));";
-        print(code);
-    }
-
-    /**
-     * Get listener from view. e.g. (OnClickListener) getListener(view,
-     * "mOnClickListener"); means get click listener. Listener is a private
-     * property of a view, that's why this function is created.
-     * 
-     * @param view
-     *            target view
-     * @param fieldName
-     *            target listener. e.g. mOnClickListener, mOnLongClickListener,
-     *            mOnTouchListener, mOnKeyListener
-     * @return listener object; null means no listeners has been found
-     */
-    public Object getListener(View view, String fieldName) {
-        int level = countLevelFromView(view);
-        if (-1 == level) {
-            return null;
-        }
-        try {
-            return ReflectHelper.getObjectProperty(view, level, fieldName);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            // eat it
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private void setAutoGenerateCodeListenerOnView(View view) {
-        mOnClickListener = (OnClickListener) getListener(view, "mOnClickListener");
-        view.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (null != mOnClickListener) {
-                    mOnClickListener.onClick(v);
-                }
-                generateCodeForClick(v);
-                print("id:" + v.getId() + "\t click");
-            }
-        });
-
-        mOnLongClickListener = (OnLongClickListener) getListener(view, "mOnLongClickListener");
-        view.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View v) {
-                if (null != mOnLongClickListener) {
-                    mOnLongClickListener.onLongClick(v);
-                }
-                print("id:" + v.getId() + "\t long_click");
-                return false;
-            }
-        });
-
-        mOnTouchListener = (OnTouchListener) getListener(view, "mOnTouchListener");
-        view.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (null != mOnTouchListener) {
-                    mOnTouchListener.onTouch(v, event);
-                }
-                print("id:" + v.getId() + "\t" + event.toString());
-                return false;
-            }
-        });
-
-        mOnKeyListener = (OnKeyListener) getListener(view, "mOnKeyListener");
-        view.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (null != mOnKeyListener) {
-                    mOnKeyListener.onKey(v, keyCode, event);
-                }
-                print("id:" + v.getId() + "\t" + event.toString() + "\t" + keyCode);
-                return false;
-            }
-        });
+    public void beginRecordCode() {
+        new ViewRecorder(this).beginRecordCode();
     }
 
     public String getViewText(View view) {
