@@ -1,6 +1,7 @@
 package com.baidu.cafe.local;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.locks.LockSupport;
 
 import android.util.Log;
@@ -20,13 +21,13 @@ import android.widget.AdapterView;
  * @todo
  */
 public class ViewRecorder {
-    private final static boolean DEBUG = true;
+    private final static boolean                 DEBUG                 = true;
 
-    private OnClickListener      mOnClickListener;
-    private OnLongClickListener  mOnLongClickListener;
-    private OnTouchListener      mOnTouchListener;
-    private OnKeyListener        mOnKeyListener;
-    private LocalLib             local = null;
+    private HashMap<String, OnClickListener>     mOnClickListeners     = new HashMap<String, OnClickListener>();
+    private HashMap<String, OnLongClickListener> mOnLongClickListeners = new HashMap<String, OnLongClickListener>();
+    private HashMap<String, OnTouchListener>     mOnTouchListeners     = new HashMap<String, OnTouchListener>();
+    private HashMap<String, OnKeyListener>       mOnKeyListeners       = new HashMap<String, OnKeyListener>();
+    private LocalLib                             local                 = null;
 
     public ViewRecorder(LocalLib local) {
         this.local = local;
@@ -60,52 +61,62 @@ public class ViewRecorder {
             return;
         }
 
-        mOnClickListener = (OnClickListener) local.getListener(view, "mOnClickListener");
-        if (null != mOnClickListener) {
+        OnClickListener onClickListener = (OnClickListener) local.getListener(view, "mOnClickListener");
+        if (null != onClickListener) {
             print("hook [" + view + "]");
+            mOnClickListeners.put(getViewID(view), onClickListener);
             view.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     generateCodeForClick(v);
                     print("id:" + v.getId() + "\t click");
-                    OnClickListener onClickListener = (OnClickListener) local.getListener(v, "mOnClickListener");
-                    onClickListener.onClick(v);
+                    OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
+                    if (onClickListener != null) {
+                        onClickListener.onClick(v);
+                    } else {
+                        print("onClickListener == null");
+                    }
                 }
             });
         }
-
-        mOnLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
-        if (null != mOnLongClickListener) {
-            view.setOnLongClickListener(new View.OnLongClickListener() {
-                public boolean onLongClick(View v) {
-                    print("id:" + v.getId() + "\t long_click");
-                    mOnLongClickListener.onLongClick(v);
-                    return false;
+        /*
+                mOnLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
+                if (null != mOnLongClickListener) {
+                    view.setOnLongClickListener(new View.OnLongClickListener() {
+                        public boolean onLongClick(View v) {
+                            print("id:" + v.getId() + "\t long_click");
+                            mOnLongClickListener.onLongClick(v);
+                            return false;
+                        }
+                    });
                 }
-            });
-        }
 
-        mOnTouchListener = (OnTouchListener) local.getListener(view, "mOnTouchListener");
-        if (null != mOnTouchListener) {
-            view.setOnTouchListener(new View.OnTouchListener() {
-                public boolean onTouch(View v, MotionEvent event) {
-                    print("id:" + v.getId() + "\t" + event.toString());
-                    mOnTouchListener.onTouch(v, event);
-                    return false;
+                mOnTouchListener = (OnTouchListener) local.getListener(view, "mOnTouchListener");
+                if (null != mOnTouchListener) {
+                    view.setOnTouchListener(new View.OnTouchListener() {
+                        public boolean onTouch(View v, MotionEvent event) {
+                            print("id:" + v.getId() + "\t" + event.toString());
+                            mOnTouchListener.onTouch(v, event);
+                            return false;
+                        }
+                    });
                 }
-            });
-        }
 
-        mOnKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
-        if (null != mOnKeyListener) {
-            view.setOnKeyListener(new View.OnKeyListener() {
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    print("id:" + v.getId() + "\t" + event.toString() + "\t" + keyCode);
-                    mOnKeyListener.onKey(v, keyCode, event);
-                    return false;
+                mOnKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
+                if (null != mOnKeyListener) {
+                    view.setOnKeyListener(new View.OnKeyListener() {
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            print("id:" + v.getId() + "\t" + event.toString() + "\t" + keyCode);
+                            mOnKeyListener.onKey(v, keyCode, event);
+                            return false;
+                        }
+                    });
                 }
-            });
-        }
+        */
+    }
 
+    private String getViewID(View view) {
+        String viewString = view.toString();
+        return viewString.substring(viewString.indexOf("@"));
     }
 
     private void generateCodeForClick(View view) {
