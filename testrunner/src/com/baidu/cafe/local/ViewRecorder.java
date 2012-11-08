@@ -60,6 +60,7 @@ public class ViewRecorder {
             print("ignore AdapterView [" + view + "]");
             return;
         }
+        // luxiaoyu
 
         OnClickListener onClickListener = (OnClickListener) local.getListener(view, "mOnClickListener");
         if (null != onClickListener) {
