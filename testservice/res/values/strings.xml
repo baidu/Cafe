@@ -8,5 +8,5 @@
     <string name="button_unlock">Unlock</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_lock">ActivityLock</string>
-
+    <string name="textview_notice">退出请按HOME键</string>
 </resources>
