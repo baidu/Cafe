@@ -11,6 +11,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.AdapterView;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -54,49 +55,55 @@ public class ViewRecorder {
     }
 
     private void setAutoGenerateCodeListenerOnView(View view) {
+        if (view instanceof AdapterView) {
+            print("ignore AdapterView [" + view + "]");
+            return;
+        }
+
         mOnClickListener = (OnClickListener) local.getListener(view, "mOnClickListener");
-        view.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (null != mOnClickListener) {
+        if (null != mOnClickListener) {
+            print("hook [" + view + "]");
+            view.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    generateCodeForClick(v);
+                    print("id:" + v.getId() + "\t click");
                     mOnClickListener.onClick(v);
                 }
-                generateCodeForClick(v);
-                print("id:" + v.getId() + "\t click");
-            }
-        });
+            });
+        }
 
         mOnLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
-        view.setOnLongClickListener(new View.OnLongClickListener() {
-            public boolean onLongClick(View v) {
-                if (null != mOnLongClickListener) {
+        if (null != mOnLongClickListener) {
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    print("id:" + v.getId() + "\t long_click");
                     mOnLongClickListener.onLongClick(v);
+                    return false;
                 }
-                print("id:" + v.getId() + "\t long_click");
-                return false;
-            }
-        });
+            });
+        }
 
         mOnTouchListener = (OnTouchListener) local.getListener(view, "mOnTouchListener");
-        view.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (null != mOnTouchListener) {
+        if (null != mOnTouchListener) {
+            view.setOnTouchListener(new View.OnTouchListener() {
+                public boolean onTouch(View v, MotionEvent event) {
+                    print("id:" + v.getId() + "\t" + event.toString());
                     mOnTouchListener.onTouch(v, event);
+                    return false;
                 }
-                print("id:" + v.getId() + "\t" + event.toString());
-                return false;
-            }
-        });
+            });
+        }
 
         mOnKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
-        view.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (null != mOnKeyListener) {
+        if (null != mOnKeyListener) {
+            view.setOnKeyListener(new View.OnKeyListener() {
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    print("id:" + v.getId() + "\t" + event.toString() + "\t" + keyCode);
                     mOnKeyListener.onKey(v, keyCode, event);
+                    return false;
                 }
-                print("id:" + v.getId() + "\t" + event.toString() + "\t" + keyCode);
-                return false;
-            }
-        });
+            });
+        }
 
     }
 
