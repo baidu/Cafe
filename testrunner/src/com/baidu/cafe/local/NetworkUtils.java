@@ -11,8 +11,10 @@ import android.os.Build;
  * @todo
  */
 public class NetworkUtils {
-    private final static String MODE_RCV = "tcp_rcv";
-    private final static String MODE_SND = "tcp_snd";
+    private final static String   MODE_RCV           = "tcp_rcv";
+    private final static String   MODE_SND           = "tcp_snd";
+    private final static String[] NETWORK_CARD_TYPES = new String[] { "eth0:", "wlan0:", "tiwlan0:", "svnet0:",
+            "rmnet0:", "mlan0:"                     };
 
     public NetworkUtils() {
 
@@ -53,16 +55,43 @@ public class NetworkUtils {
      * @return
      */
     private int getPackageTraffic(String packageName, String mode) {
-        int traffic = 0;
-        int uid = getUidByPid(getPidsByPackageName(packageName).get(0));
-        if (-1 == uid) {
+        if ((!MODE_RCV.equals(mode)) || (!MODE_SND.equals(mode))) {
+            print("mode invaild:" + mode);
             return -1;
         }
 
+        int traffic = 0;
+        ArrayList<Integer> pids = getPidsByPackageName(packageName);
+        if (pids.size() < 1) {
+            return -1;
+        }
+        int pid = pids.get(0);
+
         if (Build.VERSION.SDK_INT >= 14) {// API Level: 14. Android 4.0
+            int uid = getUidByPid(pid);
+            if (-1 == uid) {
+                return -1;
+            }
             String ret = new ShellExecute().execute(String.format("cat /proc/uid_stat/%s/%s", uid, mode), "/").console.strings
                     .get(0);
             traffic = Integer.valueOf(ret);
+        } else {
+            Strings netString = new ShellExecute().execute(String.format("cat /proc/%s/net/dev", pid), "/").console;
+            int rcv = 0;
+            int snd = 0;
+            for (String networkCard : NETWORK_CARD_TYPES) {
+                Strings netLine = netString.grep(networkCard);
+                if (netLine.strings.size() != 1) {
+                    continue;
+                }
+                rcv += Integer.valueOf(netLine.getRow("\\s{1,}", 2).strings.get(0));
+                snd += Integer.valueOf(netLine.getRow("\\s{1,}", 10).strings.get(0));
+            }
+            if (MODE_RCV.equals(mode)) {
+                traffic = rcv;
+            } else if (MODE_SND.equals(mode)) {
+                traffic = snd;
+            }
         }
         return traffic;
     }
