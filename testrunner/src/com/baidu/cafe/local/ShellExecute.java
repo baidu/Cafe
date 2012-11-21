@@ -36,21 +36,12 @@ import java.util.concurrent.Future;
 public class ShellExecute {
 
     public class CommandResult {
-        public int               ret     = 0;
-        public ArrayList<String> console = new ArrayList<String>();
+        public int     ret     = 0;
+        public Strings console = new Strings(new ArrayList<String>());
 
         public CommandResult() {
         }
 
-        public ArrayList<String> grep(String str) {
-            ArrayList<String> ret = new ArrayList<String>();
-            for (String line : console) {
-                if (line.contains(str)) {
-                    ret.add(line);
-                }
-            }
-            return ret;
-        }
     }
 
     /**
@@ -72,7 +63,7 @@ public class ShellExecute {
             in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = null;
             while ((line = in.readLine()) != null) {
-                cr.console.add(line);
+                cr.console.strings.add(line);
             }
         } catch (IOException e) {
             e.printStackTrace();
