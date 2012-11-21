@@ -1314,7 +1314,7 @@ public class LocalLib extends SoloEx {
     public void takeActivitySnapshot() {
         Time localTime = new Time("Asia/Hong_Kong");
         localTime.setToNow();
-        String fileName = localTime.format("%Y-%m-%d_%H:%M:%S");
+        String fileName = localTime.format("%Y-%m-%d_%H-%M-%S");
 
         String path = "/data/data/" + getCurrentActivity().getPackageName() + "/cafe";
         File cafe = new File(path);
