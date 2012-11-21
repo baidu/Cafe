@@ -418,7 +418,7 @@ public class LocalLib extends SoloEx {
      *            e.g. "/sdcard"
      * @return the result string of the command
      */
-    public static CommandResult runShellOnDevice(String command, String directory) {
+    public CommandResult runShellOnDevice(String command, String directory) {
         return new ShellExecute().execute(command, directory);
     }
 
