@@ -16,6 +16,7 @@
 
 package com.baidu.cafe.local;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +37,6 @@ import android.content.res.Resources;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
@@ -46,6 +46,7 @@ import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Checkable;
 import android.widget.CheckedTextView;
 import android.widget.DatePicker;
@@ -56,6 +57,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.baidu.cafe.CafeTestCase;
+import com.baidu.cafe.local.ShellExecute.CommandResult;
 import com.baidu.cafe.mockclient.MockConstant;
 import com.baidu.cafe.mockclient.MockHelper;
 
@@ -73,17 +75,16 @@ import dalvik.system.DexFile;
  */
 
 public class LocalLib extends SoloEx {
-    public final static int      SEARCHMODE_COMPLETE_MATCHING = 1;
-    public final static int      SEARCHMODE_DEFAULT           = 1;
-    public final static int      SEARCHMODE_INCLUDE_MATCHING  = 2;
-    public final static int      WAIT_INTERVAL                = 1000;
-    private final static boolean DEBUG                        = true;
+    public final static int SEARCHMODE_COMPLETE_MATCHING = 1;
+    public final static int SEARCHMODE_DEFAULT           = 1;
+    public final static int SEARCHMODE_INCLUDE_MATCHING  = 2;
+    public final static int WAIT_INTERVAL                = 1000;
 
-    private boolean              mHasBegin                    = false;
-    private ArrayList<View>      mViews                       = null;
-    private Instrumentation      mInstrumentation;
-    private Activity             mActivity;
-    private Context              mContext                     = null;
+    private boolean         mHasBegin                    = false;
+    private ArrayList<View> mViews                       = null;
+    private Instrumentation mInstrumentation;
+    private Activity        mActivity;
+    private Context         mContext                     = null;
 
     public LocalLib(Instrumentation instrumentation, Activity activity) {
         super(instrumentation, activity);
@@ -93,7 +94,7 @@ public class LocalLib extends SoloEx {
     }
 
     private void print(String message) {
-        if (DEBUG) {
+        if (Log.IS_DEBUG) {
             Log.i("LocalLib", message);
         }
     }
@@ -219,7 +220,8 @@ public class LocalLib extends SoloEx {
      * @return listener object; null means no listeners has been found
      */
     public Object getListener(View view, String fieldName) {
-        int level = countLevelFromView(view);
+        int level = view instanceof AdapterView ? countLevelFromViewToFather(view, AdapterView.class)
+                : countLevelFromViewToFather(view, View.class);
         if (-1 == level) {
             return null;
         }
@@ -238,20 +240,22 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * find parent until parent is android.view.View or java.lang.Object
+     * find parent until parent is father or java.lang.Object(to the end)
      * 
      * @param view
      *            target view
-     * @return positive means level from android.view.View; -1 means not found
+     * @param father
+     *            target father
+     * @return positive means level from father; -1 means not found
      */
-    private int countLevelFromView(View view) {
+    private int countLevelFromViewToFather(View view, Class father) {
         int level = 0;
         Class originalClass = view.getClass();
         // find its parent
         while (true) {
             if (originalClass.equals(Object.class)) {
                 return -1;
-            } else if (originalClass.equals(View.class)) {
+            } else if (originalClass.equals(father)) {
                 return level;
             } else {
                 level++;
@@ -414,8 +418,8 @@ public class LocalLib extends SoloEx {
      *            e.g. "/sdcard"
      * @return the result string of the command
      */
-    public String runShellOnDevice(String[] command, String directory) {
-        return ShellExecute.execute(command, directory);
+    public static CommandResult runShellOnDevice(String command, String directory) {
+        return new ShellExecute().execute(command, directory);
     }
 
     /**
@@ -1304,37 +1308,37 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * Take an activity snapshot named 'fileName+timestamp', and place it in
-     * this apk's folder.
+     * Take an activity snapshot named 'timestamp', and you can get it by adb
+     * pull /data/data/'packagename'/cafe/xxxxx.jpg.
+     */
+    public void takeActivitySnapshot() {
+        Time localTime = new Time("Asia/Hong_Kong");
+        localTime.setToNow();
+        String fileName = localTime.format("%Y-%m-%d_%H:%M:%S");
+
+        String path = "/data/data/" + getCurrentActivity().getPackageName() + "/cafe";
+        File cafe = new File(path);
+        if (!cafe.exists()) {
+            cafe.mkdir();
+            runShellOnDevice("chmod 777 " + path, "/");
+        }
+        takeActivitySnapshot(path + "/" + fileName + ".jpg");
+    }
+
+    /**
+     * Take an activity snapshot.
      * 
      * @param fileName
      *            file name
      */
     public void takeActivitySnapshot(String fileName) {
-        Time localTime = new Time("Asia/Hong_Kong");
-        localTime.setToNow();
-        fileName += localTime.format("%Y-%m-%d-%H-%M-%S");
-
-        String savePath = "/data/data/" + getCurrentActivity().getPackageName() + "/" + fileName + ".jpg";
-        print("save snapshot, file is in " + savePath);
-
-        View view = (View) invoke(mViewFetcher, "getActiveDecorView"); // mViewFetcher.getActiveDecorView();
-        SnapshotHelper.takeViewSnapshot(view, savePath);
-    }
-
-    /**
-     * Take an activity snapshot
-     * 
-     * @param path
-     *            path
-     * @param fileName
-     *            file name
-     */
-    public void takeActivitySnapshot(String path, String fileName) {
-        String savePath = path + fileName + ".jpg";
-        print("Save snapshot, file is in " + savePath);
-        View view = (View) invoke(mViewFetcher, "getActiveDecorView"); // mViewFetcher.getActiveDecorView();
-        SnapshotHelper.takeViewSnapshot(view, savePath);
+        print("Save snapshot, file is " + fileName);
+        View view = getWindowDecorViews()[0];
+        if (view != null) {
+            SnapshotHelper.takeViewSnapshot(view, fileName);
+        } else {
+            print("view == null at takeActivitySnapshot!");
+        }
     }
 
     /**

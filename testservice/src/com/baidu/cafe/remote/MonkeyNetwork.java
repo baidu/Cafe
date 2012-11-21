@@ -78,13 +78,13 @@ public class MonkeyNetwork {
         String command = String.format("%s %s %s", "key", type, keyCode);
         sendCommand(command);
     }
-    
-    public void type(String str){
+
+    public void type(String str) {
         String command = String.format("%s %s", "type", str);
         sendCommand(command);
     }
-    
-    public void done(){
+
+    public void done() {
         sendCommand("done");
     }
 
@@ -145,6 +145,7 @@ public class MonkeyNetwork {
         }
     }
 
+    // Start monkey requires android.permission.SET_ACTIVITY_WATCHER which is owned by shell not app_xx
     private void start(final int port) {
         new Thread(new Runnable() {
             public void run() {

@@ -2,7 +2,6 @@ package com.baidu.cafe.local;
 
 import java.util.ArrayList;
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
@@ -113,6 +112,8 @@ public class FPSTracer {
     }
 
     private static void print(String msg) {
-        Log.i("FPS", msg);
+        if (Log.IS_DEBUG) {
+            Log.i("FPS", msg);
+        }
     }
 }

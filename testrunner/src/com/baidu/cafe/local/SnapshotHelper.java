@@ -16,7 +16,6 @@
 
 package com.baidu.cafe.local;
 
-import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,10 +31,9 @@ import android.graphics.Bitmap;
  * @todo
  */
 public class SnapshotHelper {
-    private static final boolean DEBUG = true;
 
     private static void print(String message) {
-        if (DEBUG && message != null) {
+        if (Log.IS_DEBUG && message != null) {
             Log.i("SnapshotHelper", message);
         }
     }
@@ -56,6 +54,7 @@ public class SnapshotHelper {
                 } catch (Exception e2) {
                 }
             }
+            FileUtils.setPermissions(savePath, FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IRWXO, -1, -1);
         }
     }
 

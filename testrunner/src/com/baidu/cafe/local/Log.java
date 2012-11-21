@@ -30,6 +30,7 @@ import android.test.ActivityInstrumentationTestCase2;
  * @todo
  */
 public class Log {
+    public final static boolean                     IS_DEBUG     = true;
 
     private static ActivityInstrumentationTestCase2 mTestcase    = null;
 

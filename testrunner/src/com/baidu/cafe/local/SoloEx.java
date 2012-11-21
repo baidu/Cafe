@@ -25,7 +25,6 @@ import com.jayway.android.robotium.solo.Solo;
 
 import android.app.Activity;
 import android.app.Instrumentation;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -35,8 +34,6 @@ import android.view.View;
  * @todo
  */
 public class SoloEx extends Solo {
-
-    private static final boolean  DEBUG                        = true;
 
     // In order to use the Non-Public-Class of robotium project, we have to
     // define the following member variables as Object
@@ -199,10 +196,7 @@ public class SoloEx extends Solo {
             }
             return field.get(owner);
         } catch (Exception e) {
-            print("getField error:");
-            if (DEBUG) {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
             return null;
         }
     }
@@ -238,28 +232,26 @@ public class SoloEx extends Solo {
             print("invoke error:");
             print("name: " + name);
             print("owner: " + owner.toString());
-            if (DEBUG) {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
             return null;
         }
     }
 
     private void print(String message) {
-        if (DEBUG && message != null) {
+        if (Log.IS_DEBUG && message != null) {
             Log.d("SoloEx", message);
         }
     }
 
     /**
-     * Returns an {@code ArrayList} of {@code View}s of the specified {@code
-     * Class} located in the current {@code Activity}.
+     * Returns an {@code ArrayList} of {@code View}s of the specified
+     * {@code Class} located in the current {@code Activity}.
      * 
      * @param classToFilterBy
      *            return all instances of this class, e.g. {@code Button.class}
      *            or {@code GridView.class}
-     * @return an {@code ArrayList} of {@code View}s of the specified {@code
-     *         Class} located in the current {@code Activity}
+     * @return an {@code ArrayList} of {@code View}s of the specified
+     *         {@code Class} located in the current {@code Activity}
      */
     public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy) {
         return (ArrayList<T>) invoke(mViewFetcher, "getCurrentViews", new Class[] { Class.class },
