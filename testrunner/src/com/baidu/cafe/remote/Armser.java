@@ -1288,7 +1288,7 @@ public class Armser {
     public String runShellOnDevice(String[] command, String directory) {
         String str = null;
         try {
-            str = iArms.executeOnDevice(command, directory);
+            str = iArms.runShellOnDevice(command, directory);
         } catch (RemoteException e) {
             e.printStackTrace();
         } finally {
