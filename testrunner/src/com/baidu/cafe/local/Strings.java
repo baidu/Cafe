@@ -30,8 +30,8 @@ public class Strings {
         for (String line : strings) {
             String[] rows = line.split(regularExpression);
             if (rows.length < rowNumber) {
-                throw new ArrayIndexOutOfBoundsException(String.format("rows.length[%s] < rowNumber[%s]", rows.length,
-                        rowNumber));
+                throw new ArrayIndexOutOfBoundsException(String.format("rows.length(%s) < rowNumber(%s) line:%s",
+                        rows.length, rowNumber, line));
             }
             ret.add(rows[rowNumber - 1]);
         }

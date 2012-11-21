@@ -39,7 +39,8 @@ public class NetworkUtils {
 
     public ArrayList<Integer> getPidsByPackageName(String packageName) {
         ArrayList<Integer> pids = new ArrayList<Integer>();
-        ArrayList<String> pidStrings = new ShellExecute().execute("ps", "/").console.grep(packageName).getRow("\t", 2).strings;
+        ArrayList<String> pidStrings = new ShellExecute().execute("ps", "/").console.grep(packageName).getRow(
+                "\\s{1,}", 2).strings;
         for (String pid : pidStrings) {
             pids.add(Integer.valueOf(pid));
         }
