@@ -41,6 +41,16 @@ public class ShellExecute {
 
         public CommandResult() {
         }
+
+        public ArrayList<String> grep(String str) {
+            ArrayList<String> ret = new ArrayList<String>();
+            for (String line : console) {
+                if (line.contains(str)) {
+                    ret.add(line);
+                }
+            }
+            return ret;
+        }
     }
 
     /**

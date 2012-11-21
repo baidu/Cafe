@@ -149,7 +149,7 @@ public class MonkeyNetwork {
     private void start(final int port) {
         new Thread(new Runnable() {
             public void run() {
-                ShellExecute.execute(new String[] { "monkey", "--port", String.format("%s", port), "-v", "-v" }, "/");
+//                ShellExecute.execute(new String[] { "monkey", "--port", String.format("%s", port), "-v", "-v" }, "/");
             }
         }).start();
 
