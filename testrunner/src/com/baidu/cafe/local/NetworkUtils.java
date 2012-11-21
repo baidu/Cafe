@@ -50,6 +50,13 @@ public class NetworkUtils {
         return pids;
     }
 
+    /**
+     * invoked 100 times costs 4800ms on Nexus One
+     * 
+     * @param packageName
+     * @param mode
+     * @return
+     */
     private static int getPackageTraffic(String packageName, String mode) {
         if ((!MODE_RCV.equals(mode)) && (!MODE_SND.equals(mode))) {
             print("mode invaild:" + mode);
