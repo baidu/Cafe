@@ -141,7 +141,7 @@ public class ShellExecute {
         }
     }
 
-    public CommandResult execute(final String command, final String directory, int timeout) {
+    public CommandResult execute(final String command, final String directory, long timeout) {
         CommandResult ret = (CommandResult) doInTimeout(new CallBack<CommandResult>() {
             @Override
             public CommandResult runInTimeout() throws InterruptedException {

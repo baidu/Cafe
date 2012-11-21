@@ -22,11 +22,11 @@ public class NetworkUtils {
 
     private static void print(String message) {
         if (Log.IS_DEBUG && message != null) {
-            Log.i("SnapshotHelper", message);
+            Log.i("NetworkUtils", message);
         }
     }
 
-    public int getUidByPid(int pid) {
+    public static int getUidByPid(int pid) {
         int uid = -1;
         try {
             ArrayList<String> uidString = new ShellExecute().execute(String.format("cat /proc/%s/status", pid), "/").console
@@ -39,7 +39,7 @@ public class NetworkUtils {
         return uid;
     }
 
-    public ArrayList<Integer> getPidsByPackageName(String packageName) {
+    public static ArrayList<Integer> getPidsByPackageName(String packageName) {
         ArrayList<Integer> pids = new ArrayList<Integer>();
         ArrayList<String> pidStrings = new ShellExecute().execute("ps", "/").console.grep(packageName).getRow(
                 "\\s{1,}", 2).strings;
@@ -50,11 +50,7 @@ public class NetworkUtils {
         return pids;
     }
 
-    /**
-     * @param packageName
-     * @return
-     */
-    private int getPackageTraffic(String packageName, String mode) {
+    private static int getPackageTraffic(String packageName, String mode) {
         if ((!MODE_RCV.equals(mode)) && (!MODE_SND.equals(mode))) {
             print("mode invaild:" + mode);
             return -1;
@@ -98,11 +94,11 @@ public class NetworkUtils {
         return traffic;
     }
 
-    public int getPackageRcv(String packageName) {
+    public static int getPackageRcv(String packageName) {
         return getPackageTraffic(packageName, MODE_RCV);
     }
 
-    public int getPackageSnd(String packageName) {
+    public static int getPackageSnd(String packageName) {
         return getPackageTraffic(packageName, MODE_SND);
     }
 }

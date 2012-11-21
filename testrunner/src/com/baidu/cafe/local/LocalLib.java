@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -29,7 +28,6 @@ import junit.framework.Assert;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -37,14 +35,9 @@ import android.content.res.Resources;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnKeyListener;
-import android.view.View.OnLongClickListener;
-import android.view.View.OnTouchListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Checkable;
@@ -58,8 +51,6 @@ import android.widget.TimePicker;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.ShellExecute.CommandResult;
-import com.baidu.cafe.mockclient.MockConstant;
-import com.baidu.cafe.mockclient.MockHelper;
 
 import dalvik.system.DexFile;
 
@@ -418,8 +409,24 @@ public class LocalLib extends SoloEx {
      *            e.g. "/sdcard"
      * @return the result string of the command
      */
-    public CommandResult runShellOnDevice(String command, String directory) {
+    public CommandResult executeOnDevice(String command, String directory) {
         return new ShellExecute().execute(command, directory);
+    }
+
+    /**
+     * run shell command with tested app's permission
+     * 
+     * @param command
+     *            e.g. new String[]{"ls", "-l"}
+     * @param directory
+     *            e.g. "/sdcard"
+     * @param timeout
+     *            Millis. e.g. 5000 means 5s
+     * 
+     * @return the result string of the command
+     */
+    public CommandResult executeOnDevice(String command, String directory, long timeout) {
+        return new ShellExecute().execute(command, directory, timeout);
     }
 
     /**
@@ -765,31 +772,6 @@ public class LocalLib extends SoloEx {
         myTime = SystemClock.uptimeMillis();
         mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime, MotionEvent.ACTION_UP, pointerNumber,
                 pointerIds, pointerPositions, 0, 0.1f, 0.1f, 0, 0, 0, 0));
-    }
-
-    /**
-     * config mock server
-     * 
-     * @param filePath
-     * @param caseId
-     * @return
-     * @throws IOException
-     * @throws UnknownHostException
-     */
-    public String configMockServer(String filePath, String caseId) throws UnknownHostException, IOException {
-        print("startup mock server");
-        Intent myIntent = new Intent(MockConstant.MOCK_ACTIVITY_NAME);
-        mActivity.startService(myIntent);
-        try {
-            print("wait 10 seconds");
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            print(e.getMessage());
-        }
-        print("startup mock server end!");
-
-        MockHelper helper = new MockHelper();
-        return helper.config(filePath, caseId);
     }
 
     /**
@@ -1320,7 +1302,7 @@ public class LocalLib extends SoloEx {
         File cafe = new File(path);
         if (!cafe.exists()) {
             cafe.mkdir();
-            runShellOnDevice("chmod 777 " + path, "/");
+            executeOnDevice("chmod 777 " + path, "/");
         }
         takeActivitySnapshot(path + "/" + fileName + ".jpg");
     }
@@ -1400,5 +1382,25 @@ public class LocalLib extends SoloEx {
      */
     public void traceFPS() {
         FPSTracer.trace(this);
+    }
+
+    /**
+     * count how many bytes from tcp app received until now
+     * 
+     * @param packageName
+     * @return
+     */
+    public int getPackageRcv(String packageName) {
+        return NetworkUtils.getPackageRcv(packageName);
+    }
+
+    /**
+     * count how many bytes from tcp app sent until now
+     * 
+     * @param packageName
+     * @return
+     */
+    public int getPackageSnd(String packageName) {
+        return NetworkUtils.getPackageSnd(packageName);
     }
 }
