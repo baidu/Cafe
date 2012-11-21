@@ -55,7 +55,7 @@ public class NetworkUtils {
      * @return
      */
     private int getPackageTraffic(String packageName, String mode) {
-        if ((!MODE_RCV.equals(mode)) || (!MODE_SND.equals(mode))) {
+        if ((!MODE_RCV.equals(mode)) && (!MODE_SND.equals(mode))) {
             print("mode invaild:" + mode);
             return -1;
         }
@@ -63,6 +63,7 @@ public class NetworkUtils {
         int traffic = 0;
         ArrayList<Integer> pids = getPidsByPackageName(packageName);
         if (pids.size() < 1) {
+            print("pids.size() < 1");
             return -1;
         }
         int pid = pids.get(0);
@@ -70,6 +71,7 @@ public class NetworkUtils {
         if (Build.VERSION.SDK_INT >= 14) {// API Level: 14. Android 4.0
             int uid = getUidByPid(pid);
             if (-1 == uid) {
+                print("-1 == uid");
                 return -1;
             }
             String ret = new ShellExecute().execute(String.format("cat /proc/uid_stat/%s/%s", uid, mode), "/").console.strings

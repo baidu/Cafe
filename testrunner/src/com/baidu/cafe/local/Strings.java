@@ -28,7 +28,7 @@ public class Strings {
     public Strings getRow(String regularExpression, int rowNumber) throws ArrayIndexOutOfBoundsException {
         ArrayList<String> ret = new ArrayList<String>();
         for (String line : strings) {
-            String[] rows = line.split(regularExpression);
+            String[] rows = line.trim().split(regularExpression);
             if (rows.length < rowNumber) {
                 throw new ArrayIndexOutOfBoundsException(String.format("rows.length(%s) < rowNumber(%s) line:%s",
                         rows.length, rowNumber, line));
