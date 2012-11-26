@@ -1293,14 +1293,18 @@ public class LocalLib extends SoloEx {
      * Take an activity snapshot named 'timestamp', and you can get it by adb
      * pull /data/data/'packagename'/cafe/xxxxx.jpg.
      */
-    public void screenShotNamedDate() {
-        Time localTime = new Time("Asia/Hong_Kong");
-        localTime.setToNow();
-        screenShot(localTime.format("%Y-%m-%d_%H-%M-%S"));
+    public void screenShotNamedTimeStamp() {
+        screenShot(getTimeStamp());
     }
 
-    public void screenShotNamedMethod(String method) {
-        screenShot(method);
+    public void screenShotNamedPrefix(String prefix) {
+        screenShot(prefix + "_" + getTimeStamp());
+    }
+
+    private String getTimeStamp() {
+        Time localTime = new Time("Asia/Hong_Kong");
+        localTime.setToNow();
+        return localTime.format("%Y-%m-%d_%H-%M-%S");
     }
 
     public void screenShot(String fileName) {
