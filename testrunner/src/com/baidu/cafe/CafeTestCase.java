@@ -24,6 +24,7 @@ import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
 import com.baidu.cafe.local.Log;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.ShellExecute;
+import com.baidu.cafe.local.ShellExecute.CommandResult;
 
 import android.app.Activity;
 import android.graphics.Rect;
@@ -93,8 +94,10 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
 
     // chmod for com.zutubi.android.junitreport.JUnitReportTestRunner
     private void initForJUnitReportTestRunner() {
-        if (new ShellExecute().execute("chmod 777 -R /data/data/" + mPackageName, "/").ret != 0) {
+        CommandResult cr = new ShellExecute().execute("chmod 777 -R /data/data/" + mPackageName, "/");
+        if (cr.ret != 0) {
             Log.i("initForJUnitReportTestRunner failed");
+            Log.i(cr.console.toString());
         }
     }
 
