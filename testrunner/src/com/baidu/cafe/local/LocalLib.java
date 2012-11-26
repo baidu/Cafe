@@ -1289,39 +1289,21 @@ public class LocalLib extends SoloEx {
         return null;
     }
 
-    private String getAddress() {
-        String methodName = null;
-        int distance = 4;
-
-        while (true) {
-            methodName = Thread.currentThread().getStackTrace()[distance].getMethodName();
-            if (!methodName.startsWith("assert") && !methodName.startsWith("fail")) {
-                break;
-            }
-            distance++;
-            if (distance > 10) {
-                Log.d("distance > 10");
-                break;
-            }
-        }
-
-        return methodName;
-    }
-
     /**
      * Take an activity snapshot named 'timestamp', and you can get it by adb
      * pull /data/data/'packagename'/cafe/xxxxx.jpg.
      */
-    public void takeActivitySnapshot() {
+    public void screenShotNamedDate() {
         Time localTime = new Time("Asia/Hong_Kong");
         localTime.setToNow();
-        String fileName = localTime.format("%Y-%m-%d_%H-%M-%S");
+        screenShot(localTime.format("%Y-%m-%d_%H-%M-%S"));
+    }
 
-        StackTraceElement[] ss = Thread.currentThread().getStackTrace();
-        for (StackTraceElement s : ss) {
-            print(s.getMethodName());
-        }
+    public void screenShotNamedMethod(String method) {
+        screenShot(method);
+    }
 
+    public void screenShot(String fileName) {
         String path = "/data/data/" + getCurrentActivity().getPackageName() + "/cafe";
         File cafe = new File(path);
         if (!cafe.exists()) {
@@ -1333,15 +1315,12 @@ public class LocalLib extends SoloEx {
 
     /**
      * Take an activity snapshot.
-     * 
-     * @param fileName
-     *            file name
      */
-    public void takeActivitySnapshot(String fileName) {
-        print("Save snapshot, file is " + fileName);
+    public void takeActivitySnapshot(String path) {
+        print("Save snapshot, file is " + path);
         View view = getWindowDecorViews()[0];
         if (view != null) {
-            SnapshotHelper.takeViewSnapshot(view, fileName);
+            SnapshotHelper.takeViewSnapshot(view, path);
         } else {
             print("view == null at takeActivitySnapshot!");
         }
