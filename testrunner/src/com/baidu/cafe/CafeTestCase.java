@@ -78,7 +78,6 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         local = new LocalLib(getInstrumentation(), getActivity());
         orignal = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new CafeExceptionHandler(orignal, this));
-        // Log.printBuildVersion(arms);
         if (remote.isViewServerOpen()) {
             mIsViewServerOpen = true;
             mTearDownHelper = new TearDownHelper(remote);
@@ -87,6 +86,9 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             Log.i("View server is not open !!!");
             Log.i("remote.clickXXX() can not work !!!");
         }
+        
+        // chmod for com.zutubi.android.junitreport.JUnitReportTestRunner
+        Log.i("TEST:"+mPackageName);
     }
 
     private int getStatusBarHeight() {
