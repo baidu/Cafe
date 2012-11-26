@@ -97,7 +97,9 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         CommandResult cr = new ShellExecute().execute("chmod 777 -R /data/data/" + mPackageName, "/");
         if (cr.ret != 0) {
             Log.i("initForJUnitReportTestRunner failed");
-            Log.i(cr.console.toString());
+            for (String line : cr.console.strings) {
+                Log.i(line);
+            }
         }
     }
 
