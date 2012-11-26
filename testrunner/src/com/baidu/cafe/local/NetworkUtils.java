@@ -66,7 +66,7 @@ public class NetworkUtils {
         int traffic = 0;
         ArrayList<Integer> pids = getPidsByPackageName(packageName);
         if (pids.size() < 1) {
-            print("pids.size() < 1");
+            print("pids.size() < 1;get pids by [" + packageName + "] failed");
             return -1;
         }
         int pid = pids.get(0);

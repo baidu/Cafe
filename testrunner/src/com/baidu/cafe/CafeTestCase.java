@@ -37,7 +37,7 @@ import android.view.Window;
 public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTestCase2<T> implements ExceptionCallBack {
 
     protected static Armser                 remote                       = null;
-    protected LocalLib                      local                        = null;
+    protected static LocalLib                      local                        = null;
 
     public final static int                 SCREEN_ORIENTATION_PORTRAIT  = 0;
     public final static int                 SCREEN_ORIENTATION_LANDSCAPE = 1;
@@ -135,24 +135,6 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         Log.i(TAG, "XXXXXXXXXX--my exceptionhandler callback--XXXXXXXXXXXXXXXXXXXX");
     }
 
-    private static String getAddress() {
-        String methodName = null;
-        int distance = 4;
-
-        while (true) {
-            methodName = Thread.currentThread().getStackTrace()[distance].getMethodName();
-            if (!methodName.startsWith("assert") && !methodName.startsWith("fail")) {
-                break;
-            }
-            distance++;
-            if (distance > 10) {
-                Log.d("distance > 10");
-                break;
-            }
-        }
-
-        return mPackageName + "." + methodName;
-    }
 
     /**
      * rewrite junit.framework.assert copy from
@@ -197,7 +179,8 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
      * Fails a test with the given message.
      */
     static public void fail(String message) {
-        remote.screenCap(getAddress());
+//        remote.screenCap(getAddress());
+        local.takeActivitySnapshot();
         throw new AssertionFailedError(message);
     }
 

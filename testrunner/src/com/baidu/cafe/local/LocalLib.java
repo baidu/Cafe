@@ -1289,6 +1289,25 @@ public class LocalLib extends SoloEx {
         return null;
     }
 
+    private String getAddress() {
+        String methodName = null;
+        int distance = 4;
+
+        while (true) {
+            methodName = Thread.currentThread().getStackTrace()[distance].getMethodName();
+            if (!methodName.startsWith("assert") && !methodName.startsWith("fail")) {
+                break;
+            }
+            distance++;
+            if (distance > 10) {
+                Log.d("distance > 10");
+                break;
+            }
+        }
+
+        return methodName;
+    }
+
     /**
      * Take an activity snapshot named 'timestamp', and you can get it by adb
      * pull /data/data/'packagename'/cafe/xxxxx.jpg.
@@ -1297,6 +1316,11 @@ public class LocalLib extends SoloEx {
         Time localTime = new Time("Asia/Hong_Kong");
         localTime.setToNow();
         String fileName = localTime.format("%Y-%m-%d_%H-%M-%S");
+
+        StackTraceElement[] ss = Thread.currentThread().getStackTrace();
+        for (StackTraceElement s : ss) {
+            print(s.getMethodName());
+        }
 
         String path = "/data/data/" + getCurrentActivity().getPackageName() + "/cafe";
         File cafe = new File(path);
