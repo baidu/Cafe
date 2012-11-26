@@ -23,6 +23,8 @@ import com.baidu.cafe.remote.Armser;
 import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
 import com.baidu.cafe.local.Log;
 import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.local.ShellExecute;
+
 import android.app.Activity;
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
@@ -70,12 +72,12 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mPackageName = this.getClass().getName();
         Log.init(this, Log.DEFAULT);
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
         remote.setStatusBarHeight(getStatusBarHeight());
         local = new LocalLib(getInstrumentation(), getActivity());
+        mPackageName = getCurrentActivity().getPackageName();
         orignal = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new CafeExceptionHandler(orignal, this));
         if (remote.isViewServerOpen()) {
@@ -86,9 +88,14 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             Log.i("View server is not open !!!");
             Log.i("remote.clickXXX() can not work !!!");
         }
-        
-        // chmod for com.zutubi.android.junitreport.JUnitReportTestRunner
-        Log.i("TEST:"+mPackageName);
+        initForJUnitReportTestRunner();
+    }
+
+    // chmod for com.zutubi.android.junitreport.JUnitReportTestRunner
+    private void initForJUnitReportTestRunner() {
+        if (new ShellExecute().execute("chmod 777 -R /data/data/" + mPackageName, "/").ret != 0) {
+            Log.i("initForJUnitReportTestRunner failed");
+        }
     }
 
     private int getStatusBarHeight() {
