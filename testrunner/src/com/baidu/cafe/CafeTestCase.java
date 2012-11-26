@@ -77,7 +77,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         remote.bind(getInstrumentation().getContext());
         remote.setStatusBarHeight(getStatusBarHeight());
         local = new LocalLib(getInstrumentation(), getActivity());
-        mPackageName = getCurrentActivity().getPackageName();
+        mPackageName = local.getCurrentActivity().getPackageName();
         orignal = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new CafeExceptionHandler(orignal, this));
         if (remote.isViewServerOpen()) {
