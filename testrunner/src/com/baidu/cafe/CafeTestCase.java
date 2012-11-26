@@ -174,7 +174,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         assertFalse(null, condition);
     }
 
-    private String getAddress() {
+    private static String getAddress() {
         String methodName = null;
         int distance = 4;
 
