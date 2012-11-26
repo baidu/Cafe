@@ -94,7 +94,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
 
     // chmod for com.zutubi.android.junitreport.JUnitReportTestRunner
     private void initForJUnitReportTestRunner() {
-        CommandResult cr = new ShellExecute().execute("chmod 777 -R /data/data/" + mPackageName, "/");
+        CommandResult cr = new ShellExecute().execute("chmod 777 -R /data/data/" + mPackageName + "/files", "/");
         if (cr.ret != 0) {
             Log.i("initForJUnitReportTestRunner failed");
             for (String line : cr.console.strings) {
