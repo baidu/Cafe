@@ -191,10 +191,11 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private static String getAddress() {
         String methodName = null;
         int distance = 4;
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
         while (true) {
-            methodName = Thread.currentThread().getStackTrace()[distance].getMethodName();
-            if (methodName.startsWith("test")) {
+            methodName = stackTrace[distance].getMethodName();
+            if (stackTrace[distance + 1].getMethodName().equals("invokeNative")) {
                 break;
             }
             distance++;
