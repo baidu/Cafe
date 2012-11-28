@@ -1297,8 +1297,8 @@ public class LocalLib extends SoloEx {
         screenShot(getTimeStamp());
     }
 
-    public void screenShotNamedPrefix(String prefix) {
-        screenShot(prefix + "_" + getTimeStamp());
+    public void screenShotNamedSuffix(String suffix) {
+        screenShot(getTimeStamp() + "_" + suffix);
     }
 
     private String getTimeStamp() {

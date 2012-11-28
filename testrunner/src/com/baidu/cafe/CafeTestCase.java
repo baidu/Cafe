@@ -211,7 +211,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
      * Fails a test with the given message.
      */
     static public void fail(String message) {
-        local.screenShotNamedPrefix(getAddress());
+        local.screenShotNamedSuffix(getAddress());
         throw new AssertionFailedError(message);
     }
 
