@@ -54,7 +54,8 @@ public class SnapshotHelper {
                 } catch (Exception e2) {
                 }
             }
-            FileUtils.setPermissions(savePath, FileUtils.S_IRWXU | FileUtils.S_IRWXG | FileUtils.S_IRWXO, -1, -1);
+            FileUtils.setPermissions(savePath, FileUtils.S_IRWXU | FileUtils.S_IRWXG
+                    | FileUtils.S_IRWXO, -1, -1);
         }
     }
 
@@ -127,7 +128,8 @@ public class SnapshotHelper {
             colors[i] = r | g | b;
         }
 
-        Bitmap bitmap = Bitmap.createBitmap(colors, screenWidth, screenHeight, Bitmap.Config.RGB_565);
+        Bitmap bitmap = Bitmap.createBitmap(colors, screenWidth, screenHeight,
+                Bitmap.Config.RGB_565);
         outputToFile(savePath, bitmap);
     }
 }

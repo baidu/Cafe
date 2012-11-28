@@ -16,18 +16,18 @@
 
 package com.baidu.cafe.remote;
 
-public class MyIntent  {
+public class MyIntent {
 
-	public static final String ACTION_PROXY = "com.baidu.arms.Proxy";
-	public static final String ACTION_INSTALL_BEGIN = "com.baidu.arms.install.begin";
-	public static final String ACTION_INSTALL_END = "com.baidu.arms.install.end";
-	public static final String ACTION_SCREENCAP_BEGIN = "com.baidu.arms.screencap.begin";
-	public static final String ACTION_SCREENCAP_END = "com.baidu.arms.screencap.end";
-	public static final String EXTRA_INSTALL = "installapk";
-	public static final String EXTRA_SCREENCAP = "screencap";
+    public static final String ACTION_PROXY           = "com.baidu.arms.Proxy";
+    public static final String ACTION_INSTALL_BEGIN   = "com.baidu.arms.install.begin";
+    public static final String ACTION_INSTALL_END     = "com.baidu.arms.install.end";
+    public static final String ACTION_SCREENCAP_BEGIN = "com.baidu.arms.screencap.begin";
+    public static final String ACTION_SCREENCAP_END   = "com.baidu.arms.screencap.end";
+    public static final String EXTRA_INSTALL          = "installapk";
+    public static final String EXTRA_SCREENCAP        = "screencap";
 
-	public static final String EXTRA_OPERATION = "operation";
-	public static final String EXTRA_ARG1 = "arg1";
+    public static final String EXTRA_OPERATION        = "operation";
+    public static final String EXTRA_ARG1             = "arg1";
 
-	public static final String EXTRA_FINISH = "finish";
+    public static final String EXTRA_FINISH           = "finish";
 }

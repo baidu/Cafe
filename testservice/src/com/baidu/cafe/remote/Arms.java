@@ -72,8 +72,8 @@ public class Arms extends Service {
             return;
         }
         try {
-            Object result = ReflectHelper.invoke(new ArmsBinder(this), intent.getStringExtra("function"),
-                    intent.getStringExtra("parameter"));
+            Object result = ReflectHelper.invoke(new ArmsBinder(this),
+                    intent.getStringExtra("function"), intent.getStringExtra("parameter"));
             Log.print(null == result ? "" : result.toString());
         } catch (Exception e) {
             e.printStackTrace();

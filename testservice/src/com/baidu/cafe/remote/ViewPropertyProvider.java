@@ -120,8 +120,8 @@ public class ViewPropertyProvider {
             return false;
         }
 
-        ArrayList<String> targetLines = dumpTargetViews("DUMP " + processNumber, "layout_type", "TYPE_INPUT_METHOD",
-                SEARCHMODE_INCLUDE_MATCHING, 1, true, false);
+        ArrayList<String> targetLines = dumpTargetViews("DUMP " + processNumber, "layout_type",
+                "TYPE_INPUT_METHOD", SEARCHMODE_INCLUDE_MATCHING, 1, true, false);
         if (null == targetLines || targetLines.size() == 0) {
             return false;
         }
@@ -139,8 +139,8 @@ public class ViewPropertyProvider {
      */
     public boolean getStatusBarIconState(String slotName) {
         String processNumber = getProcessNumber("StatusBar");
-        ArrayList<String> targetLines = dumpTargetViews("DUMP " + processNumber, "name", "StatusBarIconView",
-                SEARCHMODE_COMPLETE_MATCHING, 20, true, false);
+        ArrayList<String> targetLines = dumpTargetViews("DUMP " + processNumber, "name",
+                "StatusBarIconView", SEARCHMODE_COMPLETE_MATCHING, 20, true, false);
 
         for (String targetLine : targetLines) {
             String sName = getPropertyValue(targetLine, "mSlot");
@@ -177,10 +177,10 @@ public class ViewPropertyProvider {
      * 
      * @return String[] getValues
      */
-    public String[] getViewProperties(String searchKey, String searchValue, int searchMode, int targetNumber,
-            String[] getKeys, boolean getNew) {
-        ArrayList<String[]> viewsProperties = getViewsProperties(searchKey, searchValue, searchMode, targetNumber,
-                getKeys, getNew, false);
+    public String[] getViewProperties(String searchKey, String searchValue, int searchMode,
+            int targetNumber, String[] getKeys, boolean getNew) {
+        ArrayList<String[]> viewsProperties = getViewsProperties(searchKey, searchValue,
+                searchMode, targetNumber, getKeys, getNew, false);
         return viewsProperties.size() < targetNumber ? null : viewsProperties.get(targetNumber - 1);
     }
 
@@ -204,9 +204,10 @@ public class ViewPropertyProvider {
      *            true if u just wanna dump visible views
      * @return all of view properties dumped
      */
-    public ArrayList<String[]> getViewsProperties(String searchKey, String searchValue, int searchMode,
-            int targetNumber, String[] getKeys, boolean getNew, boolean onlyVisible) {
-        if (null == searchKey || searchKey.isEmpty() || null == searchValue || null == getKeys || targetNumber < 1) {
+    public ArrayList<String[]> getViewsProperties(String searchKey, String searchValue,
+            int searchMode, int targetNumber, String[] getKeys, boolean getNew, boolean onlyVisible) {
+        if (null == searchKey || searchKey.isEmpty() || null == searchValue || null == getKeys
+                || targetNumber < 1) {
             Log.print("getViewProperties()'s arguments is not correct!");
             return null;
         }
@@ -215,8 +216,8 @@ public class ViewPropertyProvider {
 
         // get target lines
         // Log.print("searchKey:" + searchKey + "\nsearchValue:" + searchValue + "\ntargetNumber:" + targetNumber);
-        ArrayList<String> targetLines = dumpTargetViews("DUMP -1", searchKey, searchValue, searchMode, targetNumber,
-                getNew, onlyVisible);
+        ArrayList<String> targetLines = dumpTargetViews("DUMP -1", searchKey, searchValue,
+                searchMode, targetNumber, getNew, onlyVisible);
         for (String line : targetLines) {
             Log.print("target line:" + line);
         }
@@ -434,7 +435,8 @@ public class ViewPropertyProvider {
         String[] fathersLevel = newLines[viewIndex].split("\\.");
         for (int j = 0; j < fathersLevel.length; j++) {
             // Log.print("at level " + new Integer(fathersLevel[j]));
-            relativeCoordinates = getRelativeCoordinates(mDumpedLines.get(new Integer(fathersLevel[j])).trim());
+            relativeCoordinates = getRelativeCoordinates(mDumpedLines.get(
+                    new Integer(fathersLevel[j])).trim());
 
             // accumulate relative coordinates
             if (relativeCoordinates != null) {
@@ -447,10 +449,12 @@ public class ViewPropertyProvider {
         x += relativeCoordinates[2];
         y += relativeCoordinates[3];
 
-        String widthString = getPropertyValue(mDumpedLines.get(new Integer(fathersLevel[fathersLevel.length - 1]))
-                .trim(), "getWidth()");
-        String heightString = getPropertyValue(mDumpedLines.get(new Integer(fathersLevel[fathersLevel.length - 1]))
-                .trim(), "getHeight()");
+        String widthString = getPropertyValue(
+                mDumpedLines.get(new Integer(fathersLevel[fathersLevel.length - 1])).trim(),
+                "getWidth()");
+        String heightString = getPropertyValue(
+                mDumpedLines.get(new Integer(fathersLevel[fathersLevel.length - 1])).trim(),
+                "getHeight()");
         if (heightString == null || widthString == null) {
             return null;
         }
@@ -511,9 +515,11 @@ public class ViewPropertyProvider {
         if (processNumber != null) {
             ArrayList<String> targetLines = dumpTargetViews("DUMP " + processNumber, "layout_type",
                     "TYPE_INPUT_METHOD", SEARCHMODE_INCLUDE_MATCHING, 1, true, false);
-            int heightOfInputMethod = Integer.valueOf(getPropertyValue(targetLines.get(0), "getHeight()"));
+            int heightOfInputMethod = Integer.valueOf(getPropertyValue(targetLines.get(0),
+                    "getHeight()"));
             if (heightOfInputMethod > 0) {
-                mSystemLib.setSystemProperties("persist.sys.inputmethod.h", "" + heightOfInputMethod);
+                mSystemLib.setSystemProperties("persist.sys.inputmethod.h", ""
+                        + heightOfInputMethod);
                 return heightOfInputMethod;
             }
         }
@@ -546,8 +552,8 @@ public class ViewPropertyProvider {
      * @param onlyVisible
      * @return lines which are selected
      */
-    private ArrayList<String> searchDumpedLines(String searchKey, String searchValue, int searchMode, int targetNumber,
-            boolean onlyVisible) {
+    private ArrayList<String> searchDumpedLines(String searchKey, String searchValue,
+            int searchMode, int targetNumber, boolean onlyVisible) {
         ArrayList<String> targetLines = new ArrayList<String>();
         if (null == mDumpedLines || mDumpedLines.size() == 0) {
             Log.print("mDupmedLines is empty!\nThere is no dump to find.");
@@ -611,8 +617,8 @@ public class ViewPropertyProvider {
      * @param onlyVisible
      * @return the lines dumped
      */
-    private ArrayList<String> dumpLinesFromViewServer(String command, String searchKey, String searchValue,
-            int searchMode, int targetNumber, boolean onlyVisible) {
+    private ArrayList<String> dumpLinesFromViewServer(String command, String searchKey,
+            String searchValue, int searchMode, int targetNumber, boolean onlyVisible) {
         // init
         mDumpedLines = new ArrayList<String>();
         ArrayList<String> targetLines = new ArrayList<String>();
@@ -690,33 +696,39 @@ public class ViewPropertyProvider {
         int heightOffset = 0;
 
         if (mRootHeight < mHeight || mRootWidth < mWidth) {
-            if (("TYPE_BASE_APPLICATION".equals(mRootLayoutType) && "WRAP_CONTENT".equals(mRootLayoutWidth))
+            if (("TYPE_BASE_APPLICATION".equals(mRootLayoutType) && "WRAP_CONTENT"
+                    .equals(mRootLayoutWidth))
                     || "TYPE_SYSTEM_ALERT".equals(mRootLayoutType)
-                    || ("TYPE_APPLICATION".equals(mRootLayoutType) && !"MATCH_PARENT".equals(mRootLayoutWidth))) {
+                    || ("TYPE_APPLICATION".equals(mRootLayoutType) && !"MATCH_PARENT"
+                            .equals(mRootLayoutWidth))) {
                 // middle of screen
                 // some dialogs are TYPE_APPLICATION, some are TYPE_BASE_APPLICATION(such as dialog of launcher)
                 // and all of full screen activity is TYPE_BASE_APPLICATION
-                heightOffset = (mHeight - mHeightOfStatusBar - mRootHeight) / 2 + mHeightOfStatusBar;
+                heightOffset = (mHeight - mHeightOfStatusBar - mRootHeight) / 2
+                        + mHeightOfStatusBar;
 
                 // get input method state
                 if (getInputMethodStatus()) {
-                    heightOffset = (mHeight - mHeightOfStatusBar - getInputMethodHeight() - mRootHeight) / 2
-                            + mHeightOfStatusBar;
+                    heightOffset = (mHeight - mHeightOfStatusBar - getInputMethodHeight() - mRootHeight)
+                            / 2 + mHeightOfStatusBar;
                 }
                 Log.print("middle of screen");
             } else if ("TYPE_APPLICATION_PANEL".equals(mRootLayoutType)
                     || "TYPE_APPLICATION_ATTACHED_DIALOG".equals(mRootLayoutType)
-                    || ("TYPE_APPLICATION".equals(mRootLayoutType) && "MATCH_PARENT".equals(mRootLayoutWidth))) {
+                    || ("TYPE_APPLICATION".equals(mRootLayoutType) && "MATCH_PARENT"
+                            .equals(mRootLayoutWidth))) {
                 // bottom of screen
                 // heightOffset = mHeight - mHeightOfStatusBar - height;
                 heightOffset = mHeight - mRootHeight;
                 Log.print("bottom of screen");
             } else if ("TYPE_APPLICATION_SUB_PANEL".equals(mRootLayoutType)
-                    || ("TYPE_BASE_APPLICATION".equals(mRootLayoutType) && "MATCH_PARENT".equals(mRootLayoutWidth))) {
+                    || ("TYPE_BASE_APPLICATION".equals(mRootLayoutType) && "MATCH_PARENT"
+                            .equals(mRootLayoutWidth))) {
                 // top of screen
                 heightOffset = 0;
                 Log.print("top of screen");
-            } else if ("TYPE_STATUS_BAR_PANEL".equals(mRootLayoutType) || "TYPE_KEYGUARD".equals(mRootLayoutType)) {
+            } else if ("TYPE_STATUS_BAR_PANEL".equals(mRootLayoutType)
+                    || "TYPE_KEYGUARD".equals(mRootLayoutType)) {
                 // at status bar expanded or keyguard
                 heightOffset = mHeightOfStatusBar;
                 Log.print("at status bar expanded or keyguard");
@@ -836,8 +848,8 @@ public class ViewPropertyProvider {
      *            true if u just wanna dump visible views
      * @return all of dumped views
      */
-    private ArrayList<String> dumpTargetViews(String command, String searchKey, String searchValue, int searchMode,
-            int targetNumber, boolean getNew, boolean onlyVisible) {
+    private ArrayList<String> dumpTargetViews(String command, String searchKey, String searchValue,
+            int searchMode, int targetNumber, boolean getNew, boolean onlyVisible) {
         mTargetIndexes = new ArrayList<Integer>();
 
         // getViewLines from dumped lines
@@ -845,7 +857,8 @@ public class ViewPropertyProvider {
             return searchDumpedLines(searchKey, searchValue, searchMode, targetNumber, onlyVisible);
         }
 
-        return dumpLinesFromViewServer(command, searchKey, searchValue, searchMode, targetNumber, onlyVisible);
+        return dumpLinesFromViewServer(command, searchKey, searchValue, searchMode, targetNumber,
+                onlyVisible);
     }
 
     /**
@@ -872,7 +885,8 @@ public class ViewPropertyProvider {
     private int getInputMethodHeight() {
         int heightOfInputMethod;
         if (hasValue("persist.sys.inputmethod.h")) {
-            heightOfInputMethod = Integer.valueOf(mSystemLib.getSystemProperties("persist.sys.inputmethod.h"));
+            heightOfInputMethod = Integer.valueOf(mSystemLib
+                    .getSystemProperties("persist.sys.inputmethod.h"));
         } else {
             heightOfInputMethod = dumpInputMethodHeight();
             mSystemLib.setSystemProperties("persist.sys.inputmethod.h", "" + heightOfInputMethod);

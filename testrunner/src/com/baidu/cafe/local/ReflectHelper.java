@@ -52,9 +52,10 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static Object invoke(Object owner, int classLevel, String methodName, Class[] parameterTypes,
-            Object[] parameters) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
+    public static Object invoke(Object owner, int classLevel, String methodName,
+            Class[] parameterTypes, Object[] parameters) throws SecurityException,
+            NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException {
         // get class
         Class ownerclass = getOwnerclass(owner, classLevel);
 
@@ -84,8 +85,9 @@ public class ReflectHelper {
      * @throws IllegalArgumentException
      * @throws SecurityException
      */
-    public static Object invoke(Object object, String function, String parameter) throws SecurityException,
-            IllegalArgumentException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public static Object invoke(Object object, String function, String parameter)
+            throws SecurityException, IllegalArgumentException, NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException {
         System.out.println(function + "(" + parameter + ")");
         Class[] types = null;
         Object[] values = null;
@@ -112,7 +114,8 @@ public class ReflectHelper {
 
     private static void getParameters(String parameterString) {
         String type = parameterString.substring(0, parameterString.indexOf(":"));
-        String value = parameterString.substring(parameterString.indexOf(":") + 1, parameterString.length());
+        String value = parameterString.substring(parameterString.indexOf(":") + 1,
+                parameterString.length());
 
         if ("String".equalsIgnoreCase(type)) {
             mType = String.class;
@@ -151,8 +154,9 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static void setObjectProperty(Object owner, int classLevel, String fieldName, Object value)
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public static void setObjectProperty(Object owner, int classLevel, String fieldName,
+            Object value) throws SecurityException, NoSuchFieldException, IllegalArgumentException,
+            IllegalAccessException {
         // get class
         Class ownerclass = getOwnerclass(owner, classLevel);
 
@@ -179,8 +183,9 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static Object getObjectProperty(Object owner, int classLevel, String fieldName) throws SecurityException,
-            NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public static Object getObjectProperty(Object owner, int classLevel, String fieldName)
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException,
+            IllegalAccessException {
         // get class
         Class ownerclass = getOwnerclass(owner, classLevel);
 
@@ -250,8 +255,8 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel, Class valueType, Object value)
-            throws IllegalArgumentException, IllegalAccessException {
+    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel,
+            Class valueType, Object value) throws IllegalArgumentException, IllegalAccessException {
         ArrayList<String> names = new ArrayList<String>();
         Class ownerclass = getOwnerclass(owner, classLevel);
 
@@ -261,7 +266,8 @@ public class ReflectHelper {
                 field.setAccessible(true);
             }
 
-            if (getClassName(field.getType()).equals(getClassName(valueType)) && field.get(owner).equals(value)) {
+            if (getClassName(field.getType()).equals(getClassName(valueType))
+                    && field.get(owner).equals(value)) {
                 names.add(field.getName());
             }
         }

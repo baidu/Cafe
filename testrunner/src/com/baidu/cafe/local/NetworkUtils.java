@@ -13,8 +13,8 @@ import android.os.Build;
 public class NetworkUtils {
     private final static String   MODE_RCV           = "tcp_rcv";
     private final static String   MODE_SND           = "tcp_snd";
-    private final static String[] NETWORK_CARD_TYPES = new String[] { "eth0:", "wlan0:", "tiwlan0:", "svnet0:",
-            "rmnet0:", "mlan0:"                     };
+    private final static String[] NETWORK_CARD_TYPES = new String[] { "eth0:", "wlan0:",
+            "tiwlan0:", "svnet0:", "rmnet0:", "mlan0:" };
 
     public NetworkUtils() {
 
@@ -29,8 +29,8 @@ public class NetworkUtils {
     public static int getUidByPid(int pid) {
         int uid = -1;
         try {
-            ArrayList<String> uidString = new ShellExecute().execute(String.format("cat /proc/%s/status", pid), "/").console
-                    .grep("Uid").strings;
+            ArrayList<String> uidString = new ShellExecute().execute(
+                    String.format("cat /proc/%s/status", pid), "/").console.grep("Uid").strings;
             uid = Integer.valueOf(uidString.get(0).split("\t")[1]);
         } catch (Exception e) {
             print("Get uid failed!");
@@ -41,8 +41,8 @@ public class NetworkUtils {
 
     public static ArrayList<Integer> getPidsByPackageName(String packageName) {
         ArrayList<Integer> pids = new ArrayList<Integer>();
-        ArrayList<String> pidStrings = new ShellExecute().execute("ps", "/").console.grep(packageName).getRow(
-                "\\s{1,}", 2).strings;
+        ArrayList<String> pidStrings = new ShellExecute().execute("ps", "/").console.grep(
+                packageName).getRow("\\s{1,}", 2).strings;
         for (String pid : pidStrings) {
             pids.add(Integer.valueOf(pid));
         }
@@ -77,11 +77,13 @@ public class NetworkUtils {
                 print("-1 == uid");
                 return -1;
             }
-            String ret = new ShellExecute().execute(String.format("cat /proc/uid_stat/%s/%s", uid, mode), "/").console.strings
+            String ret = new ShellExecute().execute(
+                    String.format("cat /proc/uid_stat/%s/%s", uid, mode), "/").console.strings
                     .get(0);
             traffic = Integer.valueOf(ret);
         } else {
-            Strings netString = new ShellExecute().execute(String.format("cat /proc/%s/net/dev", pid), "/").console;
+            Strings netString = new ShellExecute().execute(
+                    String.format("cat /proc/%s/net/dev", pid), "/").console;
             int rcv = 0;
             int snd = 0;
             for (String networkCard : NETWORK_CARD_TYPES) {

@@ -581,10 +581,11 @@ public class ArmsBinder extends IRemoteArms.Stub {
         mUILib.clickLongScreen(x, y, time);
     }
 
-    public boolean clickView(String searchKey, String searchValue, int searchMode, int index, int timeout, int xOffset,
-            int yOffset, int longClickTime, String scrollViewId, int scrollViewIndex) {
-        return mUILib.clickView(searchKey, searchValue, searchMode, index, timeout, xOffset, yOffset, longClickTime,
-                scrollViewId, scrollViewIndex);
+    public boolean clickView(String searchKey, String searchValue, int searchMode, int index,
+            int timeout, int xOffset, int yOffset, int longClickTime, String scrollViewId,
+            int scrollViewIndex) {
+        return mUILib.clickView(searchKey, searchValue, searchMode, index, timeout, xOffset,
+                yOffset, longClickTime, scrollViewId, scrollViewIndex);
     }
 
     public void drag(float fromX, float toX, float fromY, float toY, int stepCount) {
@@ -663,10 +664,10 @@ public class ArmsBinder extends IRemoteArms.Stub {
         return mViewPropertyProvider.getInputMethodStatus();
     }
 
-    public String[] getViewProperties(String searchKey, String searchValue, int searchMode, int targetNumber,
-            String[] getKeys, boolean getNew) {
-        return mViewPropertyProvider.getViewProperties(searchKey, searchValue, searchMode, targetNumber, getKeys,
-                getNew);
+    public String[] getViewProperties(String searchKey, String searchValue, int searchMode,
+            int targetNumber, String[] getKeys, boolean getNew) {
+        return mViewPropertyProvider.getViewProperties(searchKey, searchValue, searchMode,
+                targetNumber, getKeys, getNew);
     }
 
     public String getFocusedWindow() {

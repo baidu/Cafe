@@ -1,5 +1,9 @@
 package com.baidu.cafe.local;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +47,7 @@ public class ViewRecorder {
     private ArrayList<String>                        mAllViews                 = new ArrayList<String>();
     private Queue<RecordMotionEvent>                 mMotionEventQueue         = new LinkedList<RecordMotionEvent>();
     private LocalLib                                 local                     = null;
+    private File                                     mRecord                   = null;
 
     class RecordMotionEvent {
         public View        view;
@@ -62,11 +67,25 @@ public class ViewRecorder {
 
     public ViewRecorder(LocalLib local) {
         this.local = local;
+        init();
     }
 
     private void print(String message) {
         if (Log.IS_DEBUG) {
             Log.i("ViewRecorder", message);
+        }
+    }
+
+    private void init() {
+        String path = "/data/data/" + local.getCurrentActivity().getPackageName() + "/cafe";
+        File cafe = new File(path);
+        if (!cafe.exists()) {
+            cafe.mkdir();
+            local.executeOnDevice("chmod 777 " + path, "/");
+        }
+        mRecord = new File(path + "/record");
+        if (mRecord.exists()) {
+            mRecord.delete();
         }
     }
 
@@ -204,14 +223,20 @@ public class ViewRecorder {
     }
 
     private boolean hookOnClickListener(View view) {
-        OnClickListener onClickListener = (OnClickListener) local.getListener(view, "mOnClickListener");
+        OnClickListener onClickListener = (OnClickListener) local.getListener(view,
+                "mOnClickListener");
         if (null != onClickListener) {
             print("hookClickListener [" + view + "(" + local.getViewText(view) + ")]");
             mOnClickListeners.put(getViewID(view), onClickListener);
             view.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    generateCodeForClick(v);
+                    String code = "//view.text=" + local.getViewText(v) + "\n"
+                            + "clickOnView(findViewById(new Integer(" + v.getId() + ")));";
+                    print(code);
+                    writeToFile(String.format("local.clickOn(viewClass, index);", v.getClass(),
+                            local.getCurrentViewIndex(v)));
+
                     OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
                     if (onClickListener != null) {
                         onClickListener.onClick(v);
@@ -226,7 +251,8 @@ public class ViewRecorder {
     }
 
     private void hookOnLongClickListener(View view) {
-        OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
+        OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view,
+                "mOnLongClickListener");
         if (null != onLongClickListener) {
             print("hookOnLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
             mOnLongClickListeners.put(getViewID(view), onLongClickListener);
@@ -242,7 +268,8 @@ public class ViewRecorder {
     }
 
     private void hookOnTouchListener(View view) {
-        OnTouchListener onTouchListener = (OnTouchListener) local.getListener(view, "mOnTouchListener");
+        OnTouchListener onTouchListener = (OnTouchListener) local.getListener(view,
+                "mOnTouchListener");
         //        print("hookOnTouchListener [" + view + "(" + local.getViewText(view) + ")]"
         //                + (view instanceof ViewGroup ? "ViewGroup" : "View"));
         if (null != onTouchListener) {
@@ -276,8 +303,8 @@ public class ViewRecorder {
 
     private void addEvent(View v, MotionEvent event) {
         if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event))) {
-            print("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString() + "mMotionEventQueue.size="
-                    + mMotionEventQueue.size());
+            print("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
+                    + "mMotionEventQueue.size=" + mMotionEventQueue.size());
         }
     }
 
@@ -342,11 +369,15 @@ public class ViewRecorder {
         float fromY = down.motionEvent.getRawY();
         float toX = up.motionEvent.getRawX();
         float toY = up.motionEvent.getRawY();
-        print(String.format("Drag from (%s,%s) to (%s, %s) by step count %s", fromX, fromY, toX, toY, stepCount));
+        print(String.format("Drag from (%s,%s) to (%s, %s) by step count %s", fromX, fromY, toX,
+                toY, stepCount));
+        writeToFile(String.format("local.drag(%s, %s, %s, %s, %s);", fromX, toX, fromY, toY,
+                stepCount));
     }
 
     private void hookOnItemClickListener(AdapterView view) {
-        OnItemClickListener onItemClickListener = (OnItemClickListener) local.getListener(view, "mOnItemClickListener");
+        OnItemClickListener onItemClickListener = (OnItemClickListener) local.getListener(view,
+                "mOnItemClickListener");
 
         if (null != onItemClickListener) {
             print("hook AdapterView [" + view + "]");
@@ -372,8 +403,12 @@ public class ViewRecorder {
                  */
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    print("parent: " + parent + "view: " + view + "\t position: " + position + " click ");
-                    OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
+                    print("parent: " + parent + "view: " + view + "\t position: " + position
+                            + " click ");
+                    writeToFile(String.format("local.clickInList(%s, %s, false);", position,
+                            local.getCurrentViewIndex(parent)));
+                    OnItemClickListener onItemClickListener = mOnItemClickListeners
+                            .get(getViewID(parent));
                     if (onItemClickListener != null) {
                         onItemClickListener.onItemClick(parent, view, position, id);
                     } else {
@@ -395,9 +430,19 @@ public class ViewRecorder {
         return viewString.substring(viewString.indexOf("@"));
     }
 
-    private void generateCodeForClick(View view) {
-        String code = "//view.text=" + local.getViewText(view) + "\n" + "clickOnView(findViewById(new Integer("
-                + view.getId() + ")));";
-        print(code);
+    private void writeToFile(String line) {
+        if (null == line) {
+            return;
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(mRecord));
+            writer.write(line);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
     }
 }

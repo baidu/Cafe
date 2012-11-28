@@ -144,8 +144,8 @@ public class SystemLib {
         mPackageManager = mContext.getPackageManager();
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        mWakeLock = mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK,
-                "Test Acquired!");
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP
+                | PowerManager.SCREEN_DIM_WAKE_LOCK, "Test Acquired!");
         //mWakeLock = mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.FULL_WAKE_LOCK,
         //        "Test Acquired!");
         mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
@@ -155,8 +155,8 @@ public class SystemLib {
      * light up the screen
      */
     public void setScreenOn() {
-        mWakeLock = mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK,
-                "Test Acquired!");
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP
+                | PowerManager.SCREEN_DIM_WAKE_LOCK, "Test Acquired!");
         mWakeLock.acquire();
         mWakeLock.release();
     }
@@ -479,11 +479,12 @@ public class SystemLib {
                 Log.print("Regex did not match on /proc/version: " + procVersionStr);
                 return "Unavailable";
             } else if (m.groupCount() < 4) {
-                Log.print("Regex match on /proc/version only returned " + m.groupCount() + " groups");
+                Log.print("Regex match on /proc/version only returned " + m.groupCount()
+                        + " groups");
                 return "Unavailable";
             } else {
-                return (new StringBuilder(m.group(1)).append("\n").append(m.group(2)).append(" ").append(m.group(3))
-                        .append("\n").append(m.group(4))).toString();
+                return (new StringBuilder(m.group(1)).append("\n").append(m.group(2)).append(" ")
+                        .append(m.group(3)).append("\n").append(m.group(4))).toString();
             }
         } catch (IOException e) {
             Log.print("IO Exception when getting kernel version for Device Info screen\n" + e);
@@ -676,7 +677,8 @@ public class SystemLib {
      *            ------------------------------<br/>
      */
     public void setAudioVolumeDown(int streamType) {
-        mAudioManager.adjustStreamVolume(streamType, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
+        mAudioManager.adjustStreamVolume(streamType, AudioManager.ADJUST_LOWER,
+                AudioManager.FLAG_SHOW_UI);
     }
 
     /**
@@ -698,7 +700,8 @@ public class SystemLib {
      *            ------------------------------<br/>
      */
     public void setAudioVolumeUp(int streamType) {
-        mAudioManager.adjustStreamVolume(streamType, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI);
+        mAudioManager.adjustStreamVolume(streamType, AudioManager.ADJUST_RAISE,
+                AudioManager.FLAG_SHOW_UI);
     }
 
     /**
@@ -868,7 +871,8 @@ public class SystemLib {
      */
     // TODO: NEED TO CHECK
     public void writeLineToSdcard(String filename, String line) {
-        final String outputFile = Environment.getExternalStorageDirectory().toString() + "/" + filename;
+        final String outputFile = Environment.getExternalStorageDirectory().toString() + "/"
+                + filename;
         try {
             FileWriter fstream = null;
             fstream = new FileWriter(outputFile, true);
@@ -1012,7 +1016,8 @@ public class SystemLib {
      */
     public int getDisplayX() {
         DisplayMetrics dm = new DisplayMetrics();
-        ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+        ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                .getMetrics(dm);
         return dm.widthPixels;
     }
 
@@ -1023,7 +1028,8 @@ public class SystemLib {
      */
     public int getDisplayY() {
         DisplayMetrics dm = new DisplayMetrics();
-        ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+        ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                .getMetrics(dm);
         return dm.heightPixels;
     }
 
@@ -1034,7 +1040,8 @@ public class SystemLib {
      */
     public int getScreenBrightness() {
         try {
-            return Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+            return Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS);
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
             return -1;
@@ -1048,7 +1055,8 @@ public class SystemLib {
      */
     public int getScreenBrightnessMode() {
         try {
-            return Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+            return Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS_MODE);
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
             return -1;
@@ -1062,7 +1070,8 @@ public class SystemLib {
      *            : expected screen brightness mode
      */
     public void setScreenBrightnessMode(int mode) {
-        Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, mode);
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS_MODE, mode);
     }
 
     /**
@@ -1072,7 +1081,8 @@ public class SystemLib {
      * @param enabled
      */
     public void setLocationProviderEnabled(String provider, boolean enabled) {
-        Settings.Secure.setLocationProviderEnabled(mContext.getContentResolver(), provider, enabled);
+        Settings.Secure
+                .setLocationProviderEnabled(mContext.getContentResolver(), provider, enabled);
     }
 
     /**
@@ -1092,8 +1102,8 @@ public class SystemLib {
      */
     public boolean isAccelerometerRotationEnabled() {
         try {
-            int accelerometerRotationEnabled = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.ACCELEROMETER_ROTATION);
+            int accelerometerRotationEnabled = Settings.System.getInt(
+                    mContext.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION);
             return accelerometerRotationEnabled == 1;
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
@@ -1107,7 +1117,8 @@ public class SystemLib {
      * @param enabled
      */
     public void setAccelerometerRotationEnabled(boolean enabled) {
-        Settings.System.putInt(mContext.getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, enabled ? 1 : 0);
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.ACCELEROMETER_ROTATION, enabled ? 1 : 0);
     }
 
     /**
@@ -1116,7 +1127,8 @@ public class SystemLib {
      * @return
      */
     public boolean getBackgroundDataState() {
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getBackgroundDataSetting();
     }
 
@@ -1126,7 +1138,8 @@ public class SystemLib {
      * @param enabled
      */
     public void setBackgroundDataSetting(boolean enabled) {
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         cm.setBackgroundDataSetting(enabled);
         try {
             // wait for setBackgroundDataSetting completed
@@ -1192,7 +1205,8 @@ public class SystemLib {
      *            , 0 ~ 255
      */
     public void setScreenBrightness(int brightness) {
-        ((PowerManager) mContext.getSystemService(Context.POWER_SERVICE)).setBacklightBrightness(brightness);
+        ((PowerManager) mContext.getSystemService(Context.POWER_SERVICE))
+                .setBacklightBrightness(brightness);
     }
 
     /**
@@ -1217,7 +1231,8 @@ public class SystemLib {
      * get my phone number
      */
     public String getMyPhoneNumber() {
-        return ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE)).getLine1Number();
+        return ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE))
+                .getLine1Number();
     }
 
     /**
@@ -1299,7 +1314,8 @@ public class SystemLib {
      *         5: SIM_STATE_READY<br/>
      */
     public int getSimCardState() {
-        return ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE)).getSimState();
+        return ((TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE))
+                .getSimState();
     }
 
     /**
@@ -1323,7 +1339,8 @@ public class SystemLib {
      *            true means open; false means closed
      */
     public void setAirplaneMode(boolean enable) {
-        Settings.System.putInt(mContext.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, enable ? 1 : 0);
+        Settings.System.putInt(mContext.getContentResolver(), Settings.System.AIRPLANE_MODE_ON,
+                enable ? 1 : 0);
 
         // Post the intent
         Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
@@ -1335,7 +1352,8 @@ public class SystemLib {
      * set mobile data disabled
      */
     public void setDataConnectionDisabled() {
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         cm.setMobileDataEnabled(false);
     }
 
@@ -1343,7 +1361,8 @@ public class SystemLib {
      * set mobile data enabled
      */
     public void setDataConnectionEnabled() {
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         cm.setMobileDataEnabled(true);
     }
 
@@ -1452,7 +1471,8 @@ public class SystemLib {
      */
     @Deprecated
     public String getServerIP() {
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences(PREFERENCE_NAME, Activity.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(PREFERENCE_NAME,
+                Activity.MODE_PRIVATE);
         String str = sharedPreferences.getString("serverip", "");
         if (str.equals(""))
             return null;
@@ -1501,7 +1521,8 @@ public class SystemLib {
      * factory reset system with erase sdcard
      */
     public void factoryResetWithEraseSD() {
-        Intent intent = new Intent(com.android.internal.os.storage.ExternalStorageFormatter.FORMAT_AND_FACTORY_RESET);
+        Intent intent = new Intent(
+                com.android.internal.os.storage.ExternalStorageFormatter.FORMAT_AND_FACTORY_RESET);
         intent.setComponent(com.android.internal.os.storage.ExternalStorageFormatter.COMPONENT_NAME);
         mContext.startService(intent);
     }
@@ -1594,8 +1615,10 @@ public class SystemLib {
      *            : true if want to keep screen awake
      */
     public void setScreenStayAwake(boolean isAwake) {
-        Settings.System.putInt(mContext.getContentResolver(), Settings.System.STAY_ON_WHILE_PLUGGED_IN,
-                isAwake ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB) : 0);
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.STAY_ON_WHILE_PLUGGED_IN,
+                isAwake ? (BatteryManager.BATTERY_PLUGGED_AC | BatteryManager.BATTERY_PLUGGED_USB)
+                        : 0);
     }
 
     /**
@@ -1633,12 +1656,15 @@ public class SystemLib {
 
     public final BroadcastReceiver mReceiver = new BroadcastReceiver() {
                                                  @Override
-                                                 public void onReceive(Context context, Intent intent) {
-                                                     if (intent.getAction().equals(MyIntent.ACTION_INSTALL_BEGIN)) {
+                                                 public void onReceive(Context context,
+                                                         Intent intent) {
+                                                     if (intent.getAction().equals(
+                                                             MyIntent.ACTION_INSTALL_BEGIN)) {
                                                          //  mediascantext.setText("Media Scanner started scanning " + intent.getData().getPath());
                                                          isinstallapkfinish = false;
                                                          Log.print("begin to install apk");
-                                                     } else if (intent.getAction().equals(MyIntent.ACTION_INSTALL_END)) {
+                                                     } else if (intent.getAction().equals(
+                                                             MyIntent.ACTION_INSTALL_END)) {
                                                          //  mediascantext.setText("Media Scanner finished scanning " + intent.getData().getPath());  
                                                          //          sendBroadcast(new Intent("com.baidu.RES_SCAN_COMPLETED"));
                                                          isinstallapkfinish = true;
@@ -1755,7 +1781,8 @@ public class SystemLib {
     public int getNonMarketAppsAllowed() {
         int type = -1;
         try {
-            type = Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS);
+            type = Settings.Secure.getInt(mContext.getContentResolver(),
+                    Settings.Secure.INSTALL_NON_MARKET_APPS);
         } catch (SettingNotFoundException e) {
             e.printStackTrace();
         }
@@ -1769,8 +1796,8 @@ public class SystemLib {
      */
     public void setNonMarketAppsAllowed(boolean enabled) {
         try {
-            Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS, enabled ? 1
-                    : 0);
+            Settings.Secure.putInt(mContext.getContentResolver(),
+                    Settings.Secure.INSTALL_NON_MARKET_APPS, enabled ? 1 : 0);
         } catch (Exception e) {
             // eat it 
         }
@@ -1962,14 +1989,17 @@ public class SystemLib {
 
     public final BroadcastReceiver mscreencapReceiver = new BroadcastReceiver() {
                                                           @Override
-                                                          public void onReceive(Context context, Intent intent) {
-                                                              if (intent.getAction().equals(
-                                                                      MyIntent.ACTION_SCREENCAP_BEGIN)) {
+                                                          public void onReceive(Context context,
+                                                                  Intent intent) {
+                                                              if (intent
+                                                                      .getAction()
+                                                                      .equals(MyIntent.ACTION_SCREENCAP_BEGIN)) {
                                                                   //  mediascantext.setText("Media Scanner started scanning " + intent.getData().getPath());
                                                                   isscreencapfinish = false;
                                                                   Log.print("begin to screencap");
-                                                              } else if (intent.getAction().equals(
-                                                                      MyIntent.ACTION_SCREENCAP_END)) {
+                                                              } else if (intent
+                                                                      .getAction()
+                                                                      .equals(MyIntent.ACTION_SCREENCAP_END)) {
                                                                   //  mediascantext.setText("Media Scanner finished scanning " + intent.getData().getPath());  
                                                                   //          sendBroadcast(new Intent("com.baidu.RES_SCAN_COMPLETED"));
                                                                   isscreencapfinish = true;
@@ -2112,7 +2142,8 @@ public class SystemLib {
         values.put("apn_id", id);
         try {
             resolver.update(PREFERRED_APN_URI, values, null, null);
-            Cursor c = resolver.query(PREFERRED_APN_URI, new String[] { "name", "apn" }, "_id=" + id, null, null);
+            Cursor c = resolver.query(PREFERRED_APN_URI, new String[] { "name", "apn" }, "_id="
+                    + id, null, null);
             if (c != null) {
                 res = true;
                 c.close();
@@ -2128,8 +2159,8 @@ public class SystemLib {
      */
     public boolean isAdbEnabled() {
         try {
-            return Settings.Secure.getInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED) == 0 ? false
-                    : true;
+            return Settings.Secure.getInt(mContext.getContentResolver(),
+                    Settings.Secure.ADB_ENABLED) == 0 ? false : true;
         } catch (Exception e) {
             // eat it
         }
@@ -2138,7 +2169,8 @@ public class SystemLib {
 
     public void setAdbEnabled(boolean enabled) {
         try {
-            Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED, enabled ? 1 : 0);
+            Settings.Secure.putInt(mContext.getContentResolver(), Settings.Secure.ADB_ENABLED,
+                    enabled ? 1 : 0);
         } catch (Exception e) {
             // eat it
         }
@@ -2190,8 +2222,8 @@ public class SystemLib {
 
     public boolean isAirplaneModeOn() {
         try {
-            return Settings.Secure.getInt(mContext.getContentResolver(), Settings.System.AIRPLANE_MODE_ON) == 0 ? false
-                    : true;
+            return Settings.Secure.getInt(mContext.getContentResolver(),
+                    Settings.System.AIRPLANE_MODE_ON) == 0 ? false : true;
         } catch (Exception e) {
             // eat it
         }
@@ -2239,7 +2271,8 @@ public class SystemLib {
         final String[] activities = new String[] { "com.android.settings"/*packageName*/,
                 "com.miui.uac.AppListActivity", "com.htc.android.psclient.RestoreUsbSettings",
                 "com.baidu.android.ota.ui.UpdateSettings", "com.android.updater.UpdaterSettings",
-                "com.android.updater.MainActivity", "com.android.settings.framework.activity.HtcSettings" };
+                "com.android.updater.MainActivity",
+                "com.android.settings.framework.activity.HtcSettings" };
 
         new Thread(new Runnable() {
             public void run() {
@@ -2273,7 +2306,8 @@ public class SystemLib {
         intent.addCategory(Intent.CATEGORY_HOME);
         List<String> names = new ArrayList<String>();
 
-        for (ResolveInfo resolveInfo : mPackageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)) {
+        for (ResolveInfo resolveInfo : mPackageManager.queryIntentActivities(intent,
+                PackageManager.MATCH_DEFAULT_ONLY)) {
             names.add(resolveInfo.activityInfo.packageName);
             //            Log.print(resolveInfo.activityInfo.packageName);
         }
@@ -2284,7 +2318,8 @@ public class SystemLib {
      * Judge whether top activity is home.
      */
     public boolean isHome() {
-        return getHomePackageNames().contains(mActivityManager.getRunningTasks(1).get(0).topActivity.getPackageName());
+        return getHomePackageNames().contains(
+                mActivityManager.getRunningTasks(1).get(0).topActivity.getPackageName());
     }
 
     public boolean isLockPatternEnabled() {
@@ -2318,7 +2353,8 @@ public class SystemLib {
     public void processAppBatteryUsage() {
         create();
 
-        SensorManager sensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
+        SensorManager sensorManager = (SensorManager) mContext
+                .getSystemService(Context.SENSOR_SERVICE);
         final int which = mStatsType;
         final int speedSteps = mPowerProfile.getNumSpeedSteps();
         final double[] powerCpuNormal = new double[speedSteps];
@@ -2346,7 +2382,8 @@ public class SystemLib {
             long gpsTime = 0;
             if (processStats.size() > 0) {
                 // Process CPU time
-                for (Map.Entry<String, ? extends BatteryStats.Uid.Proc> ent : processStats.entrySet()) {
+                for (Map.Entry<String, ? extends BatteryStats.Uid.Proc> ent : processStats
+                        .entrySet()) {
                     Log.print("Process name = " + ent.getKey());
                     Uid.Proc ps = ent.getValue();
                     final long userTime = ps.getUserTime(which);
@@ -2390,7 +2427,8 @@ public class SystemLib {
 
             // Process wake lock usage
             Map<String, ? extends BatteryStats.Uid.Wakelock> wakelockStats = u.getWakelockStats();
-            for (Map.Entry<String, ? extends BatteryStats.Uid.Wakelock> wakelockEntry : wakelockStats.entrySet()) {
+            for (Map.Entry<String, ? extends BatteryStats.Uid.Wakelock> wakelockEntry : wakelockStats
+                    .entrySet()) {
                 Uid.Wakelock wakelock = wakelockEntry.getValue();
                 // Only care about partial wake locks since full wake locks
                 // are canceled when the user turns the screen off.
@@ -2417,7 +2455,8 @@ public class SystemLib {
 
             // Process Sensor usage
             Map<Integer, ? extends BatteryStats.Uid.Sensor> sensorStats = u.getSensorStats();
-            for (Map.Entry<Integer, ? extends BatteryStats.Uid.Sensor> sensorEntry : sensorStats.entrySet()) {
+            for (Map.Entry<Integer, ? extends BatteryStats.Uid.Sensor> sensorEntry : sensorStats
+                    .entrySet()) {
                 Uid.Sensor sensor = sensorEntry.getValue();
                 int sensorType = sensor.getHandle();
                 BatteryStats.Timer timer = sensor.getSensorTime();
@@ -2432,7 +2471,8 @@ public class SystemLib {
                     android.hardware.Sensor sensorData = sensorManager.getDefaultSensor(sensorType);
                     if (sensorData != null) {
                         multiplier = sensorData.getPower();
-                        Log.print("Got sensor " + sensorData.getName() + " with power = " + multiplier);
+                        Log.print("Got sensor " + sensorData.getName() + " with power = "
+                                + multiplier);
                     }
                 }
                 power += (multiplier * sensorTime) / 1000;
@@ -2513,16 +2553,19 @@ public class SystemLib {
         final long MOBILE_BPS = 200000; // TODO: Extract average bit rates from system
         final double WIFI_POWER = mPowerProfile.getAveragePower(PowerProfile.POWER_WIFI_ACTIVE) / 3600;
         final double MOBILE_POWER = mPowerProfile.getAveragePower(PowerProfile.POWER_RADIO_ACTIVE) / 3600;
-        final long mobileData = mStats.getMobileTcpBytesReceived(mStatsType) + mStats.getMobileTcpBytesSent(mStatsType);
-        final long wifiData = mStats.getTotalTcpBytesReceived(mStatsType) + mStats.getTotalTcpBytesSent(mStatsType)
-                - mobileData;
+        final long mobileData = mStats.getMobileTcpBytesReceived(mStatsType)
+                + mStats.getMobileTcpBytesSent(mStatsType);
+        final long wifiData = mStats.getTotalTcpBytesReceived(mStatsType)
+                + mStats.getTotalTcpBytesSent(mStatsType) - mobileData;
         final long radioDataUptimeMs = mStats.getRadioDataUptime() / 1000;
-        final long mobileBps = radioDataUptimeMs != 0 ? mobileData * 8 * 1000 / radioDataUptimeMs : MOBILE_BPS;
+        final long mobileBps = radioDataUptimeMs != 0 ? mobileData * 8 * 1000 / radioDataUptimeMs
+                : MOBILE_BPS;
 
         double mobileCostPerByte = MOBILE_POWER / (mobileBps / 8);
         double wifiCostPerByte = WIFI_POWER / (WIFI_BPS / 8);
         if (wifiData + mobileData != 0) {
-            return (mobileCostPerByte * mobileData + wifiCostPerByte * wifiData) / (mobileData + wifiData);
+            return (mobileCostPerByte * mobileData + wifiCostPerByte * wifiData)
+                    / (mobileData + wifiData);
         } else {
             return 0;
         }

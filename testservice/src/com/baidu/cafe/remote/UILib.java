@@ -67,8 +67,8 @@ public class UILib {
         switch (EVENT_SENDER) {
         case USE_INSTRUMENTATION:
             if (longPress) {
-                mInstrumentation.sendKeySync(KeyEvent.changeFlags(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode),
-                        KeyEvent.FLAG_LONG_PRESS));
+                mInstrumentation.sendKeySync(KeyEvent.changeFlags(new KeyEvent(
+                        KeyEvent.ACTION_DOWN, keyCode), KeyEvent.FLAG_LONG_PRESS));
             } else {
                 mInstrumentation.sendKeyDownUpSync(keyCode);
             }
@@ -79,7 +79,7 @@ public class UILib {
                 SystemClock.sleep((int) (ViewConfiguration.getLongPressTimeout() * 1.5f));
             }
             new MonkeyNetwork().key(MonkeyNetwork.UP, keyCode);
-//            new MonkeyNetwork().done();
+            //            new MonkeyNetwork().done();
             break;
         }
     }
@@ -101,8 +101,8 @@ public class UILib {
      */
     public boolean checkView(String searchKey, String searchValue, int searchMode, int targetNumber) {
         String[] getKeys = { "mID" };
-        ArrayList<String[]> getValues = mViewPropertyProvider.getViewsProperties(searchKey, searchValue, searchMode,
-                targetNumber, getKeys, true, true);
+        ArrayList<String[]> getValues = mViewPropertyProvider.getViewsProperties(searchKey,
+                searchValue, searchMode, targetNumber, getKeys, true, true);
         return targetNumber <= getValues.size();
     }
 
@@ -113,7 +113,7 @@ public class UILib {
      *            the text you wanna to enter
      */
     public void enterText(String text) {
-        
+
         switch (EVENT_SENDER) {
         case USE_INSTRUMENTATION:
             mInstrumentation.sendStringSync(text);
@@ -199,10 +199,11 @@ public class UILib {
      *            the given scroll view's index level
      * @return
      */
-    public boolean clickView(String searchKey, String searchValue, int searchMode, int index, int timeout, int xOffset,
-            int yOffset, int longClickTime, String scrollViewId, int scrollViewIndex) {
-        if (index < 0 || timeout < 0 || null == searchKey || searchKey.isEmpty() || null == searchValue
-                || longClickTime < 0 || scrollViewIndex < 0) {
+    public boolean clickView(String searchKey, String searchValue, int searchMode, int index,
+            int timeout, int xOffset, int yOffset, int longClickTime, String scrollViewId,
+            int scrollViewIndex) {
+        if (index < 0 || timeout < 0 || null == searchKey || searchKey.isEmpty()
+                || null == searchValue || longClickTime < 0 || scrollViewIndex < 0) {
             Log.print("clickView's param error");
             return false;
         }
@@ -221,17 +222,18 @@ public class UILib {
                 return false;
             }
 
-            getValues = mViewPropertyProvider.getViewsProperties(searchKey, searchValue, searchMode, index + 1,
-                    new String[] { "coordinate" }, true, true);
+            getValues = mViewPropertyProvider.getViewsProperties(searchKey, searchValue,
+                    searchMode, index + 1, new String[] { "coordinate" }, true, true);
             Log.print("getValues.size():" + getValues.size());
 
             if (getValues.size() > index) {
                 final String[] coordinates = getValues.get(index)[0].split("\\,");
-                if (scrollViewId != null && !isClickInList(coordinates, scrollViewId, scrollViewIndex)) {
+                if (scrollViewId != null
+                        && !isClickInList(coordinates, scrollViewId, scrollViewIndex)) {
                     Log.print("Scroll half height of scroll view, because target view is not completely visible.");
                     scrollList(DOWN, (float) 0.5, scrollViewId, scrollViewIndex);
-                    getValues = mViewPropertyProvider.getViewsProperties(searchKey, searchValue, searchMode, index + 1,
-                            new String[] { "coordinate" }, true, true);
+                    getValues = mViewPropertyProvider.getViewsProperties(searchKey, searchValue,
+                            searchMode, index + 1, new String[] { "coordinate" }, true, true);
                 }
                 break;
             }
@@ -274,14 +276,15 @@ public class UILib {
      */
     private boolean isClickInList(String[] coordinates, String scrollViewId, int scrollViewIndex) {
         int[] clickXY = getCenterXY(coordinates);
-        String[] xywh = getScrollProperty(scrollViewId, scrollViewIndex, "coordinate", false).split("\\,");
+        String[] xywh = getScrollProperty(scrollViewId, scrollViewIndex, "coordinate", false)
+                .split("\\,");
         int scrollViewX = Integer.valueOf(xywh[0]);
         int scrollViewY = Integer.valueOf(xywh[1]);
         int scrollViewWidth = Integer.valueOf(xywh[2]);
         int scrollViewHeight = Integer.valueOf(xywh[3]);
 
-        if (scrollViewX < clickXY[0] && clickXY[0] < scrollViewX + scrollViewWidth && scrollViewY < clickXY[1]
-                && clickXY[1] < scrollViewY + scrollViewHeight) {
+        if (scrollViewX < clickXY[0] && clickXY[0] < scrollViewX + scrollViewWidth
+                && scrollViewY < clickXY[1] && clickXY[1] < scrollViewY + scrollViewHeight) {
             return true;
         }
 
@@ -325,7 +328,8 @@ public class UILib {
      * @return
      */
     public void drag(float fromX, float toX, float fromY, float toY, int stepCount) {
-        Log.print("scroll from (" + (int) fromX + "," + (int) fromY + ") to (" + (int) toX + "," + (int) toY + ")");
+        Log.print("scroll from (" + (int) fromX + "," + (int) fromY + ") to (" + (int) toX + ","
+                + (int) toY + ")");
         touch(fromX, toX, fromY, toY, stepCount, 0);
     }
 
@@ -345,7 +349,8 @@ public class UILib {
      * @param longClickTime
      *            touch time length
      */
-    private void touch(float fromX, float toX, float fromY, float toY, int stepCount, int longClickTime) {
+    private void touch(float fromX, float toX, float fromY, float toY, int stepCount,
+            int longClickTime) {
         switch (EVENT_SENDER) {
         case USE_INSTRUMENTATION:
             touchUseInstrumentation(fromX, toX, fromY, toY, stepCount, longClickTime);
@@ -373,8 +378,8 @@ public class UILib {
      * @param longClickTime
      *            touch time length
      */
-    private void touchUseInstrumentation(float fromX, float toX, float fromY, float toY, int stepCount,
-            int longClickTime) {
+    private void touchUseInstrumentation(float fromX, float toX, float fromY, float toY,
+            int stepCount, int longClickTime) {
         if (stepCount > 0 && longClickTime > 0) {
             Log.print("touchUseInstrumentation's param error: stepCount > 0 && longClickTime > 0");
         }
@@ -391,22 +396,26 @@ public class UILib {
             yStep = (toY - fromY) / stepCount;
         }
 
-        mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0));
+        mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime,
+                MotionEvent.ACTION_DOWN, x, y, 0));
 
         for (int i = 0; i < stepCount; ++i) {
             y += yStep;
             x += xStep;
             eventTime = SystemClock.uptimeMillis();
-            mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_MOVE, x, y, 0));
+            mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime,
+                    MotionEvent.ACTION_MOVE, x, y, 0));
         }
 
         if (longClickTime > 0) {
-            mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_MOVE, x, y, 0));
+            mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime,
+                    MotionEvent.ACTION_MOVE, x, y, 0));
             SystemClock.sleep(longClickTime);
         }
 
         eventTime = SystemClock.uptimeMillis();
-        mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0));
+        mInstrumentation.sendPointerSync(MotionEvent.obtain(downTime, eventTime,
+                MotionEvent.ACTION_UP, x, y, 0));
     }
 
     /**
@@ -425,7 +434,8 @@ public class UILib {
      * @param longClickTime
      *            touch time length
      */
-    private void touchUseMonkey(float fromX, float toX, float fromY, float toY, int stepCount, int longClickTime) {
+    private void touchUseMonkey(float fromX, float toX, float fromY, float toY, int stepCount,
+            int longClickTime) {
         if (stepCount > 0 && longClickTime > 0) {
             Log.print("touchUseInstrumentation's param error: stepCount > 0 && longClickTime > 0");
         }
@@ -454,7 +464,7 @@ public class UILib {
         }
 
         new MonkeyNetwork().touch(MonkeyNetwork.UP, x, y);
-//        new MonkeyNetwork().done();
+        //        new MonkeyNetwork().done();
     }
 
     /**
@@ -468,8 +478,10 @@ public class UILib {
      *            index of the same id
      * @return true if more scrolling can be done
      */
-    public boolean scrollList(int direction, float scrollDistance, String scrollViewId, int scrollViewIndex) {
-        String[] xywh = getScrollProperty(scrollViewId, scrollViewIndex, "coordinate", false).split("\\,");
+    public boolean scrollList(int direction, float scrollDistance, String scrollViewId,
+            int scrollViewIndex) {
+        String[] xywh = getScrollProperty(scrollViewId, scrollViewIndex, "coordinate", false)
+                .split("\\,");
         int x = Integer.valueOf(xywh[0]);
         int y = Integer.valueOf(xywh[1]);
         int width = Integer.valueOf(xywh[2]);
@@ -503,7 +515,8 @@ public class UILib {
      */
     private int getScrollAmount(String scrollViewId, int scrollViewIndex, boolean getNew) {
         int scrollAmount = 0;
-        String mFirstPosition = getScrollProperty(scrollViewId, scrollViewIndex, "mFirstPosition", getNew);
+        String mFirstPosition = getScrollProperty(scrollViewId, scrollViewIndex, "mFirstPosition",
+                getNew);
         String mScrollY = getScrollProperty(scrollViewId, scrollViewIndex, "mScrollY", getNew);
 
         if (null == mFirstPosition) {
@@ -530,10 +543,11 @@ public class UILib {
      *            true if the view is already dumped, else false
      * @return the given scroll view's properties
      */
-    private String getScrollProperty(String scrollViewId, int scrollViewIndex, String getKey, boolean getNew) {
+    private String getScrollProperty(String scrollViewId, int scrollViewIndex, String getKey,
+            boolean getNew) {
         return mViewPropertyProvider.getViewsProperties("mID", scrollViewId,
-                ViewPropertyProvider.SEARCHMODE_COMPLETE_MATCHING, scrollViewIndex + 1, new String[] { getKey },
-                getNew, true).get(scrollViewIndex)[0];
+                ViewPropertyProvider.SEARCHMODE_COMPLETE_MATCHING, scrollViewIndex + 1,
+                new String[] { getKey }, getNew, true).get(scrollViewIndex)[0];
     }
 
 }

@@ -6,7 +6,7 @@ public class CafeExceptionHandler implements Thread.UncaughtExceptionHandler {
     public interface ExceptionCallBack {
         public void callWhenExceptionHappen();
     }
-    
+
     private final static String             TAG      = "MyAndroidRuntime";
 
     private ExceptionCallBack               mycafe   = null;

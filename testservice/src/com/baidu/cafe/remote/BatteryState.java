@@ -97,72 +97,83 @@ class BatteryState {
     public String getTechnology() {
         return mTechnology;
     }
-    
-    private BroadcastReceiver mBroadcastReceiver = 
-        new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
-                int status = intent.getIntExtra("status", 0);
-                int health = intent.getIntExtra("health", 0);
-                mPresent = intent.getBooleanExtra("present", false);
-                mLevel = intent.getIntExtra("level", 0);
-                mScale = intent.getIntExtra("scale", 0);
-                mIcon_small = intent.getIntExtra("icon-small", 0);
-                int plugged = intent.getIntExtra("plugged", 0);
-                mVoltage = intent.getIntExtra("voltage", 0);
-                mTemperature = intent.getIntExtra("temperature", 0);
-                mTechnology = intent.getStringExtra("technology");
 
-                switch (status) {
-                    case BatteryManager.BATTERY_STATUS_UNKNOWN:
-                      mStatus = "unknown";
-                      break;
-                    case BatteryManager.BATTERY_STATUS_CHARGING:
-                      mStatus = "charging";
-                      break;
-                    case BatteryManager.BATTERY_STATUS_DISCHARGING:
-                      mStatus = "discharging";
-                      break;
-                    case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
-                      mStatus = "not charging";
-                      break;
-                    case BatteryManager.BATTERY_STATUS_FULL:
-                      mStatus = "full";
-                      break;
-                }
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+                                                     @Override
+                                                     public void onReceive(Context context,
+                                                             Intent intent) {
+                                                         String action = intent.getAction();
+                                                         if (action
+                                                                 .equals(Intent.ACTION_BATTERY_CHANGED)) {
+                                                             int status = intent.getIntExtra(
+                                                                     "status", 0);
+                                                             int health = intent.getIntExtra(
+                                                                     "health", 0);
+                                                             mPresent = intent.getBooleanExtra(
+                                                                     "present", false);
+                                                             mLevel = intent
+                                                                     .getIntExtra("level", 0);
+                                                             mScale = intent
+                                                                     .getIntExtra("scale", 0);
+                                                             mIcon_small = intent.getIntExtra(
+                                                                     "icon-small", 0);
+                                                             int plugged = intent.getIntExtra(
+                                                                     "plugged", 0);
+                                                             mVoltage = intent.getIntExtra(
+                                                                     "voltage", 0);
+                                                             mTemperature = intent.getIntExtra(
+                                                                     "temperature", 0);
+                                                             mTechnology = intent
+                                                                     .getStringExtra("technology");
 
-                switch (health) {
-                    case BatteryManager.BATTERY_HEALTH_UNKNOWN:
-                      mHealth = "unknown";
-                      break;
-                    case BatteryManager.BATTERY_HEALTH_GOOD:
-                      mHealth = "good";
-                      break;
-                    case BatteryManager.BATTERY_HEALTH_OVERHEAT:
-                      mHealth = "overheat";
-                      break;
-                    case BatteryManager.BATTERY_HEALTH_DEAD:
-                      mHealth = "dead";
-                      break;
-                    case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
-                      mHealth = "voltage";
-                      break;
-                    case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
-                      mHealth = "unspecified failure";
-                      break;
-                }
+                                                             switch (status) {
+                                                             case BatteryManager.BATTERY_STATUS_UNKNOWN:
+                                                                 mStatus = "unknown";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_STATUS_CHARGING:
+                                                                 mStatus = "charging";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_STATUS_DISCHARGING:
+                                                                 mStatus = "discharging";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_STATUS_NOT_CHARGING:
+                                                                 mStatus = "not charging";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_STATUS_FULL:
+                                                                 mStatus = "full";
+                                                                 break;
+                                                             }
 
-                switch (plugged) {
-                    case BatteryManager.BATTERY_PLUGGED_AC:
-                      mPlugged = "plugged ac";
-                      break;
-                    case BatteryManager.BATTERY_PLUGGED_USB:
-                      mPlugged = "plugged usb";
-                      break;
-                }
-            }
-        }
-    };
+                                                             switch (health) {
+                                                             case BatteryManager.BATTERY_HEALTH_UNKNOWN:
+                                                                 mHealth = "unknown";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_HEALTH_GOOD:
+                                                                 mHealth = "good";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_HEALTH_OVERHEAT:
+                                                                 mHealth = "overheat";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_HEALTH_DEAD:
+                                                                 mHealth = "dead";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE:
+                                                                 mHealth = "voltage";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE:
+                                                                 mHealth = "unspecified failure";
+                                                                 break;
+                                                             }
+
+                                                             switch (plugged) {
+                                                             case BatteryManager.BATTERY_PLUGGED_AC:
+                                                                 mPlugged = "plugged ac";
+                                                                 break;
+                                                             case BatteryManager.BATTERY_PLUGGED_USB:
+                                                                 mPlugged = "plugged usb";
+                                                                 break;
+                                                             }
+                                                         }
+                                                     }
+                                                 };
 }

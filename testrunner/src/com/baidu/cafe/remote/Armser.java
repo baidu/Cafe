@@ -40,7 +40,6 @@ import java.util.ArrayList;
 
 public class Armser {
 
-    public Database             db                               = null;
     private IRemoteArms         iArms                            = null;
     private Context             mContext                         = null;
     private MyServiceConnection serviceConnection                = null;
@@ -66,15 +65,16 @@ public class Armser {
 
     public Armser(Context context) {
         mContext = context;
-        db = new Database(mContext.getContentResolver());
-        Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay();
         mScreenHeight = display.getHeight();
         mScreenWidth = display.getWidth();
         serviceConnection = new MyServiceConnection();
     }
 
     public boolean bind(Context context) {
-        context.bindService(new Intent(IRemoteArms.class.getName()), serviceConnection, Context.BIND_AUTO_CREATE);
+        context.bindService(new Intent(IRemoteArms.class.getName()), serviceConnection,
+                Context.BIND_AUTO_CREATE);
         int count = 0;
         try {
             while (null == iArms) {
@@ -1297,7 +1297,7 @@ public class Armser {
 
     }
 
-    private static final int     TIMEOUT_DEFAULT_VALUE = 10000;
+    private static final int TIMEOUT_DEFAULT_VALUE = 10000;
 
     /**
      * press home key
@@ -1359,7 +1359,7 @@ public class Armser {
      */
     public boolean launchActivity(String className, int flags) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
-//        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        //        intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.setComponent(ComponentName.unflattenFromString(className));
         intent.setFlags(flags);
         mContext.startActivity(intent);
@@ -1493,7 +1493,8 @@ public class Armser {
      *            timeout of wait
      * @return whether the view appears
      */
-    public boolean waitForView(String searchKey, String searchValue, int searchMode, int index, long timeout) {
+    public boolean waitForView(String searchKey, String searchValue, int searchMode, int index,
+            long timeout) {
         try {
             if (index < 0) {
                 print("param error: index < 0");
@@ -1611,8 +1612,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean clickViewById(String id) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0,
-                null, 0);
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 0,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, null, 0);
     }
 
     /**
@@ -1629,8 +1630,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean clickViewById(String id, String scrollViewId, int scrollViewIndex) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0,
-                scrollViewId, scrollViewIndex);
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 0,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1648,8 +1649,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean clickViewById(String id, int index, String scrollViewId, int scrollViewIndex) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, TIMEOUT_DEFAULT_VALUE/*10000*/, 0,
-                0, 0, scrollViewId, scrollViewIndex);
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1668,9 +1669,10 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickViewById(String id, int index, int timeout, String scrollViewId, int scrollViewIndex) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, 0, 0, 0, scrollViewId,
-                scrollViewIndex);
+    public boolean clickViewById(String id, int index, int timeout, String scrollViewId,
+            int scrollViewIndex) {
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, 0, 0, 0,
+                scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1693,10 +1695,10 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickViewById(String id, int index, int timeout, int xOffset, int yOffset, String scrollViewId,
-            int scrollViewIndex) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, xOffset, yOffset, 0,
-                scrollViewId, scrollViewIndex);
+    public boolean clickViewById(String id, int index, int timeout, int xOffset, int yOffset,
+            String scrollViewId, int scrollViewIndex) {
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, xOffset,
+                yOffset, 0, scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1709,8 +1711,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean clickViewByText(String text) {
-        return clickView("mText", text, LocalLib.SEARCHMODE_INCLUDE_MATCHING, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0,
-                0, null, 0);
+        return clickView("mText", text, LocalLib.SEARCHMODE_INCLUDE_MATCHING, 0,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, null, 0);
     }
 
     /**
@@ -1726,7 +1728,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean clickViewByText(String text, int searchMode) {
-        return clickView("mText", text, searchMode, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, null, 0);
+        return clickView("mText", text, searchMode, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0,
+                null, 0);
     }
 
     /**
@@ -1745,9 +1748,10 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickViewByText(String text, int searchMode, String scrollViewId, int scrollViewIndex) {
-        return clickView("mText", text, searchMode, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, scrollViewId,
-                scrollViewIndex);
+    public boolean clickViewByText(String text, int searchMode, String scrollViewId,
+            int scrollViewIndex) {
+        return clickView("mText", text, searchMode, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0,
+                scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1768,9 +1772,10 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickViewByText(String text, int searchMode, int index, String scrollViewId, int scrollViewIndex) {
-        return clickView("mText", text, searchMode, index, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, scrollViewId,
-                scrollViewIndex);
+    public boolean clickViewByText(String text, int searchMode, int index, String scrollViewId,
+            int scrollViewIndex) {
+        return clickView("mText", text, searchMode, index, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0,
+                0, scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1793,9 +1798,10 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickViewByText(String text, int searchMode, int index, int timeout, String scrollViewId,
-            int scrollViewIndex) {
-        return clickView("mText", text, searchMode, index, timeout, 0, 0, 0, scrollViewId, scrollViewIndex);
+    public boolean clickViewByText(String text, int searchMode, int index, int timeout,
+            String scrollViewId, int scrollViewIndex) {
+        return clickView("mText", text, searchMode, index, timeout, 0, 0, 0, scrollViewId,
+                scrollViewIndex);
     }
 
     /**
@@ -1822,9 +1828,10 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickViewByText(String text, int searchMode, int index, int timeout, int xOffset, int yOffset,
-            String scrollViewId, int scrollViewIndex) {
-        return clickView("mText", text, searchMode, index, timeout, xOffset, yOffset, 0, scrollViewId, scrollViewIndex);
+    public boolean clickViewByText(String text, int searchMode, int index, int timeout,
+            int xOffset, int yOffset, String scrollViewId, int scrollViewIndex) {
+        return clickView("mText", text, searchMode, index, timeout, xOffset, yOffset, 0,
+                scrollViewId, scrollViewIndex);
     }
 
     /**
@@ -1838,8 +1845,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean longClickViewById(String id, int time) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0,
-                time, null, 0);
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 0,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, time, null, 0);
     }
 
     /**
@@ -1855,8 +1862,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean longClickViewById(String id, int index, int time) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, TIMEOUT_DEFAULT_VALUE/*10000*/, 0,
-                0, time, null, 0);
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, time, null, 0);
     }
 
     /**
@@ -1873,7 +1880,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean longClickViewById(String id, int index, int timeout, int time) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, 0, 0, time, null, 0);
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, 0, 0,
+                time, null, 0);
     }
 
     /**
@@ -1893,9 +1901,10 @@ public class Armser {
      *            if time > 0, click will change to long click
      * @return whether the view is clicked
      */
-    public boolean longClickViewById(String id, int index, int timeout, int xOffset, int yOffset, int time) {
-        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, xOffset, yOffset, time,
-                null, 0);
+    public boolean longClickViewById(String id, int index, int timeout, int xOffset, int yOffset,
+            int time) {
+        return clickView("mID", id, LocalLib.SEARCHMODE_COMPLETE_MATCHING, index, timeout, xOffset,
+                yOffset, time, null, 0);
     }
 
     /**
@@ -1910,8 +1919,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean longClickViewByText(String text, int time) {
-        return clickView("mText", text, LocalLib.SEARCHMODE_INCLUDE_MATCHING, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0,
-                time, null, 0);
+        return clickView("mText", text, LocalLib.SEARCHMODE_INCLUDE_MATCHING, 0,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, time, null, 0);
     }
 
     /**
@@ -1929,7 +1938,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean longClickViewByText(String text, int searchMode, int time) {
-        return clickView("mText", text, searchMode, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, time, null, 0);
+        return clickView("mText", text, searchMode, 0, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, time,
+                null, 0);
     }
 
     /**
@@ -1949,7 +1959,8 @@ public class Armser {
      * @return whether the view is clicked
      */
     public boolean longClickViewByText(String text, int searchMode, int index, int time) {
-        return clickView("mText", text, searchMode, index, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, time, null, 0);
+        return clickView("mText", text, searchMode, index, TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0,
+                time, null, 0);
     }
 
     /**
@@ -1994,8 +2005,8 @@ public class Armser {
      *            if time > 0, click will change to long click
      * @return whether the view is clicked
      */
-    public boolean longClickViewByText(String text, int searchMode, int index, int timeout, int xOffset, int yOffset,
-            int time) {
+    public boolean longClickViewByText(String text, int searchMode, int index, int timeout,
+            int xOffset, int yOffset, int time) {
         return clickView("mText", text, searchMode, index, timeout, xOffset, yOffset, time, null, 0);
     }
 
@@ -2027,12 +2038,13 @@ public class Armser {
      *            the index of target {ListView, GridView, ScrollView}
      * @return whether the view is clicked
      */
-    public boolean clickView(String searchKey, String searchValue, int searchMode, int index, int timeout, int xOffset,
-            int yOffset, int longClickTime, String scrollViewId, int scrollViewIndex) {
+    public boolean clickView(String searchKey, String searchValue, int searchMode, int index,
+            int timeout, int xOffset, int yOffset, int longClickTime, String scrollViewId,
+            int scrollViewIndex) {
         boolean result = false;
         try {
-            result = iArms.clickView(searchKey, searchValue, searchMode, index, timeout, xOffset, yOffset,
-                    longClickTime, scrollViewId, scrollViewIndex);
+            result = iArms.clickView(searchKey, searchValue, searchMode, index, timeout, xOffset,
+                    yOffset, longClickTime, scrollViewId, scrollViewIndex);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2448,11 +2460,12 @@ public class Armser {
      * 
      * @return String[] getValues
      */
-    public String[] getViewProperties(String searchKey, String searchValue, int searchMode, int targetNumber,
-            String[] getKeys, boolean getNew) {
+    public String[] getViewProperties(String searchKey, String searchValue, int searchMode,
+            int targetNumber, String[] getKeys, boolean getNew) {
         String[] ret = null;
         try {
-            ret = iArms.getViewProperties(searchKey, searchValue, searchMode, targetNumber, getKeys, getNew);
+            ret = iArms.getViewProperties(searchKey, searchValue, searchMode, targetNumber,
+                    getKeys, getNew);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2842,8 +2855,8 @@ public class Armser {
      * @return coordinate array
      */
     public int[] getViewCenterPointByText(String text) {
-        return getCenterXY(getViewProperties("mText", text, LocalLib.SEARCHMODE_COMPLETE_MATCHING, 1,
-                new String[] { "coordinate" }, true));
+        return getCenterXY(getViewProperties("mText", text, LocalLib.SEARCHMODE_COMPLETE_MATCHING,
+                1, new String[] { "coordinate" }, true));
     }
 
     /**
@@ -3022,7 +3035,7 @@ public class Armser {
             return ret;
         }
     }
-    
+
     /**
      * Judge whether top activity is home.
      */

@@ -95,7 +95,8 @@ public class MonkeyNetwork {
                 try {
                     mSocket.connect(new InetSocketAddress(MONKEY_SERVER_IP, MONKEY_PORT));
                     mOut = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream()));
-                    mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), "utf-8"));
+                    mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream(),
+                            "utf-8"));
                     if (mOut == null || mIn == null) {
                         Log.print("ERROR! mOut or mIn is null.");
                         return;
@@ -149,7 +150,7 @@ public class MonkeyNetwork {
     private void start(final int port) {
         new Thread(new Runnable() {
             public void run() {
-//                ShellExecute.execute(new String[] { "monkey", "--port", String.format("%s", port), "-v", "-v" }, "/");
+                //                ShellExecute.execute(new String[] { "monkey", "--port", String.format("%s", port), "-v", "-v" }, "/");
             }
         }).start();
 

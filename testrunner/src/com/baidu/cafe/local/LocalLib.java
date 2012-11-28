@@ -111,9 +111,10 @@ public class LocalLib extends SoloEx {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public Object invokeObjectMethod(Object owner, int classLevel, String methodName, Class[] parameterTypes,
-            Object[] parameters) throws SecurityException, NoSuchMethodException, IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
+    public Object invokeObjectMethod(Object owner, int classLevel, String methodName,
+            Class[] parameterTypes, Object[] parameters) throws SecurityException,
+            NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException {
         return ReflectHelper.invoke(owner, classLevel, methodName, parameterTypes, parameters);
     }
 
@@ -134,7 +135,8 @@ public class LocalLib extends SoloEx {
      * @throws IllegalArgumentException
      */
     public void setObjectProperty(Object owner, int classLevel, String fieldName, Object value)
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException,
+            IllegalAccessException {
         ReflectHelper.setObjectProperty(owner, classLevel, fieldName, value);
     }
 
@@ -153,8 +155,9 @@ public class LocalLib extends SoloEx {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static Object getObjectProperty(Object owner, int classLevel, String fieldName) throws SecurityException,
-            NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public static Object getObjectProperty(Object owner, int classLevel, String fieldName)
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException,
+            IllegalAccessException {
         return ReflectHelper.getObjectProperty(owner, classLevel, fieldName);
     }
 
@@ -186,8 +189,8 @@ public class LocalLib extends SoloEx {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel, Class valueType, Object value)
-            throws IllegalArgumentException, IllegalAccessException {
+    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel,
+            Class valueType, Object value) throws IllegalArgumentException, IllegalAccessException {
         return ReflectHelper.getPropertyNameByValue(owner, classLevel, valueType, value);
     }
 
@@ -211,8 +214,8 @@ public class LocalLib extends SoloEx {
      * @return listener object; null means no listeners has been found
      */
     public Object getListener(View view, String fieldName) {
-        int level = view instanceof AdapterView ? countLevelFromViewToFather(view, AdapterView.class)
-                : countLevelFromViewToFather(view, View.class);
+        int level = view instanceof AdapterView ? countLevelFromViewToFather(view,
+                AdapterView.class) : countLevelFromViewToFather(view, View.class);
         if (-1 == level) {
             return null;
         }
@@ -347,7 +350,8 @@ public class LocalLib extends SoloEx {
                     stringIndex = i;
                 }
             }
-            return (Integer) classes[stringIndex].getDeclaredField(stringName).get(classes[stringIndex].newInstance());
+            return (Integer) classes[stringIndex].getDeclaredField(stringName).get(
+                    classes[stringIndex].newInstance());
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -372,7 +376,8 @@ public class LocalLib extends SoloEx {
      * @return string value
      */
     public String getTestRString(String stringName) {
-        return mContext.getResources().getString(getRStringId(mContext.getPackageName(), stringName));
+        return mContext.getResources().getString(
+                getRStringId(mContext.getPackageName(), stringName));
     }
 
     /**
@@ -397,7 +402,8 @@ public class LocalLib extends SoloEx {
      * @return activity
      */
     public Activity getActivityAsync(String activityName) {
-        return mInstrumentation.waitForMonitor(mInstrumentation.addMonitor(activityName, null, false));
+        return mInstrumentation.waitForMonitor(mInstrumentation.addMonitor(activityName, null,
+                false));
     }
 
     /**
@@ -487,7 +493,8 @@ public class LocalLib extends SoloEx {
      *            true we only deal with the view visible
      * @return true we get it
      */
-    public boolean waitForViewVanishById(String resId, long timeout, boolean scroll, boolean onlyvisible) {
+    public boolean waitForViewVanishById(String resId, long timeout, boolean scroll,
+            boolean onlyvisible) {
         Long end = System.currentTimeMillis() + timeout;
         while (true) {
             if (System.currentTimeMillis() > end) {
@@ -562,7 +569,8 @@ public class LocalLib extends SoloEx {
      *         shown before the timeout
      * 
      */
-    public boolean waitForTextVanish(String text, int minimumNumberOfMatches, long timeout, boolean scroll) {
+    public boolean waitForTextVanish(String text, int minimumNumberOfMatches, long timeout,
+            boolean scroll) {
         Long end = System.currentTimeMillis() + timeout;
         while (true) {
             if (System.currentTimeMillis() > end) {
@@ -724,8 +732,8 @@ public class LocalLib extends SoloEx {
      * @param upDelay
      *            the delay before sending up event
      */
-    public void sendMultiTouchMotionEvent(int pointerNumber, int[] start, int[] end, int step, int downDelay,
-            int moveDelay, int upDelay) {
+    public void sendMultiTouchMotionEvent(int pointerNumber, int[] start, int[] end, int step,
+            int downDelay, int moveDelay, int upDelay) {
 
         double[] delta = new double[pointerNumber * 2];
         int[] pointerIds = new int[pointerNumber];
@@ -748,8 +756,9 @@ public class LocalLib extends SoloEx {
         }
 
         long myTime = SystemClock.uptimeMillis();
-        mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime, MotionEvent.ACTION_DOWN, pointerNumber,
-                pointerIds, pointerPositions, 0, 0.1f, 0.1f, 0, 0, 0, 0));
+        mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime,
+                MotionEvent.ACTION_DOWN, pointerNumber, pointerIds, pointerPositions, 0, 0.1f,
+                0.1f, 0, 0, 0, 0));
         this.sleep(downDelay);
 
         for (int i = 0; i < step; i++) {
@@ -762,16 +771,17 @@ public class LocalLib extends SoloEx {
             }
 
             myTime = SystemClock.uptimeMillis();
-            mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime, MotionEvent.ACTION_MOVE, pointerNumber,
-                    pointerIds, pointerPositions, 0, 0.1f, 0.1f, 0, 0, 0, 0));
+            mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime,
+                    MotionEvent.ACTION_MOVE, pointerNumber, pointerIds, pointerPositions, 0, 0.1f,
+                    0.1f, 0, 0, 0, 0));
 
             this.sleep(moveDelay);
         }
 
         this.sleep(upDelay);
         myTime = SystemClock.uptimeMillis();
-        mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime, MotionEvent.ACTION_UP, pointerNumber,
-                pointerIds, pointerPositions, 0, 0.1f, 0.1f, 0, 0, 0, 0));
+        mInstrumentation.sendPointerSync(MotionEvent.obtain(myTime, myTime, MotionEvent.ACTION_UP,
+                pointerNumber, pointerIds, pointerPositions, 0, 0.1f, 0.1f, 0, 0, 0, 0));
     }
 
     /**
@@ -1158,7 +1168,8 @@ public class LocalLib extends SoloEx {
             if (searchMode == LocalLib.SEARCHMODE_INCLUDE_MATCHING && strid.contains(resId)) {
                 print("include mode;  strid is " + strid);
                 number++;
-            } else if (searchMode == LocalLib.SEARCHMODE_COMPLETE_MATCHING && strid.split(":")[1].trim().equals(resId)) {
+            } else if (searchMode == LocalLib.SEARCHMODE_COMPLETE_MATCHING
+                    && strid.split(":")[1].trim().equals(resId)) {
                 print("complete mode; strid is " + strid);
                 number++;
             }
@@ -1177,7 +1188,8 @@ public class LocalLib extends SoloEx {
         int size = viewArray.size();
         for (int i = 0; i < size; i++) {
             if ((true == isVisiable)
-                    && ((viewArray.get(i).getVisibility() == View.GONE) || (viewArray.get(i).getVisibility() == View.INVISIBLE))) {
+                    && ((viewArray.get(i).getVisibility() == View.GONE) || (viewArray.get(i)
+                            .getVisibility() == View.INVISIBLE))) {
                 continue;
             }
             // we only concern the shown view
@@ -1188,7 +1200,8 @@ public class LocalLib extends SoloEx {
             int resid = viewArray.get(i).getId();
             try {
                 strid = viewArray.get(i).getResources().getResourceName(resid);
-                print(strid + "  viewArray.get(i).getResources().getResourceName(resid) is " + strid);
+                print(strid + "  viewArray.get(i).getResources().getResourceName(resid) is "
+                        + strid);
             } catch (Resources.NotFoundException e) {
                 print("resid num " + resid + " dose not have id");
                 continue;
@@ -1216,8 +1229,9 @@ public class LocalLib extends SoloEx {
      */
     @SuppressWarnings("unchecked")
     public boolean searchTextFromParent(View parent, String text, int searchMode) {
-        ArrayList<TextView> textViews = (ArrayList<TextView>) invoke(mViewFetcher, "getCurrentViews", new Class[] {
-                Class.class, View.class }, new Object[] { TextView.class, parent }); // mViewFetcher.getCurrentViews(TextView.class,
+        ArrayList<TextView> textViews = (ArrayList<TextView>) invoke(mViewFetcher,
+                "getCurrentViews", new Class[] { Class.class, View.class }, new Object[] {
+                        TextView.class, parent }); // mViewFetcher.getCurrentViews(TextView.class,
         // parent);
 
         for (TextView textView : textViews) {
@@ -1258,14 +1272,15 @@ public class LocalLib extends SoloEx {
      */
     @SuppressWarnings("unchecked")
     public ArrayList<TextView> clickInList(int line, int index, boolean scroll) {
-        boolean foundList = (Boolean) invoke(mWaiter, "waitForView", new Class[] { Class.class, int.class },
-                new Object[] { ListView.class, index });//waiter.waitForView(ListView.class, index);
+        boolean foundList = (Boolean) invoke(mWaiter, "waitForView", new Class[] { Class.class,
+                int.class }, new Object[] { ListView.class, index });//waiter.waitForView(ListView.class, index);
         if (!foundList) {
             Assert.assertTrue("No ListView with index " + index + " is available!", false);
         }
 
-        final ListView listView = (ListView) invoke(mViewFetcher, "getView", new Class[] { Class.class,
-                ArrayList.class, int.class }, new Object[] { ListView.class, null, index });//viewFetcher.getView(ListView.class, null, index);
+        final ListView listView = (ListView) invoke(mViewFetcher, "getView", new Class[] {
+                Class.class, ArrayList.class, int.class }, new Object[] { ListView.class, null,
+                index });//viewFetcher.getView(ListView.class, null, index);
         if (listView == null) {
             Assert.assertTrue("ListView is null!", false);
         }
@@ -1273,16 +1288,16 @@ public class LocalLib extends SoloEx {
         if (isLineShow(listView, line - 1)) {
             int visibleLine = line - listView.getFirstVisiblePosition();
             print("visibleLine:" + visibleLine);
-            return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class, Boolean.class,
-                    int.class }, new Object[] { index, false, 0 }); // mClicker.clickInList(index,
+            return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class,
+                    Boolean.class, int.class }, new Object[] { index, false, 0 }); // mClicker.clickInList(index,
             // false, 0);
         }
 
         if (scroll
                 && (Boolean) invoke(mScroller, "scroll", new Class[] { int.class },
                         new Object[] { getField(mScroller, "DOWN") })) {//scroller.scroll(Scroller.DOWN)
-            return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class, int.class,
-                    Boolean.class }, new Object[] { line, index, scroll }); // mClicker.clickInList(line,
+            return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class,
+                    int.class, Boolean.class }, new Object[] { line, index, scroll }); // mClicker.clickInList(line,
             // index, scroll);
         }
 
@@ -1340,7 +1355,8 @@ public class LocalLib extends SoloEx {
     public ArrayList<String> getAllClassNamesFromPackage(String packageName) {
         ArrayList<String> classes = new ArrayList<String>();
         try {
-            String path = mContext.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA).sourceDir;
+            String path = mContext.getPackageManager().getApplicationInfo(packageName,
+                    PackageManager.GET_META_DATA).sourceDir;
             DexFile dexfile = new DexFile(path);
             Enumeration<String> entries = dexfile.entries();
             while (entries.hasMoreElements()) {
@@ -1372,7 +1388,8 @@ public class LocalLib extends SoloEx {
     public ActivityInfo[] getActivitiesFromPackage(String packageName) {
         ActivityInfo[] activities = null;
         try {
-            activities = mContext.getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES).activities;
+            activities = mContext.getPackageManager().getPackageInfo(packageName,
+                    PackageManager.GET_ACTIVITIES).activities;
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -1409,5 +1426,24 @@ public class LocalLib extends SoloEx {
      */
     public int getPackageSnd(String packageName) {
         return NetworkUtils.getPackageSnd(packageName);
+    }
+
+    /**
+     * get view index at current activity
+     * 
+     * @param view
+     * @return -1 means not found;otherwise is then index of view
+     */
+    public int getCurrentViewIndex(View view) {
+        if (null == view) {
+            return -1;
+        }
+        ArrayList<? extends View> views = getCurrentViews(view.getClass());
+        for (int i = 0; i < views.size(); i++) {
+            if (views.get(i).equals(view)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

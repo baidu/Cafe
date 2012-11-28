@@ -25,13 +25,14 @@ public class Strings {
         return new Strings(ret);
     }
 
-    public Strings getRow(String regularExpression, int rowNumber) throws ArrayIndexOutOfBoundsException {
+    public Strings getRow(String regularExpression, int rowNumber)
+            throws ArrayIndexOutOfBoundsException {
         ArrayList<String> ret = new ArrayList<String>();
         for (String line : strings) {
             String[] rows = line.trim().split(regularExpression);
             if (rows.length < rowNumber) {
-                throw new ArrayIndexOutOfBoundsException(String.format("rows.length(%s) < rowNumber(%s) line:%s",
-                        rows.length, rowNumber, line));
+                throw new ArrayIndexOutOfBoundsException(String.format(
+                        "rows.length(%s) < rowNumber(%s) line:%s", rows.length, rowNumber, line));
             }
             ret.add(rows[rowNumber - 1]);
         }

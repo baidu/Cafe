@@ -37,7 +37,8 @@ import android.view.Window;
  * @version
  * @todo
  */
-public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTestCase2<T> implements ExceptionCallBack {
+public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTestCase2<T> implements
+        ExceptionCallBack {
 
     protected static Armser                 remote                       = null;
     protected static LocalLib               local                        = null;
@@ -94,7 +95,8 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
 
     // chmod for com.zutubi.android.junitreport.JUnitReportTestRunner
     private void initForJUnitReportTestRunner() {
-        CommandResult cr = new ShellExecute().execute("chmod 777 /data/data/" + mPackageName + "/files", "/");
+        CommandResult cr = new ShellExecute().execute("chmod 777 /data/data/" + mPackageName
+                + "/files", "/");
         if (cr.ret != 0) {
             Log.i("initForJUnitReportTestRunner failed");
             for (String line : cr.console.strings) {
@@ -105,7 +107,8 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
 
     private int getStatusBarHeight() {
         Rect rect = new Rect();
-        getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT).getWindowVisibleDisplayFrame(rect);
+        getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT)
+                .getWindowVisibleDisplayFrame(rect);
         Log.i("" + rect.top);
         return rect.top;
     }

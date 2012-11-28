@@ -73,7 +73,7 @@ public class TearDownHelper {
             print("null == mWindowsAtNow at killWindowsFromBirthToNow");
             return;
         }
-        
+
         String[] newWindows = arrayUnique(subArray(mWindowsAtNow, mWindowsAtBirth));
 
         for (String window : newWindows) {

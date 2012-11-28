@@ -94,24 +94,28 @@ public class SoloEx extends Solo {
             Class Setter = Class.forName("com.jayway.android.robotium.solo.Setter");
 
             Constructor sleeperConstructor = Sleeper.getDeclaredConstructor();
-            Constructor activitiyUtilsConstructor = ActivityUtils.getDeclaredConstructor(Instrumentation.class,
-                    Activity.class, Sleeper);
+            Constructor activitiyUtilsConstructor = ActivityUtils.getDeclaredConstructor(
+                    Instrumentation.class, Activity.class, Sleeper);
             Constructor setterConstructor = Setter.getDeclaredConstructor(ActivityUtils);
             Constructor viewFetcherConstructor = ViewFetcher.getDeclaredConstructor(ActivityUtils);
-            Constructor scrollerConstructor = Scroller.getDeclaredConstructor(Instrumentation.class, ActivityUtils,
-                    ViewFetcher, Sleeper);
-            Constructor searcherConstructor = Searcher.getDeclaredConstructor(ViewFetcher, Scroller, Sleeper);
-            Constructor waiterConstructor = Waiter.getDeclaredConstructor(ActivityUtils, ViewFetcher, Searcher,
+            Constructor scrollerConstructor = Scroller.getDeclaredConstructor(
+                    Instrumentation.class, ActivityUtils, ViewFetcher, Sleeper);
+            Constructor searcherConstructor = Searcher.getDeclaredConstructor(ViewFetcher,
                     Scroller, Sleeper);
-            Constructor asserterConstructor = Asserter.getDeclaredConstructor(ActivityUtils, Waiter);
-            Constructor dialogUtilsConstructor = DialogUtils.getDeclaredConstructor(ViewFetcher, Sleeper);
+            Constructor waiterConstructor = Waiter.getDeclaredConstructor(ActivityUtils,
+                    ViewFetcher, Searcher, Scroller, Sleeper);
+            Constructor asserterConstructor = Asserter
+                    .getDeclaredConstructor(ActivityUtils, Waiter);
+            Constructor dialogUtilsConstructor = DialogUtils.getDeclaredConstructor(ViewFetcher,
+                    Sleeper);
             Constructor checkerConstructor = Checker.getDeclaredConstructor(ViewFetcher, Waiter);
-            Constructor robotiumUtilsConstructor = RobotiumUtils.getDeclaredConstructor(Instrumentation.class, Sleeper);
+            Constructor robotiumUtilsConstructor = RobotiumUtils.getDeclaredConstructor(
+                    Instrumentation.class, Sleeper);
             Constructor textEnterer = TextEnterer.getDeclaredConstructor(Instrumentation.class);
-            Constructor clickerConstructor = Clicker.getDeclaredConstructor(ViewFetcher, Scroller, RobotiumUtils,
+            Constructor clickerConstructor = Clicker.getDeclaredConstructor(ViewFetcher, Scroller,
+                    RobotiumUtils, Instrumentation.class, Sleeper, Waiter);
+            Constructor presserConstructor = Presser.getDeclaredConstructor(Clicker,
                     Instrumentation.class, Sleeper, Waiter);
-            Constructor presserConstructor = Presser.getDeclaredConstructor(Clicker, Instrumentation.class, Sleeper,
-                    Waiter);
 
             sleeperConstructor.setAccessible(true);
             activitiyUtilsConstructor.setAccessible(true);
@@ -129,20 +133,24 @@ public class SoloEx extends Solo {
             textEnterer.setAccessible(true);
 
             mSleeper = sleeperConstructor.newInstance(new Object[] {});
-            mActivitiyUtils = activitiyUtilsConstructor.newInstance(mInstrumentation, mActivity, mSleeper);
+            mActivitiyUtils = activitiyUtilsConstructor.newInstance(mInstrumentation, mActivity,
+                    mSleeper);
             mSetter = setterConstructor.newInstance(mActivitiyUtils);
             mViewFetcher = viewFetcherConstructor.newInstance(mActivitiyUtils);
-            mScroller = scrollerConstructor.newInstance(mInstrumentation, mActivitiyUtils, mViewFetcher, mSleeper);
+            mScroller = scrollerConstructor.newInstance(mInstrumentation, mActivitiyUtils,
+                    mViewFetcher, mSleeper);
             mSearcher = searcherConstructor.newInstance(mViewFetcher, mScroller, mSleeper);
-            mWaiter = waiterConstructor.newInstance(mActivitiyUtils, mViewFetcher, mSearcher, mScroller, mSleeper);
+            mWaiter = waiterConstructor.newInstance(mActivitiyUtils, mViewFetcher, mSearcher,
+                    mScroller, mSleeper);
             mAsserter = asserterConstructor.newInstance(mActivitiyUtils, mWaiter);
             mDialogUtils = dialogUtilsConstructor.newInstance(mViewFetcher, mSleeper);
             mChecker = checkerConstructor.newInstance(mViewFetcher, mWaiter);
             mRobotiumUtils = robotiumUtilsConstructor.newInstance(mInstrumentation, mSleeper);
             mTextEnterer = textEnterer.newInstance(mInstrumentation);
-            mClicker = clickerConstructor.newInstance(mViewFetcher, mScroller, mRobotiumUtils, mInstrumentation,
-                    mSleeper, mWaiter);
-            mPresser = presserConstructor.newInstance(mClicker, mInstrumentation, mSleeper, mWaiter);
+            mClicker = clickerConstructor.newInstance(mViewFetcher, mScroller, mRobotiumUtils,
+                    mInstrumentation, mSleeper, mWaiter);
+            mPresser = presserConstructor
+                    .newInstance(mClicker, mInstrumentation, mSleeper, mWaiter);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -258,4 +266,18 @@ public class SoloEx extends Solo {
                 new Object[] { classToFilterBy });
     }
 
+    /**
+     * Clicks on a {@code View} of a specific class, with a certain index.
+     * 
+     * @param viewClass
+     *            what kind of {@code View} to click, e.g. {@code Button.class}
+     *            or {@code ImageView.class}
+     * @param index
+     *            the index of the {@code View} to be clicked, within
+     *            {@code View}s of the specified class
+     */
+    public <T extends View> void clickOn(Class<T> viewClass, int index) {
+        invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
+                viewClass, index });
+    }
 }
