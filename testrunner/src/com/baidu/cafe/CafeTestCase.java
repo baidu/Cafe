@@ -194,7 +194,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
 
         while (true) {
             methodName = Thread.currentThread().getStackTrace()[distance].getMethodName();
-            if (!methodName.startsWith("assert") && !methodName.startsWith("fail")) {
+            if (methodName.startsWith("test")) {
                 break;
             }
             distance++;
