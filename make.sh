@@ -145,6 +145,13 @@ done
 	cp $SRC/cafe_setup.sh $SRC/out
 }
 
+function compile()
+{
+    init
+    make_cafe
+    make_arms
+}
+
 HAS_DEVICE=`adb devices | grep -v ^$ | grep -v List`
 while getopts "hty" option
 do
@@ -155,7 +162,9 @@ do
 			;;  
 		t)  
 			if [ ! -z "$HAS_DEVICE" ];then
-				run_testcase $2 $3
+                compile
+                cd $SRC/tests
+                ./run_demo_test.sh
 			else
 				echo "There is no device to run testcase!"
 			fi
@@ -169,7 +178,4 @@ do
 	esac
 done
 
-init
-make_cafe
-make_arms
-
+compile
