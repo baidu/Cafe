@@ -34,8 +34,8 @@ public class TestCafe extends CafeTestCase<MainActivity> {
      * NOTICE: 运行case前需要开启cafe_setup.bat
      */
     public void test_sample() {
-        local.beginRecordCode();
-        local.sleep(2000);
+        //local.beginRecordCode();
+        assertTrue(false);
     }
 
     private void history() {

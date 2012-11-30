@@ -84,7 +84,7 @@ public class LocalLib extends SoloEx {
         mContext = instrumentation.getContext();
     }
 
-    private void print(String message) {
+    private static void print(String message) {
         if (Log.IS_DEBUG) {
             Log.i("LocalLib", message);
         }
@@ -415,7 +415,7 @@ public class LocalLib extends SoloEx {
      *            e.g. "/sdcard"
      * @return the result string of the command
      */
-    public CommandResult executeOnDevice(String command, String directory) {
+    public static CommandResult executeOnDevice(String command, String directory) {
         return new ShellExecute().execute(command, directory);
     }
 
@@ -1312,30 +1312,33 @@ public class LocalLib extends SoloEx {
         screenShot(getTimeStamp());
     }
 
-    public void screenShotNamedSuffix(String suffix) {
-        screenShot(getTimeStamp() + "_" + suffix);
+    public static void screenShotNamedSuffix(String suffix, String packagePath) {
+        screenShot(getTimeStamp() + "_" + suffix, packagePath);
     }
 
-    private String getTimeStamp() {
+    private static String getTimeStamp() {
         Time localTime = new Time("Asia/Hong_Kong");
         localTime.setToNow();
         return localTime.format("%Y-%m-%d_%H-%M-%S");
     }
 
-    public void screenShot(String fileName) {
-        String path = "/data/data/" + getCurrentActivity().getPackageName() + "/cafe";
-        File cafe = new File(path);
+    private static void screenShot(String fileName, String packagePath) {
+        File cafe = new File(packagePath);
         if (!cafe.exists()) {
             cafe.mkdir();
-            executeOnDevice("chmod 777 " + path, "/");
         }
-        takeActivitySnapshot(path + "/" + fileName + ".jpg");
+        executeOnDevice("chmod 777 " + packagePath, "/");
+        takeActivitySnapshot(packagePath + "/" + fileName + ".jpg");
+    }
+
+    public void screenShot(String fileName) {
+        screenShot(fileName, mContext.getFilesDir().toString());
     }
 
     /**
      * Take an activity snapshot.
      */
-    public void takeActivitySnapshot(String path) {
+    public static void takeActivitySnapshot(String path) {
         print("Save snapshot, file is " + path);
         View view = getWindowDecorViews()[0];
         if (view != null) {
@@ -1397,7 +1400,7 @@ public class LocalLib extends SoloEx {
         return activities;
     }
 
-    public View[] getWindowDecorViews() {
+    public static View[] getWindowDecorViews() {
         return (View[]) invoke(mViewFetcher, "getWindowDecorViews"); // mViewFetcher.getActiveDecorView();
     }
 

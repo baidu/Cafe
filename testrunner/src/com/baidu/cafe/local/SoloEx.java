@@ -40,7 +40,7 @@ public class SoloEx extends Solo {
     // Currently, although some classes is not being used, we still define them
     // in case we may need them in the future
     protected Object              mAsserter;
-    protected Object              mViewFetcher;
+    protected static Object       mViewFetcher;
     protected Object              mChecker;
     protected Object              mClicker;
     protected Object              mPresser;
@@ -179,7 +179,6 @@ public class SoloEx extends Solo {
         this(instrumentation, null);
     }
 
-    @Override
     public void finalize() throws Throwable {
         invoke(mActivitiyUtils, "finalize"); // mActivityUtils.finalize();
         super.finalize();
@@ -217,7 +216,7 @@ public class SoloEx extends Solo {
      * @param name
      *            Method name
      */
-    protected Object invoke(Object owner, String name) {
+    protected static Object invoke(Object owner, String name) {
         return invoke(owner, name, new Class[] {}, new Object[] {});
     }
 
@@ -233,7 +232,8 @@ public class SoloEx extends Solo {
      * @param parameters
      *            objects array of parameters
      */
-    protected Object invoke(Object owner, String name, Class[] parameterTypes, Object[] parameters) {
+    protected static Object invoke(Object owner, String name, Class[] parameterTypes,
+            Object[] parameters) {
         try {
             return ReflectHelper.invoke(owner, 0, name, parameterTypes, parameters);
         } catch (Exception e) {
@@ -245,7 +245,7 @@ public class SoloEx extends Solo {
         }
     }
 
-    private void print(String message) {
+    private static void print(String message) {
         if (Log.IS_DEBUG && message != null) {
             Log.d("SoloEx", message);
         }
