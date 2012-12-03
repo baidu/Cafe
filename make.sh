@@ -143,6 +143,7 @@ do
 done
 	cp $SRC/cafe_setup.bat $SRC/out
 	cp $SRC/cafe_setup.sh $SRC/out
+	cp $SRC/util.sh $SRC/out
 }
 
 function compile()
