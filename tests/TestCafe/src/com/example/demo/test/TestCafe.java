@@ -39,6 +39,7 @@ public class TestCafe extends CafeTestCase<MainActivity> {
     }
 
     private void history() {
+    	  Log.i("!!!!!!!!!!!!!!!!:"+remote.isNetworkEnable());
         Log.i("###", "" + new NetworkUtils().getPackageRcv("com.baidu.BaiduMap"));
         try {
             Thread.sleep(5000);

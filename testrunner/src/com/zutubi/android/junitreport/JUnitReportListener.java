@@ -105,6 +105,8 @@ public class JUnitReportListener implements TestListener {
 
     // added by luxiaoyu01@baidu.com
     private static String         mName                 = null;
+    private int                   mPackageRcv           = 0;
+    private int                   mPackageSnd           = 0;
 
     /**
      * Creates a new listener.
@@ -155,6 +157,8 @@ public class JUnitReportListener implements TestListener {
                 mName = testCase.getName();
                 LocalLib.executeOnDevice("chmod 777 " + mTargetContext.getFilesDir().toString(),
                         "/");
+                mPackageRcv = LocalLib.getPackageRcv(mTargetContext.getPackageName());
+                mPackageSnd = LocalLib.getPackageSnd(mTargetContext.getPackageName());
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, safeMessage(e));
@@ -289,6 +293,15 @@ public class JUnitReportListener implements TestListener {
                 recordTestTime();
                 mSerializer.endTag("", TAG_CASE);
                 mSerializer.flush();
+
+                // added by luxiaoyu01@baidu.com
+                String packageName = mTargetContext.getPackageName();
+                String string = String.format(
+                        "Testcase: %s  Time: %sms  PackageRcv: %sbytes  PackageSnd: %sbytes",
+                        ((TestCase) test).getClass(), System.currentTimeMillis() - mTestStartTime,
+                        LocalLib.getPackageRcv(packageName) - mPackageRcv,
+                        LocalLib.getPackageSnd(packageName) - mPackageSnd);
+                Log.i("NetworkStatus", string);
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, safeMessage(e));

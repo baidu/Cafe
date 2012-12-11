@@ -95,11 +95,15 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.lang.Process;
 import java.lang.Runtime;
 import java.lang.System;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -2575,4 +2579,18 @@ public class SystemLib {
         //PowerTutorConnector ptc = new PowerTutorConnector(mContext);
         //ptc.connectToPowerTutor();
     }
+
+    public boolean isNetworkEnable() {
+        boolean ret = false;
+        try {
+            URL url = new URL("http://www.baidu.com/");
+            InputStream in = url.openStream();
+            in.close();
+            ret = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
 }

@@ -3049,4 +3049,20 @@ public class Armser {
             return ret;
         }
     }
+    
+    /**
+     * ping 8.8.8.8
+     * 
+     * @return
+     */
+    public boolean isNetworkEnable() {
+        boolean ret = false;
+        try {
+            ret = iArms.isNetworkEnable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return ret;
+        }
+    }
 }

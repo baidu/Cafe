@@ -77,10 +77,13 @@ public class NetworkUtils {
                 print("-1 == uid");
                 return -1;
             }
-            String ret = new ShellExecute().execute(
-                    String.format("cat /proc/uid_stat/%s/%s", uid, mode), "/").console.strings
-                    .get(0);
-            traffic = Integer.valueOf(ret);
+            ArrayList<String> ret = new ShellExecute().execute(
+                    String.format("cat /proc/uid_stat/%s/%s", uid, mode), "/").console.strings;
+            if (ret.size() > 0) {
+                traffic = Integer.valueOf(ret.get(0));
+            } else {
+                print(String.format("Failed: cat /proc/uid_stat/%s/%s", uid, mode));
+            }
         } else {
             Strings netString = new ShellExecute().execute(
                     String.format("cat /proc/%s/net/dev", pid), "/").console;
@@ -110,4 +113,5 @@ public class NetworkUtils {
     public static int getPackageSnd(String packageName) {
         return getPackageTraffic(packageName, MODE_SND);
     }
+
 }

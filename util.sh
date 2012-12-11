@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #################################################
-########## Android Shell Lib ########################
+########## Android Shell Lib ####################
 #################################################
 
 # REPORTING BUGS: luxiaoyu01@baidu.com
@@ -11,13 +11,13 @@
 # Run a command with timeout.
 #
 # DESCRIPTION:
-# If it terminates normally, run_with_timeout will return the return value of cmd string as soon as possible.
-# If it is over time, the command process will be killed including its children processes.
-# This function will product two additional processes. 
-# Process A will execute the command string at background. 
+# If it terminates normally, run_with_timeout will return the return value 
+# of cmd string as soon as possible. If it is over time, the command process 
+# will be killed including its children processes. This function will product 
+# two additional processes. Process A will execute the command string at background. 
 # Process B will wait for process A and get return value of command string.
-# And B is the father of A.
-# The stderr and stdout of command string will be redirected to the stdout of run_with_timeout as a convenience. 
+# And B is the father of A. The stderr and stdout of command string will be 
+# redirected to the stdout of run_with_timeout as a convenience. 
 #
 # ret == 99 means wrong parameters
 # ret == 100 means timeout
@@ -83,10 +83,12 @@ run_at_background() # $cmd_str, $current_pid
 #
 # kill pid family from son to father
 #
-# eat error message of kill
+# NOTICE:eats error message of kill -9
 kill_family() # $pid_ancestor
 {
-	pstree -p $1 | awk -F"[()]" '{for(i=0;i<=NF;i++)if($i~/[0-9]+/)print $i}'| sed '/[|+-]/d' | grep -o "[0-9]\+" | sort -nr | uniq | xargs kill -9  2>&1 > /dev/null
+	pstree -p $1 | awk -F"[()]" '{for(i=0;i<=NF;i++)if($i~/[0-9]+/)print $i}' \
+    | sed '/[|+-]/d' | grep -o "[0-9]\+" | sort -nr | uniq | xargs kill -9  \
+    2>&1 > /dev/null
 }
 
 # ret == 0 means boot success
@@ -139,7 +141,7 @@ wait_for_boot_completed() # $serial_number, $target
 
 log() # $msg
 {
-	echo "[`date +%Y-%m-%d-%H:%M:%S`] $1"
+	echo "[`date +%Y-%m-%d\ %H:%M:%S`] $1"
 }
 
 #
@@ -152,7 +154,8 @@ kill_by_including() # $grep_str
 
 #
 # Watch a process and terminate it when invoker script is over.
-# It is useful for some scenes that some pids should be killed when the invoker script is killed.
+# It is useful for some scenes that some pids should be killed 
+# when the invoker script is killed.
 end_with_script() # $target_pid
 {
 	target_pid=$1
@@ -195,9 +198,12 @@ cat_cmd_by_pid() # $pid
 }
 
 #
-# install apk to device
+# Install apk to device with -r .
+# If installation failed including "device not found" and "waiting for device", 
+# script will return 1 as soon as possible.
 #
-# If installation failed including "device not found" and "waiting for device", script will return 1 as soon as possible.
+# NOTICE: if $timeout is empty, it will be filled by apk size 
+#
 # ret == 0 means install success 
 # ret == 1 menas install failed
 safe_install() # $SERIAL_NUMBER, $apk, $timeout
@@ -206,7 +212,6 @@ safe_install() # $SERIAL_NUMBER, $apk, $timeout
 	apk=$2
 	timeout=$3
 	ADB="adb -s $SERIAL_NUMBER"
-	log "Install [$apk] on [$SERIAL_NUMBER] in [$timeout]"
 
 	touch_device "$SERIAL_NUMBER"
 	if [ $? -ne 0 ];then
@@ -217,6 +222,13 @@ safe_install() # $SERIAL_NUMBER, $apk, $timeout
 		log "[$apk] does not exist!"
 		return 1
 	fi
+
+    if [ -z "$3" ];then
+        timeout=`get_install_timeout "$apk"`
+        log "timeout is set to $timeout defaultly by apk size"
+    fi
+
+	log "Install [$apk] on [$SERIAL_NUMBER] in [$timeout]"
 
 	# install at background for "waiting for device"
 	install_log="$SERIAL_NUMBER.install"
@@ -306,11 +318,12 @@ get_install_timeout() # $apk
 
 	apksize=`ls -l "$apk" | awk '{print $5}'`
 	apksize_m=`echo $apksize/1024/1024+5 | bc`
-	timeoutValue=`echo $apksize_m*5 | bc`
+	timeoutValue=`echo $apksize_m*7 | bc`
 	echo "$timeoutValue"
 }
 
-# "su -c" is not supported perfect by some phone, so this function put cmd in script and execute the script by "su -c"
+# "su -c" is not supported perfect by some phone, so this function put cmd in 
+# script and execute the script by "su -c"
 execute_with_root() # $serial_number, $cmd
 {
 	ADB="adb -s $1"
@@ -555,7 +568,6 @@ get_launchable_activity() # $apk $isShort
 		return 1
 	fi
 
-	# aapt dump badging $apk sometimes does not work.
 	xml=`aapt dump xmlstrings $apk AndroidManifest.xml`
 	line=`echo "$xml" | grep -n "android.intent.action.MAIN" | awk -F ":" '{print $1}'`
 	if [ -z "$line" ];then
@@ -597,5 +609,46 @@ get_launchable_activity() # $apk $isShort
 	fi
 	#echo "$ret_get_launchable_activity"
 	return 0
+}
+
+#
+# try to install apk to device `$times` times
+# $times is best to 2.
+#
+# ret == 0 means install success 
+# ret == 1 means install failed 
+reliable_install() # $SERIAL_NUMBER, $apk, $times
+{
+    SERIAL_NUMBER=$1
+    apk=$2
+    times=$3
+    if [ -z "$3"] || [$times -lt 1 ];then
+        log "Try times is set to [2] defaultly."
+        times=2
+    fi
+    timeout=`get_install_timeout "$apk"`
+
+    for((i=0;i<$times;i++));do
+        safe_install $SERIAL_NUMBER $apk $timeout
+        if [ 0 -ne $? ];then
+            log "Install again!"
+        else
+            return 0
+        fi
+    done
+    return 1
+}
+
+kill_android_process_by_name() # $serial_number, $name
+{
+    ADB="adb -s $1"
+    name="$2"
+	pid=`$ADB shell ps | grep "$name" | awk -F " " '{print $2}'`
+	echo "#!/system/bin/sh" > kill_package.sh
+	echo "kill -9 $pid" >> kill_package.sh
+	chmod +x kill_package.sh
+	$ADB push kill_package.sh /data/local/tmp > /dev/null 2>&1
+    rm kill_package.sh
+	run_with_timeout "$ADB shell su -c \"/data/local/tmp/kill_package.sh\"" 5
 }
 

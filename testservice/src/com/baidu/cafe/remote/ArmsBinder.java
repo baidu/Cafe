@@ -847,4 +847,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public boolean isAirplaneModeOn() {
         return mSystemLib.isAirplaneModeOn();
     }
+
+    public boolean isNetworkEnable() {
+        return mSystemLib.isNetworkEnable();
+    }
 }

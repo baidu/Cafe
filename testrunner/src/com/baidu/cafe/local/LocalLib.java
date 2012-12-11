@@ -1417,7 +1417,7 @@ public class LocalLib extends SoloEx {
      * @param packageName
      * @return
      */
-    public int getPackageRcv(String packageName) {
+    public static int getPackageRcv(String packageName) {
         return NetworkUtils.getPackageRcv(packageName);
     }
 
@@ -1427,7 +1427,7 @@ public class LocalLib extends SoloEx {
      * @param packageName
      * @return
      */
-    public int getPackageSnd(String packageName) {
+    public static int getPackageSnd(String packageName) {
         return NetworkUtils.getPackageSnd(packageName);
     }
 
@@ -1449,4 +1449,5 @@ public class LocalLib extends SoloEx {
         }
         return -1;
     }
+
 }

@@ -161,4 +161,5 @@ interface IRemoteArms {
     void setStatusBarHeight(int height);
     boolean isViewServerOpen();
     boolean isHome();
+    boolean isNetworkEnable();
 }
