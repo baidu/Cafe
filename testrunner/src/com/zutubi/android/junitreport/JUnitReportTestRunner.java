@@ -16,6 +16,8 @@
 
 package com.zutubi.android.junitreport;
 
+import com.baidu.cafe.local.Strings;
+
 import android.os.Bundle;
 import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
@@ -29,34 +31,36 @@ import android.util.Log;
  * property.
  * <p/>
  * This runner behaves identically to the default, with the added side-effect of
- * producing JUnit XML reports. The report format is similar to that produced
- * by the Ant JUnit task's XML formatter, making it compatible with existing
- * tools that can process that format. See {@link JUnitReportListener} for
- * further details.
+ * producing JUnit XML reports. The report format is similar to that produced by
+ * the Ant JUnit task's XML formatter, making it compatible with existing tools
+ * that can process that format. See {@link JUnitReportListener} for further
+ * details.
  * <p/>
- * This runner accepts arguments specified by the ARG_* constants.  For details
+ * This runner accepts arguments specified by the ARG_* constants. For details
  * refer to the README.
  */
 public class JUnitReportTestRunner extends InstrumentationTestRunner {
     /**
-     * Name of the report file(s) to write, may contain __suite__ in multiFile mode.
+     * Name of the report file(s) to write, may contain __suite__ in multiFile
+     * mode.
      */
-    private static final String ARG_REPORT_FILE = "reportFile";
+    private static final String ARG_REPORT_FILE            = "reportFile";
     /**
-     * If specified, path of the directory to write report files to.  May start with __external__.
-     * If not set files are written to the internal storage directory of the app under test.
+     * If specified, path of the directory to write report files to. May start
+     * with __external__. If not set files are written to the internal storage
+     * directory of the app under test.
      */
-    private static final String ARG_REPORT_DIR = "reportDir";
+    private static final String ARG_REPORT_DIR             = "reportDir";
     /**
-     * If true, stack traces in the report will be filtered to remove common noise (e.g. framework
-     * methods).
+     * If true, stack traces in the report will be filtered to remove common
+     * noise (e.g. framework methods).
      */
-    private static final String ARG_FILTER_TRACES = "filterTraces";
+    private static final String ARG_FILTER_TRACES          = "filterTraces";
     /**
-     * If true, produce a separate file for each test suite.  By default a single report is created
-     * for all suites.
+     * If true, produce a separate file for each test suite. By default a single
+     * report is created for all suites.
      */
-    private static final String ARG_MULTI_FILE = "multiFile";
+    private static final String ARG_MULTI_FILE             = "multiFile";
     /**
      * Default name of the single report file.
      */
@@ -64,15 +68,22 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
     /**
      * Default name pattern for multiple report files.
      */
-    private static final String DEFAULT_MULTI_REPORT_FILE = "junit-report-" + JUnitReportListener.TOKEN_SUITE + ".xml";
+    private static final String DEFAULT_MULTI_REPORT_FILE  = "junit-report-"
+                                                                   + JUnitReportListener.TOKEN_SUITE
+                                                                   + ".xml";
 
-    private static final String LOG_TAG = JUnitReportTestRunner.class.getSimpleName();
-    
+    private static final String LOG_TAG                    = JUnitReportTestRunner.class
+                                                                   .getSimpleName();
+
     private JUnitReportListener mListener;
-    private String mReportFile;
-    private String mReportDir;
-    private boolean mFilterTraces = true;
-    private boolean mMultiFile = false;
+    private String              mReportFile;
+    private String              mReportDir;
+    private boolean             mFilterTraces              = true;
+    private boolean             mMultiFile                 = false;
+
+    // added by luxiaoyu01@baidu.com
+    private static final String ARG_CUSTOM_ARG             = "custom";
+    public static String        mCustom                    = null;
 
     @Override
     public void onCreate(Bundle arguments) {
@@ -82,6 +93,8 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
             mReportDir = arguments.getString(ARG_REPORT_DIR);
             mFilterTraces = getBooleanArgument(arguments, ARG_FILTER_TRACES, true);
             mMultiFile = getBooleanArgument(arguments, ARG_MULTI_FILE, false);
+            // added by luxiaoyu01@baidu.com
+            mCustom = Strings.unicodeStringToUnicode(arguments.getString(ARG_CUSTOM_ARG));
         } else {
             Log.i(LOG_TAG, "No arguments provided");
         }
@@ -94,8 +107,7 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
         super.onCreate(arguments);
     }
 
-    private boolean getBooleanArgument(Bundle arguments, String name, boolean defaultValue)
-    {
+    private boolean getBooleanArgument(Bundle arguments, String name, boolean defaultValue) {
         String value = arguments.getString(name);
         if (value == null) {
             return defaultValue;
@@ -105,7 +117,8 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
     }
 
     /**
-     * Subclass and override this if you want to use a different TestRunner type.
+     * Subclass and override this if you want to use a different TestRunner
+     * type.
      * 
      * @return the test runner to use
      */
@@ -116,7 +129,8 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
     @Override
     protected AndroidTestRunner getAndroidTestRunner() {
         AndroidTestRunner runner = makeAndroidTestRunner();
-        mListener = new JUnitReportListener(getContext(), getTargetContext(), mReportFile, mReportDir, mFilterTraces, mMultiFile);
+        mListener = new JUnitReportListener(getContext(), getTargetContext(), mReportFile,
+                mReportDir, mFilterTraces, mMultiFile, this);
         runner.addTestListener(mListener);
         return runner;
     }

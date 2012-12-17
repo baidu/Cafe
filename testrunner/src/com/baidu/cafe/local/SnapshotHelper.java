@@ -21,11 +21,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import android.view.View;
+import android.webkit.WebView;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Picture;
 
 /**
- * @author yuboyang@baidu.com
+ * @author yuboyang@baidu.com, luxiaoyu01@baidu.com
  * @date 2011-1-14
  * @version
  * @todo
@@ -39,6 +43,7 @@ public class SnapshotHelper {
     }
 
     private static void outputToFile(String savePath, Bitmap bitmap) {
+        print("savePath:" + savePath);
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(savePath);
@@ -60,6 +65,23 @@ public class SnapshotHelper {
     }
 
     /**
+     * Take a whole snapshot of a WebView.
+     * 
+     * @param webView
+     *            target webview
+     * @param savePath
+     *            e.g. /sdcard/webview.jpg
+     */
+    public static void takeWebViewSnapshot(WebView webView, String savePath) {
+        Picture picture = webView.capturePicture();
+        Bitmap bmp = Bitmap.createBitmap(picture.getWidth(), picture.getHeight(),
+                Bitmap.Config.RGB_565);
+        Canvas c = new Canvas(bmp);
+        picture.draw(c);
+        outputToFile(savePath, bmp);
+    }
+
+    /**
      * Take a Snapshot of a View
      * 
      * @param view
@@ -67,11 +89,10 @@ public class SnapshotHelper {
      * @param savePath
      *            Image Path
      */
-    static public void takeViewSnapshot(View view, String savePath) {
+    static public void takeViewSnapshot(final View view, final String savePath) {
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
         Bitmap bitmap = view.getDrawingCache();
-
         outputToFile(savePath, bitmap);
     }
 
@@ -80,11 +101,11 @@ public class SnapshotHelper {
      * 
      * @param savePath
      */
-    static public void takeSnapshot(String savePath) {
-        takeSnapshot(savePath, 320, 480);
+    static public void takeScreenshot(String savePath) {
+        takeScreenshot(savePath, 320, 480);
     }
 
-    static public void takeSnapshot(String savePath, int screenWidth, int screenHeight) {
+    static public void takeScreenshot(String savePath, int screenWidth, int screenHeight) {
         savePath += ".jpg";
         print(savePath + " " + screenWidth + " " + screenHeight);
 

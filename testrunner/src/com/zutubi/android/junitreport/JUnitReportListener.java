@@ -33,6 +33,7 @@ import org.xmlpull.v1.XmlSerializer;
 
 import com.baidu.cafe.local.LocalLib;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.util.Log;
 import android.util.Xml;
@@ -107,6 +108,7 @@ public class JUnitReportListener implements TestListener {
     private static String         mName                 = null;
     private int                   mPackageRcv           = 0;
     private int                   mPackageSnd           = 0;
+    private LocalLib              mLocalLib             = null;
 
     /**
      * Creates a new listener.
@@ -128,7 +130,9 @@ public class JUnitReportListener implements TestListener {
      *            if true, use a separate file for each test suite
      */
     public JUnitReportListener(Context context, Context targetContext, String reportFile,
-            String reportDir, boolean filterTraces, boolean multiFile) {
+            String reportDir, boolean filterTraces, boolean multiFile,
+            /*added by luxiaoyu01@baidu.com*/
+            Instrumentation instrumentation) {
         Log.i(LOG_TAG, "Listener created with arguments:\n" + "  report file  : '" + reportFile
                 + "'\n" + "  report dir   : '" + reportDir + "'\n" + "  filter traces: "
                 + filterTraces + "\n" + "  multi file   : " + multiFile);
@@ -138,6 +142,10 @@ public class JUnitReportListener implements TestListener {
         this.mReportDir = reportDir;
         this.mFilterTraces = filterTraces;
         this.mMultiFile = multiFile;
+
+        // added by luxiaoyu01@baidu.com
+        // activity == null, so we can no use those fuction in Locallib which use it.
+//        this.mLocalLib = new LocalLib(instrumentation, null);
     }
 
     @Override
@@ -261,7 +269,7 @@ public class JUnitReportListener implements TestListener {
 
     private void addProblem(String tag, Throwable error) {
         // added by luxiaoyu01@baidu.com
-        LocalLib.screenShotNamedSuffix(mName, mTargetContext.getFilesDir().toString());
+//        mLocalLib.screenShotNamedSuffix(mName, mTargetContext.getFilesDir().toString());
         try {
             recordTestTime();
 

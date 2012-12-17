@@ -3,6 +3,8 @@ source ../util.sh
 
 _PWD=`pwd`
 ANDROID_TOP=$_PWD/../..
+APK=""
+QUERY="767E5EA6"
 
 start_monkey_server()
 {
@@ -14,20 +16,75 @@ start_monkey_server()
 	echo ""
 }
 
-cd $ANDROID_TOP
-. build/envsetup.sh
-cd $_PWD/TestCafe
-cp $_PWD/../out/cafe.jar libs
-apk=`mm -j5 | grep "Install:" | awk '{print $2}'`
-# suppose there is only one android device
-serial=`adb devices | grep -v ^$ | grep -v List | awk '{print $1}'`
-ADB="adb -s $serial"
-start_monkey_server
-$ADB shell service call window 1 i32 4939
-$ADB install -r $_PWD/../out/Cafe.apk
-$ADB install -r $_PWD/Demo/bin/CafeDemo.apk
-$ADB install -r $ANDROID_TOP/$apk
-$ADB logcat -c
-$ADB shell am instrument -w \
-com.example.demo.test/com.zutubi.android.junitreport.JUnitReportTestRunner &
-$ADB logcat 
+compile()
+{
+    cd $ANDROID_TOP
+    . build/envsetup.sh
+    cd $_PWD/$target
+    cp $_PWD/../out/cafe.jar libs
+    # get test package
+    rm -f .install
+    mm -j5 > .install 2>&1
+    if [ $? -ne 0 ];then
+        cat .install
+        exit 1
+    fi
+    apk=`cat .install | grep "Install:" | awk '{print $2}'`
+    APK="$ANDROID_TOP/$apk"
+    rm -f .install
+    mkdir -p $_PWD/out
+    echo "$_PWD"
+    cp $APK $_PWD/out
+}
+
+run()
+{
+    ADB="adb -s $serial"
+    start_monkey_server
+    $ADB shell service call window 1 i32 4939
+    #$ADB install -r $_PWD/Cafe.apk
+    #$ADB install -r $APK
+    $ADB logcat -c
+    $ADB logcat  > $serial.locat &
+    logcat_pid=$!
+    $ADB shell am instrument -e custom "$QUERY" -w \
+        $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
+    kill -9 $logcat_pid
+    $ADB pull /data/data/$package_name/files/$package_name.jpg .
+}
+
+while getopts "rca" option
+do
+	case $option in
+		r)  
+            #APK=$_PWD/$2
+            serial="$2"
+            package_name="$3"
+            test_package="$package_name.test"
+            QUERY="$4"
+            echo "serial_number:$serial"
+            echo "package_name:$package_name"
+            echo "query:$QUERY"
+            run 
+			exit 0
+			;;  
+		c)
+            target="$2"
+            compile 
+			exit 0
+			;;  
+		a)
+            ls | grep Test | while read dir
+        do
+            target=$dir
+            echo "compile $dir"
+            compile "$dir"
+        done
+        exit 0
+        ;;  
+esac
+done
+
+target="$1"
+compile
+run

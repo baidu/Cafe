@@ -3,6 +3,8 @@ package com.baidu.cafe.local;
 import java.util.ArrayList;
 
 /**
+ * A String util class.
+ * 
  * @author luxiaoyu01@baidu.com
  * @date 2012-11-21
  * @version
@@ -37,5 +39,24 @@ public class Strings {
             ret.add(rows[rowNumber - 1]);
         }
         return new Strings(ret);
+    }
+
+    /**
+     * e.g. transfer "767E" to "\u767E"
+     * 
+     * @param unicodeString
+     * @return "" means failed
+     */
+    public static String unicodeStringToUnicode(String unicodeString) {
+        try {
+            char[] unicode = new char[unicodeString.length() / 4];
+            for (int i = 0, j = 0; i < unicodeString.length(); i += 4, j++) {
+                unicode[j] = (char) Integer.parseInt(unicodeString.substring(i, i + 4), 16);
+            }
+            return new String(unicode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

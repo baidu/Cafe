@@ -163,9 +163,9 @@ do
 			;;  
 		t)  
 			if [ ! -z "$HAS_DEVICE" ];then
-                compile
                 cd $SRC/tests
-                ./run_demo_test.sh
+                cp ../out/Cafe.apk .
+                ./run_demo_test.sh $2 
 			else
 				echo "There is no device to run testcase!"
 			fi

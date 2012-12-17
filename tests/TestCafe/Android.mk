@@ -11,7 +11,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := libCafe
 # Include all test java files.
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
 LOCAL_PACKAGE_NAME := TestCafe
-LOCAL_INSTRUMENTATION_FOR := CafeDemo
+#LOCAL_INSTRUMENTATION_FOR := CafeDemo
 
 include $(BUILD_PACKAGE)
 

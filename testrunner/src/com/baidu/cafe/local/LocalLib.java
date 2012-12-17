@@ -39,6 +39,7 @@ import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.Checkable;
 import android.widget.CheckedTextView;
@@ -1145,23 +1146,20 @@ public class LocalLib extends SoloEx {
      */
     public View getViewById(String resId, int index, int searchMode) {
         ArrayList<View> views = getViews();
-        int size = views.size();
         int number = 0;
 
-        for (int i = 0; i < size; i++) {
+        for (View view : views) {
             String strid = "";
-            int resid = views.get(i).getId();
-
-            // we only concern the shown view
-            if (false == views.get(i).isShown()) {
+            int resid = view.getId();
+            if (false == view.isShown() || View.NO_ID == resid) {
                 continue;
             }
 
             try {
-                strid = views.get(i).getResources().getResourceName(resid);
-                print(strid + "  views.get(i).getResources().getResourceName(resid) is " + strid);
+                strid = view.getResources().getResourceName(resid);
+                //                print(strid + "  views.get(i).getResources().getResourceName(resid) is " + strid);
             } catch (Resources.NotFoundException e) {
-                print("resid num " + resid + " dose not have id");
+                //                print("resid num " + resid + " dose not have id");
                 continue;
             }
 
@@ -1175,7 +1173,7 @@ public class LocalLib extends SoloEx {
             }
 
             if (number - 1 == index) {
-                return views.get(i);
+                return view;
             }
         }
 
@@ -1186,24 +1184,23 @@ public class LocalLib extends SoloEx {
         boolean flag = false;
         ArrayList<View> viewArray = getViews();
         int size = viewArray.size();
-        for (int i = 0; i < size; i++) {
+        for (View view : viewArray) {
             if ((true == isVisiable)
-                    && ((viewArray.get(i).getVisibility() == View.GONE) || (viewArray.get(i)
-                            .getVisibility() == View.INVISIBLE))) {
+                    && ((view.getVisibility() == View.GONE) || (view.getVisibility() == View.INVISIBLE))) {
                 continue;
             }
+            int resid = view.getId();
             // we only concern the shown view
-            if (false == viewArray.get(i).isShown()) {
+            if (false == view.isShown() || View.NO_ID == resid) {
                 continue;
             }
             String strid;
-            int resid = viewArray.get(i).getId();
             try {
-                strid = viewArray.get(i).getResources().getResourceName(resid);
-                print(strid + "  viewArray.get(i).getResources().getResourceName(resid) is "
-                        + strid);
+                strid = view.getResources().getResourceName(resid);
+                //                print(strid + "  viewArray.get(i).getResources().getResourceName(resid) is "
+                //                        + strid);
             } catch (Resources.NotFoundException e) {
-                print("resid num " + resid + " dose not have id");
+                //                print("resid num " + resid + " dose not have id");
                 continue;
             }
             if (strid.contains(resId)) {
@@ -1211,7 +1208,6 @@ public class LocalLib extends SoloEx {
                 break;
             }
         }
-        print("return value is " + flag);
         return flag;
     }
 
@@ -1312,7 +1308,7 @@ public class LocalLib extends SoloEx {
         screenShot(getTimeStamp());
     }
 
-    public static void screenShotNamedSuffix(String suffix, String packagePath) {
+    public void screenShotNamedSuffix(String suffix, String packagePath) {
         screenShot(getTimeStamp() + "_" + suffix, packagePath);
     }
 
@@ -1322,7 +1318,7 @@ public class LocalLib extends SoloEx {
         return localTime.format("%Y-%m-%d_%H-%M-%S");
     }
 
-    private static void screenShot(String fileName, String packagePath) {
+    private void screenShot(String fileName, String packagePath) {
         File cafe = new File(packagePath);
         if (!cafe.exists()) {
             cafe.mkdir();
@@ -1332,20 +1328,45 @@ public class LocalLib extends SoloEx {
     }
 
     public void screenShot(String fileName) {
-        screenShot(fileName, mContext.getFilesDir().toString());
+        screenShot(fileName, mInstrumentation.getTargetContext().getFilesDir().toString());
     }
+
+    public static void takeWebViewSnapshot(WebView webView, String savePath) {
+        SnapshotHelper.takeWebViewSnapshot(webView, savePath);
+    }
+
+    /**
+     * screencap can only be invoked from shell not app process
+     */
+    //    public void screencap(String fileName) {
+    //        String path = String.format("screencap -p %s/%s.png", mInstrumentation.getTargetContext()
+    //                .getFilesDir().toString(), fileName);
+    //        executeOnDevice(path, "/system/bin");
+    //    }
 
     /**
      * Take an activity snapshot.
      */
-    public static void takeActivitySnapshot(String path) {
-        print("Save snapshot, file is " + path);
-        View view = getWindowDecorViews()[0];
-        if (view != null) {
-            SnapshotHelper.takeViewSnapshot(view, path);
-        } else {
-            print("view == null at takeActivitySnapshot!");
+    public void takeActivitySnapshot(final String path) {
+        View[] views = getWindowDecorViews();
+
+        if (0 == views.length) {
+            print("0 == views.length at takeActivitySnapshot");
+            return;
         }
+
+        final View view = getRecentDecorView(views);
+
+        if (null == view) {
+            print("null == rview");
+            return;
+        }
+
+        mInstrumentation.runOnMainSync(new Runnable() {
+            public void run() {
+                SnapshotHelper.takeViewSnapshot(view, path);
+            }
+        });
     }
 
     /**
@@ -1400,8 +1421,25 @@ public class LocalLib extends SoloEx {
         return activities;
     }
 
+    /**
+     * Returns the WindorDecorViews shown on the screen
+     * 
+     * @return the WindorDecorViews shown on the screen
+     */
     public static View[] getWindowDecorViews() {
         return (View[]) invoke(mViewFetcher, "getWindowDecorViews"); // mViewFetcher.getActiveDecorView();
+    }
+
+    /**
+     * Returns the most recent DecorView
+     * 
+     * @param views
+     *            the views to check
+     * @return the most recent DecorView
+     */
+    public static View getRecentDecorView(View[] views) {
+        return (View) invoke(mViewFetcher, "getRecentDecorView", new Class[] { View[].class },
+                new Object[] { views });
     }
 
     /**

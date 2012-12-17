@@ -2,5 +2,5 @@
 <resources>
 
     <string name="app_name">TestCafeTest</string>
-
+    <string name="query_word">百度</string>
 </resources>
