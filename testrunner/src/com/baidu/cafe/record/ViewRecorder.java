@@ -1,4 +1,4 @@
-package com.baidu.cafe.local;
+package com.baidu.cafe.record;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.local.Log;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -43,6 +46,11 @@ public class ViewRecorder {
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
 
+    public ViewRecorder(LocalLib local) {
+        this.local = local;
+        init();
+    }
+
     class RecordMotionEvent {
         public View  view;
         public float x;
@@ -64,9 +72,8 @@ public class ViewRecorder {
 
     }
 
-    public ViewRecorder(LocalLib local) {
-        this.local = local;
-        init();
+    class printEvent {
+        //        public 
     }
 
     private void print(String message) {
@@ -230,8 +237,8 @@ public class ViewRecorder {
             view.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String code = "//view.text=" + local.getViewText(v) + "\n"
-                            + "clickOnView(findViewById(new Integer(" + v.getId() + ")));";
+                    String code = "//view.text=" + local.getViewText(v) + "\n" + "clickOnView(" + v
+                            + ");";
                     print(code);
                     writeToFile(String.format("local.clickOn(viewClass, index);", v.getClass(),
                             local.getCurrentViewIndex(v)));
@@ -397,7 +404,7 @@ public class ViewRecorder {
                  */
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    print("parent: " + parent + "view: " + view + "\t position: " + position
+                    print("parent: " + parent + " view: " + view + " position: " + position
                             + " click ");
                     writeToFile(String.format("local.clickInList(%s, %s, false);", position,
                             local.getCurrentViewIndex(parent)));

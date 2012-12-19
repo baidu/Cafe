@@ -1,4 +1,4 @@
-package com.baidu.cafe.local;
+package com.baidu.cafe.record;
 
 /**
  * @author luxiaoyu01@baidu.com

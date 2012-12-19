@@ -52,6 +52,7 @@ import android.widget.TimePicker;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.ShellExecute.CommandResult;
+import com.baidu.cafe.record.ViewRecorder;
 
 import dalvik.system.DexFile;
 
