@@ -44,17 +44,22 @@ public class ViewRecorder {
     private File                                     mRecord                   = null;
 
     class RecordMotionEvent {
-        public View        view;
-        public MotionEvent motionEvent;
+        public View  view;
+        public float x;
+        public float y;
+        public int   action;
 
-        public RecordMotionEvent(View view, MotionEvent motionEvent) {
+        public RecordMotionEvent(View view, int action, float x, float y) {
             this.view = view;
-            this.motionEvent = motionEvent;
+            this.x = x;
+            this.y = y;
+            this.action = action;
         }
 
         @Override
         public String toString() {
-            return "RecordMotionEvent(" + view + ", " + motionEvent + ")";
+            return String
+                    .format("RecordMotionEvent(%s, action=%s, x=%s, y=%s)", view, action, x, y);
         }
 
     }
@@ -296,7 +301,8 @@ public class ViewRecorder {
     }
 
     private void addEvent(View v, MotionEvent event) {
-        if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event))) {
+        if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
+                event.getRawY()))) {
             print("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
                     + "mMotionEventQueue.size=" + mMotionEventQueue.size());
         }
@@ -316,9 +322,9 @@ public class ViewRecorder {
                     RecordMotionEvent e = null;
                     boolean isUp = false;
                     while ((e = mMotionEventQueue.poll()) != null) {
-                        events.add(new RecordMotionEvent(e.view, e.motionEvent));
+                        events.add(e);
                         print("" + e);
-                        if (e.motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                        if (MotionEvent.ACTION_UP == e.action) {
                             isUp = true;
                             break;
                         }
@@ -358,13 +364,13 @@ public class ViewRecorder {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
         int stepCount = events.size() - 2;
-        print("down:" + down.motionEvent);
-        print("up:" + up.motionEvent);
+        print("down:" + down);
+        print("up:" + up);
         // drag from (fromX,fromY) to (toX, toY) by step count 
-        float fromX = down.motionEvent.getRawX();
-        float fromY = down.motionEvent.getRawY();
-        float toX = up.motionEvent.getRawX();
-        float toY = up.motionEvent.getRawY();
+        float fromX = down.x;
+        float fromY = down.y;
+        float toX = up.x;
+        float toY = up.y;
         print(String.format("Drag from (%s,%s) to (%s, %s) by step count %s", fromX, fromY, toX,
                 toY, stepCount));
         writeToFile(String.format("local.drag(%s, %s, %s, %s, %s);", fromX, toX, fromY, toY,
