@@ -136,7 +136,6 @@ public class ViewRecorder {
             } else {
                 // get views who have new listeners
                 if (hasNewListener(view)) {
-                    print("hasNewListener: " + view);
                     targetViews.add(view);
                 }
             }
@@ -151,6 +150,8 @@ public class ViewRecorder {
         for (String listenerName : listenerNames) {
             Object listener = local.getListener(view, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
+                mAllListenerHashcodes.add(listener.hashCode());
+                print("has" + listenerName + ": " + view);
                 return true;
             }
         }
