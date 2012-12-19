@@ -323,7 +323,7 @@ public class ViewRecorder {
                     boolean isUp = false;
                     while ((e = mMotionEventQueue.poll()) != null) {
                         events.add(e);
-                        print("" + e);
+                        //                        print("" + e);
                         if (MotionEvent.ACTION_UP == e.action) {
                             isUp = true;
                             break;
@@ -335,7 +335,6 @@ public class ViewRecorder {
                         View targetView = events.get(events.size() - 1).view;
                         ArrayList<RecordMotionEvent> aTouch = new ArrayList<RecordMotionEvent>();
                         for (RecordMotionEvent recordMotionEvent : events) {
-                            print("events:" + recordMotionEvent);
                             if (recordMotionEvent.view.equals(targetView)) {
                                 aTouch.add(recordMotionEvent);
                             }
@@ -364,16 +363,9 @@ public class ViewRecorder {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
         int stepCount = events.size() - 2;
-        print("down:" + down);
-        print("up:" + up);
-        // drag from (fromX,fromY) to (toX, toY) by step count 
-        float fromX = down.x;
-        float fromY = down.y;
-        float toX = up.x;
-        float toY = up.y;
-        print(String.format("Drag from (%s,%s) to (%s, %s) by step count %s", fromX, fromY, toX,
-                toY, stepCount));
-        writeToFile(String.format("local.drag(%s, %s, %s, %s, %s);", fromX, toX, fromY, toY,
+        print(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s", down.view,
+                down.x, down.y, up.x, up.y, stepCount));
+        writeToFile(String.format("local.drag(%s, %s, %s, %s, %s);", down.x, up.x, down.y, up.y,
                 stepCount));
     }
 
