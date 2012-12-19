@@ -42,8 +42,6 @@ run()
     ADB="adb -s $serial"
     start_monkey_server
     $ADB shell service call window 1 i32 4939
-    #$ADB install -r $_PWD/Cafe.apk
-    #$ADB install -r $APK
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
     logcat_pid=$!
@@ -87,4 +85,10 @@ done
 
 target="$1"
 compile
+serial="HT068P801969"
+ADB="adb -s $serial"
+$ADB install -r $_PWD/Cafe.apk
+$ADB install -r $APK
+test_package=`aapt dump badging $APK | grep "package:" | awk -F "'" '{print $2}'`
+echo "$test_package"
 run

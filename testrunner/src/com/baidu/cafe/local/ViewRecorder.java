@@ -6,35 +6,29 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.locks.LockSupport;
 
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
-import android.widget.TextView.OnEditorActionListener;
 
 /**
  * @author luxiaoyu01@baidu.com
  * @date 2012-11-8
  * @version
- * @todo 1.不同版本的Android，录制、回放是否可行。尤其是4.2 2.记录成index形式的 3.touch记录成百分比
+ * @todo
  */
 public class ViewRecorder {
     private HashMap<String, OnClickListener>         mOnClickListeners         = new HashMap<String, OnClickListener>();
@@ -322,8 +316,8 @@ public class ViewRecorder {
                     RecordMotionEvent e = null;
                     boolean isUp = false;
                     while ((e = mMotionEventQueue.poll()) != null) {
-                        events.add(e);
-                        //                        print("" + e);
+                        events.add(new RecordMotionEvent(e.view, e.motionEvent));
+                        print("" + e);
                         if (e.motionEvent.getAction() == MotionEvent.ACTION_UP) {
                             isUp = true;
                             break;
@@ -335,6 +329,7 @@ public class ViewRecorder {
                         View targetView = events.get(events.size() - 1).view;
                         ArrayList<RecordMotionEvent> aTouch = new ArrayList<RecordMotionEvent>();
                         for (RecordMotionEvent recordMotionEvent : events) {
+                            print("events:" + recordMotionEvent);
                             if (recordMotionEvent.view.equals(targetView)) {
                                 aTouch.add(recordMotionEvent);
                             }
@@ -363,7 +358,8 @@ public class ViewRecorder {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
         int stepCount = events.size() - 2;
-
+        print("down:" + down.motionEvent);
+        print("up:" + up.motionEvent);
         // drag from (fromX,fromY) to (toX, toY) by step count 
         float fromX = down.motionEvent.getRawX();
         float fromY = down.motionEvent.getRawY();

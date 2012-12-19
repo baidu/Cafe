@@ -1,18 +1,11 @@
 package com.example.demo.test;
 
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Picture;
 import android.view.KeyEvent;
-import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.ListView;
 
 import com.baidu.cafe.CafeTestCase;
-import com.baidu.cafe.local.FileUtils;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
 import com.baidu.cafe.local.NetworkUtils;
@@ -53,17 +46,8 @@ public class TestCafe extends CafeTestCase {
      * NOTICE: 运行case前需要开启cafe_setup.bat
      */
     public void test_sample() {
-        //local.beginRecordCode();
-        local.sleep(2000);
-        local.sendKey(KeyEvent.KEYCODE_SEARCH);
-        local.clickOnText("\u641C\u7D22", LocalLib.SEARCHMODE_COMPLETE_MATCHING);
-        ArrayList<Button> buttons = local.getCurrentButtons();
-        for (Button button : buttons) {
-            System.out.println("" + button.getText());
-        }
-        //        local.screenShot();
-        //        local.screencap(local.getCurrentActivity().getPackageName());
-        local.sleep(2000);
+        local.beginRecordCode();
+        local.sleep(2000000);
     }
 
     private void history() {
