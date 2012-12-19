@@ -9,6 +9,7 @@ import android.graphics.Picture;
 import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.ListView;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.FileUtils;
@@ -60,7 +61,6 @@ public class TestCafe extends CafeTestCase {
         for (Button button : buttons) {
             System.out.println("" + button.getText());
         }
-
         //        local.screenShot();
         //        local.screencap(local.getCurrentActivity().getPackageName());
         local.sleep(2000);

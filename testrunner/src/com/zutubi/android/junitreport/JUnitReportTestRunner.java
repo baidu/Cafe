@@ -16,8 +16,6 @@
 
 package com.zutubi.android.junitreport;
 
-import com.baidu.cafe.local.Strings;
-
 import android.os.Bundle;
 import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
@@ -94,7 +92,8 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
             mFilterTraces = getBooleanArgument(arguments, ARG_FILTER_TRACES, true);
             mMultiFile = getBooleanArgument(arguments, ARG_MULTI_FILE, false);
             // added by luxiaoyu01@baidu.com
-            mCustom = Strings.unicodeStringToUnicode(arguments.getString(ARG_CUSTOM_ARG));
+            mCustom = arguments.getString(ARG_CUSTOM_ARG);
+            System.out.println("mCustom:" + mCustom);
         } else {
             Log.i(LOG_TAG, "No arguments provided");
         }
