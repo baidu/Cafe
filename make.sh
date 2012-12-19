@@ -113,11 +113,11 @@ function make_cafe()
 	#adb push $ANDROID_TOP/out/target/product/generic/system/framework/cafe.jar /system/framework
 
 	# make android-web-driver.jar
-	cd $SRC/webapp
-	mm -j$CPU_NUMBER
-	if [ 0 -ne $? ];then
-		exit 1;
-	fi
+	#cd $SRC/webapp
+	#mm -j$CPU_NUMBER
+	#if [ 0 -ne $? ];then
+	#	exit 1;
+	#fi
 
 	# cp classes-jarjar.jar for development
 	cd $SRC
@@ -126,8 +126,8 @@ function make_cafe()
 	cd out
 	cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates/classes.jar .
 	mv classes.jar cafe.jar
-	cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
-	mv classes.jar android-web-driver.jar
+	#cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
+	#mv classes.jar android-web-driver.jar
 }
 
 function make_arms()
