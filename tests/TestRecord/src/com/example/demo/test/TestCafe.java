@@ -8,7 +8,6 @@ import android.widget.Button;
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
-import com.baidu.cafe.local.NetworkUtils;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -51,13 +50,6 @@ public class TestCafe extends CafeTestCase {
     }
 
     private void history() {
-        Log.i("###", "" + new NetworkUtils().getPackageRcv("com.baidu.BaiduMap"));
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Log.i("###", "" + new NetworkUtils().getPackageRcv("com.baidu.BaiduMap"));
         remote.pressKey(KeyEvent.KEYCODE_HOME);
         //µã»÷ËøÆÁ¼ü
         remote.pressKey(KeyEvent.KEYCODE_POWER);
