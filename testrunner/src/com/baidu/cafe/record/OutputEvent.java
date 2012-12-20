@@ -32,6 +32,12 @@ class OutputEvent {
     public void setLog(String log) {
         this.log = log;
     }
+
+    @Override
+    public String toString() {
+        return String.format("[%s] %s", view, proity);
+    }
+
 }
 
 class ClickEvent extends OutputEvent {
