@@ -134,8 +134,8 @@ public class ViewRecorder {
                 targetViews.add(view);
                 mAllViews.add(viewID);
             } else {
-                // get views who have new listeners
-                if (hasNewListener(view)) {
+                // get views who have unhooked listeners
+                if (hasUnhookedListener(view)) {
                     targetViews.add(view);
                 }
             }
@@ -144,13 +144,13 @@ public class ViewRecorder {
         return targetViews;
     }
 
-    private boolean hasNewListener(View view) {
+    private boolean hasUnhookedListener(View view) {
         String[] listenerNames = new String[] { "mOnItemClickListener", "mOnClickListener",
                 "mOnTouchListener" };
         for (String listenerName : listenerNames) {
             Object listener = local.getListener(view, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
-                print("has unhooked " + listenerName + ": " + view);
+                //                print("has unhooked " + listenerName + ": " + view);
                 return true;
             }
         }
