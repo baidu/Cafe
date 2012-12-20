@@ -460,15 +460,20 @@ public class ViewRecorder {
                         // output all events
                         for (int i = 0; i < events.size(); i++) {
                             OutputEvent event = events.get(i);
+                            print("event:" + event.view);
                             int index = getIndexByView(events, event.view);
                             if (index == -1) {
+                                print("index == -1");
                                 outputAnEvent(event);
                             } else {
                                 // has the same view
                                 OutputEvent anotherEvent = events.get(index);
+                                print("anotherEvent:" + anotherEvent.view);
                                 if (event.proity > anotherEvent.proity) {
+                                    print("event.proity > anotherEvent.proity");
                                     outputAnEvent(event);
                                 } else if (event.proity < anotherEvent.proity) {
+                                    print("event.proity < anotherEvent.proity");
                                     outputAnEvent(anotherEvent);
                                 } else {
                                     outputAnEvent(event);
