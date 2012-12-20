@@ -176,7 +176,6 @@ public class ViewRecorder {
         }
 
         if (view instanceof EditText) {
-            print("EditText [" + view + "]");
             hookEditText((EditText) view);
             return;
         }

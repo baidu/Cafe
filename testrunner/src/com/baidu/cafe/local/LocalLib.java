@@ -26,6 +26,8 @@ import java.util.Enumeration;
 import junit.framework.Assert;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -1356,13 +1358,13 @@ public class LocalLib extends SoloEx {
             return;
         }
 
-        final View view = getRecentDecorView(views);
-
-        if (null == view) {
-            print("null == rview");
-            return;
+        View recentDecorview = getRecentDecorView(views);
+        if (null == recentDecorview) {
+            print("null == rview; use views[0]: " + views[0]);
+            recentDecorview = views[0];
         }
 
+        final View view = recentDecorview;
         mInstrumentation.runOnMainSync(new Runnable() {
             public void run() {
                 SnapshotHelper.takeViewSnapshot(view, path);
@@ -1489,4 +1491,19 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
+    /**
+     * @param pid
+     * @return
+     */
+    public String getAppNameByPID(int pid) {
+        ActivityManager manager = (ActivityManager) mInstrumentation.getTargetContext()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+
+        for (RunningAppProcessInfo processInfo : manager.getRunningAppProcesses()) {
+            if (processInfo.pid == pid) {
+                return processInfo.processName;
+            }
+        }
+        return "";
+    }
 }

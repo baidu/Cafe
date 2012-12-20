@@ -39,12 +39,37 @@ public class NetworkUtils {
         return uid;
     }
 
+    private static int getPidRowNumber() {
+        String psHead = new ShellExecute().execute("ps", "/").console.strings.get(0);
+        String[] psHeadRow = psHead.split(" ");
+        int rowNumber = 0;
+        for (int i = 0; i < psHeadRow.length; i++) {
+            if ("".equals(psHeadRow[i])) {
+                continue;
+            }
+            rowNumber++;
+            if ("PID".equals(psHeadRow[i])) {
+                //                print("PID ROW NUMBER: " + rowNumber);
+                return rowNumber;
+            }
+        }
+        return 0;
+    }
+
     public static ArrayList<Integer> getPidsByPackageName(String packageName) {
+        int pidRowNumber = getPidRowNumber();
+        if (pidRowNumber == 0) {
+            print("pidRowNumber failed!");
+        }
         ArrayList<Integer> pids = new ArrayList<Integer>();
         ArrayList<String> pidStrings = new ShellExecute().execute("ps", "/").console.grep(
-                packageName).getRow("\\s{1,}", 2).strings;
+                packageName).getRow("\\s{1,}", pidRowNumber).strings;
         for (String pid : pidStrings) {
-            pids.add(Integer.valueOf(pid));
+            try {
+                pids.add(Integer.valueOf(pid));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return pids;
