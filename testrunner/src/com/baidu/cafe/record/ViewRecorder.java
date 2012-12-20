@@ -485,8 +485,8 @@ public class ViewRecorder {
     }
 
     private void outputAnEvent(OutputEvent event) {
-        event.getCode();
-        event.getLog();
+        print("[CODE] " + event.getCode());
+        print(event.getLog());
     }
 
     private int getIndexByView(ArrayList<OutputEvent> events, View view) {

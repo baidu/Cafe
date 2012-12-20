@@ -17,12 +17,12 @@ class OutputEvent {
     protected String        code           = "";
     protected String        log            = "";
 
-    public void getCode() {
-
+    public String getCode() {
+        return code;
     }
 
-    public void getLog() {
-
+    public String getLog() {
+        return log;
     }
 
     public void setCode(String code) {
