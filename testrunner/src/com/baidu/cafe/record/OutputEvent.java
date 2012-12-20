@@ -8,9 +8,9 @@ import android.view.View;
  * @version
  * @todo
  */
-class Event {
-    public final static int PRIORITY_CLICK = 1;
-    public final static int PRIORITY_TOUCH = 2;
+class OutputEvent {
+    public final static int PRIORITY_DRAG  = 1;
+    public final static int PRIORITY_CLICK = 2;
 
     public int              proity         = 0;
     public View             view           = null;
@@ -24,13 +24,6 @@ class Event {
     public void getLog() {
 
     }
-}
-
-class ClickEvent extends Event {
-    public ClickEvent(View view) {
-        this.view = view;
-        this.proity = PRIORITY_CLICK;
-    }
 
     public void setCode(String code) {
         this.code = code;
@@ -38,5 +31,19 @@ class ClickEvent extends Event {
 
     public void setLog(String log) {
         this.log = log;
+    }
+}
+
+class ClickEvent extends OutputEvent {
+    public ClickEvent(View view) {
+        this.view = view;
+        this.proity = PRIORITY_CLICK;
+    }
+}
+
+class DragEvent extends OutputEvent {
+    public DragEvent(View view) {
+        this.view = view;
+        this.proity = PRIORITY_DRAG;
     }
 }

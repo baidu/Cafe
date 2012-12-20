@@ -70,7 +70,7 @@ public class ViewRecorder {
      * For judging events of the same view at the same time which should be
      * keeped by their priorities.
      */
-    private Queue<Event>                             mEventQueue               = new LinkedList<Event>();
+    private Queue<OutputEvent>                       mOutputEventQueue         = new LinkedList<OutputEvent>();
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
 
@@ -150,6 +150,7 @@ public class ViewRecorder {
         }).start();
 
         handleRecordMotionEventQueue();
+        handleOutEventQueue();
     }
 
     private ArrayList<View> getTargetViews(ArrayList<View> views) {
@@ -273,7 +274,7 @@ public class ViewRecorder {
                             v.getClass(), local.getCurrentViewIndex(v)));
                     clickEvent.setLog("//view.text=" + local.getViewText(v) + "\n" + "clickOnView("
                             + v + ");");
-                    mEventQueue.offer(clickEvent);
+                    mOutputEventQueue.offer(clickEvent);
 
                     OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
                     if (onClickListener != null) {
@@ -436,28 +437,69 @@ public class ViewRecorder {
         }
     }
 
-    private void handleEventQueue() {
+    private void handleOutEventQueue() {
         // merge event in 50ms by their priorities
         new Thread(new Runnable() {
 
             @Override
             public void run() {
-                ArrayList<Event> events = new ArrayList<Event>();
+                ArrayList<OutputEvent> events = new ArrayList<OutputEvent>();
                 while (true) {
-                    sleep(50);
-                    Event e = mEventQueue.poll();
+                    OutputEvent e = mOutputEventQueue.poll();
                     if (e != null) {
                         events.add(e);
                         sleep(50);
+
                         // get all event
-                        while ((e = mEventQueue.poll()) != null) {
+                        while ((e = mOutputEventQueue.poll()) != null) {
                             events.add(e);
                         }
-                    }
 
+                        // output all events
+                        for (int i = 0; i < events.size(); i++) {
+                            OutputEvent event = events.get(i);
+                            int index = getIndexByView(events, event.view);
+                            if (index == -1) {
+                                outputAnEvent(event);
+                            } else {
+                                // has the same view
+                                OutputEvent anotherEvent = events.get(index);
+                                if (event.proity > anotherEvent.proity) {
+                                    outputAnEvent(event);
+                                } else if (event.proity < anotherEvent.proity) {
+                                    outputAnEvent(anotherEvent);
+                                } else {
+                                    outputAnEvent(event);
+                                    outputAnEvent(anotherEvent);
+                                }
+                            }
+                        }
+
+                        events.clear();
+                    } else {
+                        sleep(50);
+                    }
                 }
             }
         }).start();
+    }
+
+    private void outputAnEvent(OutputEvent event) {
+        event.getCode();
+        event.getLog();
+    }
+
+    private int getIndexByView(ArrayList<OutputEvent> events, View view) {
+        boolean isSelf = true;
+        for (int i = 0; i < events.size(); i++) {
+            if (events.get(i).view.equals(view)) {
+                if (!isSelf) {
+                    return i;
+                }
+                isSelf = false;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -510,10 +552,13 @@ public class ViewRecorder {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
         int stepCount = events.size() - 2;
-        print(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s", down.view,
-                down.x, down.y, up.x, up.y, stepCount));
-        writeToFile(String.format("local.drag(%s, %s, %s, %s, %s);", down.x, up.x, down.y, up.y,
-                stepCount));
+
+        DragEvent dragEvent = new DragEvent(up.view);
+        dragEvent.setCode(String.format("local.drag(%s, %s, %s, %s, %s);", down.x, up.x, down.y,
+                up.y, stepCount));
+        dragEvent.setLog(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s",
+                down.view, down.x, down.y, up.x, up.y, stepCount));
+        mOutputEventQueue.offer(dragEvent);
     }
 
     private void hookOnItemSelectedListener(AdapterView view) {
