@@ -254,7 +254,9 @@ public class ViewRecorder {
             // save hashcode of hooked listener
             OnClickListener onClickListenerHooked = (OnClickListener) local.getListener(view,
                     "mOnClickListener");
-            mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
+            if (onClickListenerHooked != null) {
+                mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
+            }
             return true;
         }
         return false;
@@ -303,7 +305,9 @@ public class ViewRecorder {
         // save hashcode of hooked listener
         OnTouchListener onTouchListenerHooked = (OnTouchListener) local.getListener(view,
                 "mOnTouchListener");
-        mAllListenerHashcodes.add(onTouchListenerHooked.hashCode());
+        if (onTouchListenerHooked != null) {
+            mAllListenerHashcodes.add(onTouchListenerHooked.hashCode());
+        }
     }
 
     private void hookOnItemClickListener(AdapterView view) {
@@ -358,7 +362,9 @@ public class ViewRecorder {
             // save hashcode of hooked listener
             OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) local
                     .getListener(view, "mOnItemClickListener");
-            mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
+            if (onItemClickListenerHooked != null) {
+                mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
+            }
         } else {
             print("onItemClickListener == null at [" + view + "]");
         }
