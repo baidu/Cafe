@@ -43,6 +43,7 @@ public class ViewRecorder {
     private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
     private ArrayList<String>                        mAllViews                 = new ArrayList<String>();
     private ArrayList<Integer>                       mAllListenerHashcodes     = new ArrayList<Integer>();
+    private ArrayList<EditText>                      mAllEditTexts             = new ArrayList<EditText>();
     private Queue<RecordMotionEvent>                 mMotionEventQueue         = new LinkedList<RecordMotionEvent>();
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
@@ -201,7 +202,11 @@ public class ViewRecorder {
     }
 
     private void hookEditText(EditText editText) {
-        print("hookEditText [" + editText + "]");
+        if (mAllEditTexts.contains(editText)) {
+            return;
+        }
+
+        // all TextWatcher works at the same time
         editText.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -218,6 +223,8 @@ public class ViewRecorder {
             }
         });
 
+        print("hookEditText [" + editText + "]");
+        mAllEditTexts.add(editText);
     }
 
     private boolean hookOnClickListener(View view) {
