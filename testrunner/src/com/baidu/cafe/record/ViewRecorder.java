@@ -270,11 +270,13 @@ public class ViewRecorder {
                 @Override
                 public void onClick(View v) {
                     ClickEvent clickEvent = new ClickEvent(v);
-                    clickEvent.setCode(String.format("local.clickOn(viewClass, index);",
-                            v.getClass(), local.getCurrentViewIndex(v)));
-                    clickEvent.setLog("//view.text=" + local.getViewText(v) + "\n" + "clickOnView("
-                            + v + ");");
+                    clickEvent.setCode(String.format("local.clickOn(%s, %s);", v.getClass(),
+                            local.getCurrentViewIndex(v)));
+                    clickEvent.setLog(String.format("Click On View [%s(%s)] ", v,
+                            local.getViewText(v)));
                     mOutputEventQueue.offer(clickEvent);
+                    print("???:"
+                            + String.format("Click On View [%s(%s)] ", v, local.getViewText(v)));
 
                     OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
                     if (onClickListener != null) {
