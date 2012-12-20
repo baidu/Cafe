@@ -150,10 +150,17 @@ public class ViewRecorder {
         for (String listenerName : listenerNames) {
             Object listener = local.getListener(view, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
-                mAllListenerHashcodes.add(listener.hashCode());
-                print("has" + listenerName + ": " + view);
+                print("has unhooked " + listenerName + ": " + view);
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean hasHookedListener(View view, String listenerName) {
+        Object listener = local.getListener(view, listenerName);
+        if (listener != null && mAllListenerHashcodes.contains(listener.hashCode())) {
+            return true;
         }
         return false;
     }
@@ -214,6 +221,9 @@ public class ViewRecorder {
     }
 
     private boolean hookOnClickListener(View view) {
+        if (hasHookedListener(view, "mOnClickListener")) {
+            return true;
+        }
         OnClickListener onClickListener = (OnClickListener) local.getListener(view,
                 "mOnClickListener");
         if (null != onClickListener) {
@@ -251,6 +261,9 @@ public class ViewRecorder {
     }
 
     private void hookOnTouchListener(View view) {
+        if (hasHookedListener(view, "mOnTouchListener")) {
+            return;
+        }
         OnTouchListener onTouchListener = (OnTouchListener) local.getListener(view,
                 "mOnTouchListener");
         //        print("hookOnTouchListener [" + view + "(" + local.getViewText(view) + ")]"
@@ -294,6 +307,9 @@ public class ViewRecorder {
     }
 
     private void hookOnItemClickListener(AdapterView view) {
+        if (hasHookedListener(view, "mOnItemClickListener")) {
+            return;
+        }
         OnItemClickListener onItemClickListener = (OnItemClickListener) local.getListener(view,
                 "mOnItemClickListener");
 
