@@ -33,7 +33,7 @@ import android.view.View;
  * @version
  * @todo
  */
-public class SoloEx extends Solo {
+class SoloEx extends Solo {
 
     // In order to use the Non-Public-Class of robotium project, we have to
     // define the following member variables as Object

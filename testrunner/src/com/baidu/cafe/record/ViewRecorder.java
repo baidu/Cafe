@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2012 Baidu.com Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.baidu.cafe.record;
 
 import java.io.BufferedWriter;
@@ -44,7 +60,17 @@ public class ViewRecorder {
     private ArrayList<String>                        mAllViews                 = new ArrayList<String>();
     private ArrayList<Integer>                       mAllListenerHashcodes     = new ArrayList<Integer>();
     private ArrayList<EditText>                      mAllEditTexts             = new ArrayList<EditText>();
+
+    /**
+     * For merge a sequeue of MotionEvents to a drag
+     */
     private Queue<RecordMotionEvent>                 mMotionEventQueue         = new LinkedList<RecordMotionEvent>();
+
+    /**
+     * For judging events of the same view at the same time which should be
+     * keeped by their priorities.
+     */
+    private Queue<Event>                             mEventQueue               = new LinkedList<Event>();
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
 
@@ -242,11 +268,12 @@ public class ViewRecorder {
             view.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String code = "//view.text=" + local.getViewText(v) + "\n" + "clickOnView(" + v
-                            + ");";
-                    print(code);
-                    writeToFile(String.format("local.clickOn(viewClass, index);", v.getClass(),
-                            local.getCurrentViewIndex(v)));
+                    ClickEvent clickEvent = new ClickEvent(v);
+                    clickEvent.setCode(String.format("local.clickOn(viewClass, index);",
+                            v.getClass(), local.getCurrentViewIndex(v)));
+                    clickEvent.setLog("//view.text=" + local.getViewText(v) + "\n" + "clickOnView("
+                            + v + ");");
+                    mEventQueue.offer(clickEvent);
 
                     OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
                     if (onClickListener != null) {
@@ -313,6 +340,14 @@ public class ViewRecorder {
                 "mOnTouchListener");
         if (onTouchListenerHooked != null) {
             mAllListenerHashcodes.add(onTouchListenerHooked.hashCode());
+        }
+    }
+
+    private void addEvent(View v, MotionEvent event) {
+        if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
+                event.getRawY()))) {
+            print("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
+                    + "mMotionEventQueue.size=" + mMotionEventQueue.size());
         }
     }
 
@@ -393,12 +428,36 @@ public class ViewRecorder {
         }
     }
 
-    private void addEvent(View v, MotionEvent event) {
-        if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
-                event.getRawY()))) {
-            print("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
-                    + "mMotionEventQueue.size=" + mMotionEventQueue.size());
+    private void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
+    }
+
+    private void handleEventQueue() {
+        // merge event in 50ms by their priorities
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                ArrayList<Event> events = new ArrayList<Event>();
+                while (true) {
+                    sleep(50);
+                    Event e = mEventQueue.poll();
+                    if (e != null) {
+                        events.add(e);
+                        sleep(50);
+                        // get all event
+                        while ((e = mEventQueue.poll()) != null) {
+                            events.add(e);
+                        }
+                    }
+
+                }
+            }
+        }).start();
     }
 
     /**
@@ -436,12 +495,7 @@ public class ViewRecorder {
                         mergeMotionEvents(aTouch);
                         events.clear();
                     }
-
-                    try {
-                        Thread.sleep(50);
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
+                    sleep(50);
                 }
             }
         }).start();
@@ -512,15 +566,21 @@ public class ViewRecorder {
         if (null == line) {
             return;
         }
+        BufferedWriter writer = null;
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(mRecord));
+            writer = new BufferedWriter(new FileWriter("mRecord"));
             writer.write(line);
             writer.flush();
-            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

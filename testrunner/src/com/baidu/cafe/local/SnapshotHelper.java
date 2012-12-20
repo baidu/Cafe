@@ -34,7 +34,7 @@ import android.graphics.Picture;
  * @version
  * @todo
  */
-public class SnapshotHelper {
+class SnapshotHelper {
 
     private static void print(String message) {
         if (Log.IS_DEBUG && message != null) {
