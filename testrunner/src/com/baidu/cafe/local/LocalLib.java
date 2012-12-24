@@ -902,11 +902,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the right
      */
     public void clickOnScreenRight() {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         clickOnScreen(x / 4, y / 2);
     }
 
@@ -914,11 +911,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the left
      */
     public void clickOnScreenLeft() {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         clickOnScreen(x - x / 4, y / 2);
     }
 
@@ -926,11 +920,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the up
      */
     public void clickOnScreenUp() {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         clickOnScreen(x / 2, y / 4);
     }
 
@@ -938,11 +929,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the down
      */
     public void clickOnScreenDown() {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         clickOnScreen(x / 2, y - y / 4);
     }
 
@@ -950,11 +938,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to right
      */
     public void dragScreenToRight(int stepCount) {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         drag(x - x / 4, x / 4, y / 2, y / 2, stepCount);
     }
 
@@ -962,11 +947,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to Left
      */
     public void dragScreenToLeft(int stepCount) {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         drag(x / 4, x - x / 4, y / 2, y / 2, stepCount);
     }
 
@@ -974,11 +956,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to up
      */
     public void dragScreenToUp(int stepCount) {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         drag(x / 2, x / 2, y - y / 4, y / 4, stepCount);
     }
 
@@ -986,11 +965,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to Down
      */
     public void dragScreenToDown(int stepCount) {
-        DisplayMetrics dm;
-        dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int x = dm.widthPixels;
-        int y = dm.heightPixels;
+        int x = getDisplayX();
+        int y = getDisplayY();
         drag(x / 2, x / 2, y / 4, y - y / 4, stepCount);
     }
 
@@ -1473,7 +1449,7 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * get view index at current activity
+     * get view index by its class at current activity
      * 
      * @param view
      * @return -1 means not found;otherwise is then index of view
@@ -1505,5 +1481,33 @@ public class LocalLib extends SoloEx {
             }
         }
         return "";
+    }
+
+    public float getDisplayX() {
+        DisplayMetrics dm = new DisplayMetrics();
+        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+        return dm.widthPixels;
+    }
+
+    public float getDisplayY() {
+        DisplayMetrics dm = new DisplayMetrics();
+        mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+        return dm.heightPixels;
+    }
+
+    public float toScreenX(float persent) {
+        return getDisplayX() * persent;
+    }
+
+    public float toScreenY(float persent) {
+        return getDisplayY() * persent;
+    }
+
+    public float toPercentX(float x) {
+        return x / getDisplayX();
+    }
+
+    public float toPercentY(float y) {
+        return y / getDisplayY();
     }
 }

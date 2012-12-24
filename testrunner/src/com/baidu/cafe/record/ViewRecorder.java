@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -77,6 +79,7 @@ public class ViewRecorder {
     public ViewRecorder(LocalLib local) {
         this.local = local;
         init();
+        printLog("ViewRecorder is ready to work.");
     }
 
     class RecordMotionEvent {
@@ -100,14 +103,27 @@ public class ViewRecorder {
 
     }
 
-    class printEvent {
-        //        public 
+    class SortByView implements Comparator<OutputEvent> {
+        public int compare(OutputEvent e1, OutputEvent e2) {
+            if (e1.view.hashCode() > e2.view.hashCode()) {
+                return 1;
+            }
+            return 0;
+        }
     }
 
-    private void print(String message) {
+    private void print(String tag, String message) {
         if (Log.IS_DEBUG) {
-            Log.i("ViewRecorder", message);
+            Log.i(tag, message);
         }
+    }
+
+    private void printLog(String message) {
+        print("ViewRecorder", message);
+    }
+
+    private void printCode(String message) {
+        print("CodeRecorder", message);
     }
 
     private void init() {
@@ -150,7 +166,7 @@ public class ViewRecorder {
         }).start();
 
         handleRecordMotionEventQueue();
-        handleOutEventQueue();
+        handleOutputEventQueue();
     }
 
     private ArrayList<View> getTargetViews(ArrayList<View> views) {
@@ -195,7 +211,7 @@ public class ViewRecorder {
 
     private void setHookListenerOnView(View view) {
         if (view instanceof AdapterView) {
-            print("AdapterView [" + view + "]");
+            printLog("AdapterView [" + view + "]");
             hookOnItemClickListener((AdapterView) view);
             //            adapterView.setOnItemLongClickListener(listener);
             //            adapterView.setOnItemSelectedListener(listener);
@@ -237,7 +253,7 @@ public class ViewRecorder {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                print("text:" + s);
+                printLog("text:" + s);
             }
 
             @Override
@@ -249,7 +265,7 @@ public class ViewRecorder {
             }
         });
 
-        print("hookEditText [" + editText + "]");
+        printLog("hookEditText [" + editText + "]");
         mAllEditTexts.add(editText);
     }
 
@@ -260,7 +276,7 @@ public class ViewRecorder {
         OnClickListener onClickListener = (OnClickListener) local.getListener(view,
                 "mOnClickListener");
         if (null != onClickListener) {
-            print("hookClickListener [" + view + "(" + local.getViewText(view) + ")]");
+            printLog(String.format("hookClickListener [%s(%s), %s]", view, local.getViewText(view)));
 
             // save old listener
             mOnClickListeners.put(getViewID(view), onClickListener);
@@ -270,19 +286,17 @@ public class ViewRecorder {
                 @Override
                 public void onClick(View v) {
                     ClickEvent clickEvent = new ClickEvent(v);
-                    clickEvent.setCode(String.format("local.clickOn(%s, %s);", v.getClass(),
-                            local.getCurrentViewIndex(v)));
+                    clickEvent.setCode(String.format("local.clickOn(%s, %s);",
+                            getViewClassString(v), local.getCurrentViewIndex(v)));
                     clickEvent.setLog(String.format("Click On View [%s(%s)] ", v,
                             local.getViewText(v)));
                     mOutputEventQueue.offer(clickEvent);
-                    print("???:"
-                            + String.format("Click On View [%s(%s)] ", v, local.getViewText(v)));
 
                     OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
                     if (onClickListener != null) {
                         onClickListener.onClick(v);
                     } else {
-                        print("onClickListener == null");
+                        printLog("onClickListener == null");
                     }
                 }
             });
@@ -322,7 +336,7 @@ public class ViewRecorder {
                     if (onTouchListener != null) {
                         onTouchListener.onTouch(v, event);
                     } else {
-                        print("onTouchListener == null");
+                        printLog("onTouchListener == null");
                     }
                     return false;
                 }
@@ -349,7 +363,7 @@ public class ViewRecorder {
     private void addEvent(View v, MotionEvent event) {
         if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
                 event.getRawY()))) {
-            print("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
+            printLog("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
                     + "mMotionEventQueue.size=" + mMotionEventQueue.size());
         }
     }
@@ -362,7 +376,7 @@ public class ViewRecorder {
                 "mOnItemClickListener");
 
         if (null != onItemClickListener) {
-            print("hook AdapterView [" + view + "]");
+            printLog("hook AdapterView [" + view + "]");
 
             // save old listener
             mOnItemClickListeners.put(getViewID(view), onItemClickListener);
@@ -389,16 +403,19 @@ public class ViewRecorder {
                  */
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    print("parent: " + parent + " view: " + view + " position: " + position
-                            + " click ");
-                    writeToFile(String.format("local.clickInList(%s, %s, false);", position,
+                    ClickEvent clickEvent = new ClickEvent(parent);
+                    clickEvent.setCode(String.format("local.clickInList(%s, %s, false);", position,
                             local.getCurrentViewIndex(parent)));
+                    clickEvent.setLog("parent: " + parent + " view: " + view + " position: "
+                            + position + " click ");
+                    mOutputEventQueue.offer(clickEvent);
+
                     OnItemClickListener onItemClickListener = mOnItemClickListeners
                             .get(getViewID(parent));
                     if (onItemClickListener != null) {
                         onItemClickListener.onItemClick(parent, view, position, id);
                     } else {
-                        print("onItemClickListener == null");
+                        printLog("onItemClickListener == null");
                     }
                 }
             });
@@ -410,7 +427,7 @@ public class ViewRecorder {
                 mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
             }
         } else {
-            print("onItemClickListener == null at [" + view + "]");
+            printLog("onItemClickListener == null at [" + view + "]");
         }
     }
 
@@ -418,7 +435,7 @@ public class ViewRecorder {
         OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view,
                 "mOnLongClickListener");
         if (null != onLongClickListener) {
-            print("hookOnLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
+            printLog("hookOnLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
             mOnLongClickListeners.put(getViewID(view), onLongClickListener);
             view.setOnLongClickListener(new OnLongClickListener() {
 
@@ -439,7 +456,7 @@ public class ViewRecorder {
         }
     }
 
-    private void handleOutEventQueue() {
+    private void handleOutputEventQueue() {
         // merge event in 50ms by their priorities
         new Thread(new Runnable() {
 
@@ -450,38 +467,17 @@ public class ViewRecorder {
                     OutputEvent e = mOutputEventQueue.poll();
                     if (e != null) {
                         events.add(e);
-                        sleep(50);
+                        sleep(200);
 
                         // get all event
                         while ((e = mOutputEventQueue.poll()) != null) {
                             events.add(e);
                         }
 
-                        // output all events
-                        for (int i = 0; i < events.size(); i++) {
-                            OutputEvent event = events.get(i);
-                            print("event:" + event);
-                            int index = getIndexByView(events, event.view);
-                            if (index == -1) {
-                                print("index == -1");
-                                outputAnEvent(event);
-                            } else {
-                                // has the same view
-                                OutputEvent anotherEvent = events.get(index);
-                                print("anotherEvent:" + anotherEvent);
-                                if (event.proity > anotherEvent.proity) {
-                                    print("event.proity > anotherEvent.proity");
-                                    outputAnEvent(event);
-                                } else if (event.proity < anotherEvent.proity) {
-                                    print("event.proity < anotherEvent.proity");
-                                    outputAnEvent(anotherEvent);
-                                } else {
-                                    print("event.proity == anotherEvent.proity");
-                                    outputAnEvent(event);
-                                    outputAnEvent(anotherEvent);
-                                }
-                            }
-                        }
+                        // sort by view.hashCode()
+                        Collections.sort(events, new SortByView());
+
+                        outputEvents(events);
 
                         events.clear();
                     } else {
@@ -489,12 +485,41 @@ public class ViewRecorder {
                     }
                 }
             }
+
+            private void outputEvents(ArrayList<OutputEvent> events) {
+                int maxIndex = events.size() - 1;
+                for (int i = 0; i <= maxIndex;) {
+                    OutputEvent event = events.get(i);
+                    if (i == maxIndex) {
+                        outputAnEvent(event);
+                        break;
+                    }
+
+                    // NOTICE: Assume that one action just generates two outputevents.
+                    OutputEvent nextEvent = events.get(i + 1);
+                    if (event.view.equals(nextEvent.view)) {
+                        i += 2;
+                        if (event.proity > nextEvent.proity) {
+                            //                            printLog("event.proity > nextEvent.proity");
+                            outputAnEvent(event);
+                        } else if (event.proity < nextEvent.proity) {
+                            //                            printLog("event.proity < nextEvent.proity");
+                            outputAnEvent(nextEvent);
+                        } else {
+                            //                            printLog("event.proity == nextEvent.proity");
+                        }
+                    } else {
+                        i++;
+                        outputAnEvent(event);
+                    }
+                }
+            }
         }).start();
     }
 
     private void outputAnEvent(OutputEvent event) {
-        print("[CODE] " + event.getCode());
-        print(event.getLog());
+        printLog("[CODE] " + event.getCode());
+        printLog(event.getLog());
     }
 
     private int getIndexByView(ArrayList<OutputEvent> events, View view) {
@@ -560,12 +585,15 @@ public class ViewRecorder {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
         int stepCount = events.size() - 2;
-
         DragEvent dragEvent = new DragEvent(up.view);
-        dragEvent.setCode(String.format("local.drag(%s, %s, %s, %s, %s);", down.x, up.x, down.y,
-                up.y, stepCount));
+
+        String code = "local.drag(local.toScreenX(%s), local.toScreenX(%s), local.toScreenY(%s), local.toScreenY(%s), %s);";
+        dragEvent.setCode(String.format(code, local.toPercentX(down.x), local.toPercentX(up.x),
+                local.toPercentY(down.y), local.toPercentY(up.y), stepCount));
+
         dragEvent.setLog(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s",
                 down.view, down.x, down.y, up.x, up.y, stepCount));
+
         mOutputEventQueue.offer(dragEvent);
     }
 
@@ -582,18 +610,18 @@ public class ViewRecorder {
 
         OnKeyListener onKeyListener = (OnKeyListener) local.getListener(editText, "mOnKeyListener");
         if (null != onKeyListener) {
-            print("hookOnKeyListener [" + editText + "]");
+            printLog("hookOnKeyListener [" + editText + "]");
             mOnKeyListeners.put(getViewID(editText), onKeyListener);
             editText.setOnKeyListener(new OnKeyListener() {
 
                 @Override
                 public boolean onKey(View v, int keyCode, KeyEvent event) {
                     OnKeyListener onKeyListener = mOnKeyListeners.get(getViewID(v));
-                    print(event + " on " + v);
+                    printLog(event + " on " + v);
                     if (null != onKeyListener) {
                         onKeyListener.onKey(v, keyCode, event);
                     } else {
-                        print("onKeyListener == null");
+                        printLog("onKeyListener == null");
                     }
                     return false;
                 }
@@ -603,7 +631,7 @@ public class ViewRecorder {
 
                 @Override
                 public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    print(event + " new on " + v);
+                    printLog(event + " new on " + v);
                     return false;
                 }
             });
@@ -621,7 +649,7 @@ public class ViewRecorder {
         }
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter("mRecord"));
+            writer = new BufferedWriter(new FileWriter(mRecord));
             writer.write(line);
             writer.flush();
         } catch (IOException e) {
@@ -635,5 +663,9 @@ public class ViewRecorder {
                 }
             }
         }
+    }
+
+    private String getViewClassString(View view) {
+        return view.getClass().toString().split(" ")[1] + ".class";
     }
 }
