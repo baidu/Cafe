@@ -902,8 +902,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the right
      */
     public void clickOnScreenRight() {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         clickOnScreen(x / 4, y / 2);
     }
 
@@ -911,8 +911,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the left
      */
     public void clickOnScreenLeft() {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         clickOnScreen(x - x / 4, y / 2);
     }
 
@@ -920,8 +920,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the up
      */
     public void clickOnScreenUp() {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         clickOnScreen(x / 2, y / 4);
     }
 
@@ -929,8 +929,8 @@ public class LocalLib extends SoloEx {
      * click on screen, the point is on the down
      */
     public void clickOnScreenDown() {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         clickOnScreen(x / 2, y - y / 4);
     }
 
@@ -938,8 +938,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to right
      */
     public void dragScreenToRight(int stepCount) {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         drag(x - x / 4, x / 4, y / 2, y / 2, stepCount);
     }
 
@@ -947,8 +947,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to Left
      */
     public void dragScreenToLeft(int stepCount) {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         drag(x / 4, x - x / 4, y / 2, y / 2, stepCount);
     }
 
@@ -956,8 +956,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to up
      */
     public void dragScreenToUp(int stepCount) {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         drag(x / 2, x / 2, y - y / 4, y / 4, stepCount);
     }
 
@@ -965,8 +965,8 @@ public class LocalLib extends SoloEx {
      * drag on screen to Down
      */
     public void dragScreenToDown(int stepCount) {
-        int x = getDisplayX();
-        int y = getDisplayY();
+        float x = getDisplayX();
+        float y = getDisplayY();
         drag(x / 2, x / 2, y / 4, y - y / 4, stepCount);
     }
 

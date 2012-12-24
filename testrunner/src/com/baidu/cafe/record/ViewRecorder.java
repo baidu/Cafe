@@ -52,19 +52,23 @@ import android.widget.EditText;
  * @todo
  */
 public class ViewRecorder {
-    private HashMap<String, OnClickListener>         mOnClickListeners         = new HashMap<String, OnClickListener>();
-    private HashMap<String, OnLongClickListener>     mOnLongClickListeners     = new HashMap<String, OnLongClickListener>();
-    private HashMap<String, OnTouchListener>         mOnTouchListeners         = new HashMap<String, OnTouchListener>();
-    private HashMap<String, OnKeyListener>           mOnKeyListeners           = new HashMap<String, OnKeyListener>();
-    private HashMap<String, OnItemClickListener>     mOnItemClickListeners     = new HashMap<String, OnItemClickListener>();
-    private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners = new HashMap<String, OnItemLongClickListener>();
-    private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
+    /**
+     * For judging whether a view is an old one.
+     */
     private ArrayList<String>                        mAllViews                 = new ArrayList<String>();
+
+    /**
+     * For judging whether a view has been hooked.
+     */
     private ArrayList<Integer>                       mAllListenerHashcodes     = new ArrayList<Integer>();
+
+    /**
+     * For judging whether a EditText has been hooked.
+     */
     private ArrayList<EditText>                      mAllEditTexts             = new ArrayList<EditText>();
 
     /**
-     * For merge a sequeue of MotionEvents to a drag
+     * For merge a sequeue of MotionEvents to a drag.
      */
     private Queue<RecordMotionEvent>                 mMotionEventQueue         = new LinkedList<RecordMotionEvent>();
 
@@ -73,6 +77,17 @@ public class ViewRecorder {
      * keeped by their priorities.
      */
     private Queue<OutputEvent>                       mOutputEventQueue         = new LinkedList<OutputEvent>();
+
+    /**
+     * Saving old listener for invoking when needed
+     */
+    private HashMap<String, OnClickListener>         mOnClickListeners         = new HashMap<String, OnClickListener>();
+    private HashMap<String, OnLongClickListener>     mOnLongClickListeners     = new HashMap<String, OnLongClickListener>();
+    private HashMap<String, OnTouchListener>         mOnTouchListeners         = new HashMap<String, OnTouchListener>();
+    private HashMap<String, OnKeyListener>           mOnKeyListeners           = new HashMap<String, OnKeyListener>();
+    private HashMap<String, OnItemClickListener>     mOnItemClickListeners     = new HashMap<String, OnItemClickListener>();
+    private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners = new HashMap<String, OnItemLongClickListener>();
+    private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
 
@@ -103,6 +118,9 @@ public class ViewRecorder {
 
     }
 
+    /**
+     * sort by view.hashCode()
+     */
     class SortByView implements Comparator<OutputEvent> {
         public int compare(OutputEvent e1, OutputEvent e2) {
             if (e1.view.hashCode() > e2.view.hashCode()) {
@@ -183,7 +201,6 @@ public class ViewRecorder {
                     targetViews.add(view);
                 }
             }
-
         }
         return targetViews;
     }
@@ -474,9 +491,7 @@ public class ViewRecorder {
                             events.add(e);
                         }
 
-                        // sort by view.hashCode()
                         Collections.sort(events, new SortByView());
-
                         outputEvents(events);
 
                         events.clear();
@@ -518,6 +533,7 @@ public class ViewRecorder {
     }
 
     private void outputAnEvent(OutputEvent event) {
+        writeToFile(event.getCode());
         printLog("[CODE] " + event.getCode());
         printLog(event.getLog());
     }
@@ -607,7 +623,6 @@ public class ViewRecorder {
      * @param editText
      */
     private void hookOnKeyListener(EditText editText) {
-
         OnKeyListener onKeyListener = (OnKeyListener) local.getListener(editText, "mOnKeyListener");
         if (null != onKeyListener) {
             printLog("hookOnKeyListener [" + editText + "]");

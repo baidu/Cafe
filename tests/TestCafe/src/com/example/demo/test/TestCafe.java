@@ -3,6 +3,7 @@ package com.example.demo.test;
 import java.util.ArrayList;
 
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Button;
 
 import com.baidu.cafe.CafeTestCase;
@@ -45,8 +46,13 @@ public class TestCafe extends CafeTestCase {
      * NOTICE: 运行case前需要开启cafe_setup.bat
      */
     public void test_sample() {
-        local.beginRecordCode();
-        local.sleep(2000000);
+        
+        for (View view : local.getCurrentViews()) {
+            try {
+                System.out.println(getInstrumentation().getTargetContext().getResources().getString(view.getId()));
+            } catch (Exception e) {
+            }
+        }
     }
 
     private void history() {
