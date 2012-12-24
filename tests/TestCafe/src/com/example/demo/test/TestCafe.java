@@ -46,7 +46,6 @@ public class TestCafe extends CafeTestCase {
      * NOTICE: 运行case前需要开启cafe_setup.bat
      */
     public void test_sample() {
-        
         for (View view : local.getCurrentViews()) {
             try {
                 System.out.println(getInstrumentation().getTargetContext().getResources().getString(view.getId()));
