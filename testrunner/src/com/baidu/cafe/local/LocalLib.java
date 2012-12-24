@@ -18,6 +18,7 @@ package com.baidu.cafe.local;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -345,31 +346,63 @@ public class LocalLib extends SoloEx {
     }
 
     private int getRStringId(String packageName, String stringName) {
+        Class stringClass = getRClass(packageName, "string");
+        if (null == stringClass) {
+            return -1;
+        }
         try {
-            Class[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
-            // find string class's index of R
-            int stringIndex = 0;
-            for (int i = 0; i < classes.length; i++) {
-                if (classes[i].getName().indexOf("$string") != -1) {
-                    stringIndex = i;
-                }
-            }
-            return (Integer) classes[stringIndex].getDeclaredField(stringName).get(
-                    classes[stringIndex].newInstance());
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+            return (Integer) stringClass.getDeclaredField(stringName)
+                    .get(stringClass.newInstance());
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (SecurityException e) {
             e.printStackTrace();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
         }
-        return 0;
+        return -1;
+    }
+
+    public String getRIdNameByValue(String packageName, int value) {
+        Class idClass = getRClass(packageName, "id");
+        if (null == idClass) {
+            return "";
+        }
+        try {
+            for (Field field : idClass.getDeclaredFields()) {
+                Integer id = (Integer) field.get(idClass.newInstance());
+                if (id == value) {
+                    return field.getName();
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    private Class getRClass(String packageName, String className) {
+        try {
+            Class[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
+            for (int i = 0; i < classes.length; i++) {
+                if (classes[i].getName().indexOf("$" + className) != -1) {
+                    return classes[i];
+                }
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
