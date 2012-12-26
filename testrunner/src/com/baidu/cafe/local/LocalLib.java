@@ -55,7 +55,6 @@ import android.widget.TimePicker;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.ShellExecute.CommandResult;
-import com.baidu.cafe.record.ViewRecorder;
 
 import dalvik.system.DexFile;
 
@@ -200,7 +199,7 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * add listeners on all views for generating robotium code automatically
+     * add listeners on all views for generating Cafe code automatically
      */
     public void beginRecordCode() {
         new ViewRecorder(this).beginRecordCode();

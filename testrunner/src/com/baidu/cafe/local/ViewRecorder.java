@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.baidu.cafe.record;
+package com.baidu.cafe.local;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import android.widget.EditText;
  * @todo
  */
 public class ViewRecorder {
+    private final static int                         WAIT_TIMEOUT              = 20000;
     /**
      * For judging whether a view is an old one.
      */
@@ -90,6 +93,9 @@ public class ViewRecorder {
     private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
+    private String                                   mPackageName              = null;
+    private String                                   mCurrentActivity          = null;
+    private String                                   mPath                     = null;
 
     public ViewRecorder(LocalLib local) {
         this.local = local;
@@ -118,6 +124,60 @@ public class ViewRecorder {
 
     }
 
+    class OutputEvent {
+        final static int PRIORITY_ACTIVITY = 0;
+        final static int PRIORITY_DRAG     = 1;
+        final static int PRIORITY_CLICK    = 2;
+
+        public int       proity            = 0;
+        public View      view              = null;
+        protected String code              = "";
+        protected String log               = "";
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getLog() {
+            return log;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public void setLog(String log) {
+            this.log = log;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%s] %s", view, proity);
+        }
+
+    }
+
+    class ClickEvent extends OutputEvent {
+        public ClickEvent(View view) {
+            this.view = view;
+            this.proity = PRIORITY_CLICK;
+        }
+    }
+
+    class DragEvent extends OutputEvent {
+        public DragEvent(View view) {
+            this.view = view;
+            this.proity = PRIORITY_DRAG;
+        }
+    }
+
+    class ActivityEvent extends OutputEvent {
+        public ActivityEvent(View view) {
+            this.view = view;
+            this.proity = PRIORITY_ACTIVITY;
+        }
+    }
+
     /**
      * sort by view.hashCode()
      */
@@ -141,26 +201,103 @@ public class ViewRecorder {
     }
 
     private void printCode(String message) {
-        print("CodeRecorder", message);
+        print("RecorderCode", message);
+        BufferedReader reader = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+            String line = null;
+            reader = new BufferedReader(new FileReader(mRecord));
+            while ((line = reader.readLine()) != null) {
+                // add import line
+                // add code line
+                if (line.contains("next line")) {
+                    sb.append(format(message) + "\n");
+                    sb.append(format("// next line") + "\n");
+                } else {
+                    sb.append(line + "\n");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                writeToFile(sb.toString());
+            } else {
+                printLog(String.format("read [%s] failed", mRecord.getPath()));
+            }
+        }
+    }
+
+    /**
+     * For indent code line
+     * 
+     * @param code
+     * @return
+     */
+    private String format(String code) {
+        String[] lines = code.split("\n");
+        String formatString = "";
+        String prefix = "        ";
+        for (String line : lines) {
+            formatString += prefix + line + "\n";
+        }
+        return formatString;
+    }
+
+    private void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void init() {
-        String path = "/data/data/" + local.getCurrentActivity().getPackageName() + "/cafe";
-        File cafe = new File(path);
+        mPackageName = local.getCurrentActivity().getPackageName();
+        mPath = "/data/data/" + mPackageName + "/cafe";
+        File cafe = new File(mPath);
         if (!cafe.exists()) {
             cafe.mkdir();
-            local.executeOnDevice("chmod 777 " + path, "/");
+            local.executeOnDevice("chmod 777 " + mPath, "/");
         }
-        mRecord = new File(path + "/record");
+        mRecord = new File(mPath + "/record");
         if (mRecord.exists()) {
             mRecord.delete();
         }
+        writeToFile(template);
     }
+
+    String template = "package com.example.demo.test;\n"
+                            + "\n"
+                            + "import com.baidu.cafe.CafeTestCase;\n"
+                            + "// next import\n"
+                            + "\n"
+                            + "public class TestCafe extends CafeTestCase {\n"
+                            + "    private static Class<?>     launcherActivityClass;\n"
+                            + "    static {\n"
+                            + "        try {\n"
+                            + "            launcherActivityClass = Class.forName(LAUNCHER_ACTIVITY_FULL_CLASSNAME);\n"
+                            + "        } catch (ClassNotFoundException e) {\n" + "        }\n"
+                            + "    }\n" + "\n" + "    public TestCafe() {\n"
+                            + "        super(TARGET_PACKAGE, launcherActivityClass);\n" + "    }\n"
+                            + "\n" + "    @Override\n"
+                            + "    protected void setUp() throws Exception {\n"
+                            + "        super.setUp();\n" + "    }\n" + "\n" + "    @Override\n"
+                            + "    protected void tearDown() throws Exception {\n"
+                            + "        super.tearDown();\n" + "    }\n" + "\n"
+                            + "    public void testRecorded() {\n" + "        // next line\n"
+                            + "    }\n" + "\n" + "}\n";
 
     /**
      * add listeners on all views for generating cafe code automatically
      */
     public void beginRecordCode() {
+        monitorCurrentActivity();
         // keep hooking new views
         new Thread(new Runnable() {
             public void run() {
@@ -174,17 +311,37 @@ public class ViewRecorder {
                             e.printStackTrace();
                         }
                     }
-                    try {
-                        Thread.sleep(100);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    sleep(100);
                 }
             }
         }).start();
 
         handleRecordMotionEventQueue();
         handleOutputEventQueue();
+    }
+
+    private void monitorCurrentActivity() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (true) {
+                    Class activityClass = local.getCurrentActivity().getClass();
+                    String activity = activityClass.getName();
+                    String activitySimpleName = activityClass.getSimpleName();
+                    if (!activity.equals(mCurrentActivity)) {
+                        ActivityEvent activityEvent = new ActivityEvent(null);
+                        activityEvent.setCode(String.format("local.waitForActivity(\"%s\");",
+                                activitySimpleName));
+                        activityEvent.setLog(String.format("Wait for Activity(%s)", activity));
+                        outputAnEvent(activityEvent);
+                        mCurrentActivity = activity;
+                    }
+
+                    sleep(1000);
+                }
+            }
+        }).start();
     }
 
     private ArrayList<View> getTargetViews(ArrayList<View> views) {
@@ -293,7 +450,7 @@ public class ViewRecorder {
         OnClickListener onClickListener = (OnClickListener) local.getListener(view,
                 "mOnClickListener");
         if (null != onClickListener) {
-            printLog(String.format("hookClickListener [%s(%s), %s]", view, local.getViewText(view)));
+            printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
 
             // save old listener
             mOnClickListeners.put(getViewID(view), onClickListener);
@@ -303,10 +460,7 @@ public class ViewRecorder {
                 @Override
                 public void onClick(View v) {
                     ClickEvent clickEvent = new ClickEvent(v);
-                    clickEvent.setCode(String.format("local.clickOn(%s, %s);",
-                            getViewClassString(v), local.getCurrentViewIndex(v)));
-                    clickEvent.setLog(String.format("Click On View [%s(%s)] ", v,
-                            local.getViewText(v)));
+                    setClickOutput(clickEvent, v);
                     mOutputEventQueue.offer(clickEvent);
 
                     OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
@@ -327,6 +481,19 @@ public class ViewRecorder {
             return true;
         }
         return false;
+    }
+
+    private void setClickOutput(ClickEvent clickEvent, View v) {
+        String viewClass = getViewClassString(v);
+        int viewIndex = local.getCurrentViewIndex(v);
+        String rString = getRString(v);
+
+        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s));%s", viewClass,
+                viewIndex + 1, WAIT_TIMEOUT, rString);
+        String click = String.format("local.clickOn(%s, %s);%s", viewClass, viewIndex, rString);
+
+        clickEvent.setCode(wait + "\n" + click);
+        clickEvent.setLog(String.format("Click On View [%s(%s)] ", v, local.getViewText(v)));
     }
 
     private void hookOnTouchListener(View view) {
@@ -465,11 +632,12 @@ public class ViewRecorder {
         }
     }
 
-    private void sleep(long time) {
-        try {
-            Thread.sleep(time);
-        } catch (Exception exception) {
-            exception.printStackTrace();
+    private String getRString(View view) {
+        String str = local.getRIdNameByValue(mPackageName, view.getId());
+        if ("".equals(str)) {
+            return "";
+        } else {
+            return "//R.id." + str;
         }
     }
 
@@ -515,13 +683,13 @@ public class ViewRecorder {
                     if (event.view.equals(nextEvent.view)) {
                         i += 2;
                         if (event.proity > nextEvent.proity) {
-                            //                            printLog("event.proity > nextEvent.proity");
+                            //printLog("event.proity > nextEvent.proity");
                             outputAnEvent(event);
                         } else if (event.proity < nextEvent.proity) {
-                            //                            printLog("event.proity < nextEvent.proity");
+                            //printLog("event.proity < nextEvent.proity");
                             outputAnEvent(nextEvent);
                         } else {
-                            //                            printLog("event.proity == nextEvent.proity");
+                            //printLog("event.proity == nextEvent.proity");
                         }
                     } else {
                         i++;
@@ -533,8 +701,7 @@ public class ViewRecorder {
     }
 
     private void outputAnEvent(OutputEvent event) {
-        writeToFile(event.getCode());
-        printLog("[CODE] " + event.getCode());
+        printCode(event.getCode());
         printLog(event.getLog());
     }
 
@@ -603,7 +770,7 @@ public class ViewRecorder {
         int stepCount = events.size() - 2;
         DragEvent dragEvent = new DragEvent(up.view);
 
-        String code = "local.drag(local.toScreenX(%s), local.toScreenX(%s), local.toScreenY(%s), local.toScreenY(%s), %s);";
+        String code = "local.drag(local.toScreenX(%sf), local.toScreenX(%sf), local.toScreenY(%sf), local.toScreenY(%sf), %s);";
         dragEvent.setCode(String.format(code, local.toPercentX(down.x), local.toPercentX(up.x),
                 local.toPercentY(down.y), local.toPercentY(up.y), stepCount));
 
@@ -676,6 +843,7 @@ public class ViewRecorder {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                local.executeOnDevice("chmod 777 " + mPath, "/record");
             }
         }
     }
@@ -683,4 +851,5 @@ public class ViewRecorder {
     private String getViewClassString(View view) {
         return view.getClass().toString().split(" ")[1] + ".class";
     }
+
 }

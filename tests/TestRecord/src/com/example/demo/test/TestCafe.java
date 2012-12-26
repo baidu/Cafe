@@ -42,48 +42,10 @@ public class TestCafe extends CafeTestCase {
         super.tearDown();
     }
 
-    private int getRStringId(String packageName, String stringName) {
-        try {
-            Class[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
-            int stringIndex = 0;
-            for (int i = 0; i < classes.length; i++) {
-                System.out.println("class: "+classes[i].getName());
-                if (classes[i].getName().indexOf("$string") != -1) {
-                    stringIndex = i;
-                }
-            }
-            return (Integer) classes[stringIndex].getDeclaredField(stringName).get(
-                    classes[stringIndex].newInstance());
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     public void test_sample() {
-        getRStringId("com.baidu.news","");
         local.sleep(2000);
-        /*
-        for (View view : local.getCurrentViews()) {
-            try {
-                System.out.println("!!!!!!!!!!"+view.getId());
-                System.out.println(getInstrumentation().getTargetContext().getResources().getString(view.getId()));
-            } catch (Exception e) {
-            }
-        }
         local.beginRecordCode();
         local.sleep(2000000);
-        */
     }
 
 }
