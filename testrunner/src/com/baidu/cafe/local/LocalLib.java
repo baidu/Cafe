@@ -208,7 +208,7 @@ public class LocalLib extends SoloEx {
     /**
      * Get listener from view. e.g. (OnClickListener) getListener(view,
      * "mOnClickListener"); means get click listener. Listener is a private
-     * property of a view, that's why this function is created.
+     * property of a view, that's why this function is written.
      * 
      * @param view
      *            target view
@@ -231,6 +231,7 @@ public class LocalLib extends SoloEx {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
             // eat it
+            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
