@@ -234,7 +234,8 @@ public class LocalLib extends SoloEx {
             if (Build.VERSION.SDK_INT > 14) {// API Level: 14. Android 4.0
                 Object mListenerInfo = ReflectHelper
                         .getObjectProperty(view, level, "mListenerInfo");
-                return ReflectHelper.getObjectProperty(mListenerInfo, 0, fieldName);
+                return null == mListenerInfo ? null : ReflectHelper.getObjectProperty(
+                        mListenerInfo, 0, fieldName);
             } else {
                 return ReflectHelper.getObjectProperty(view, level, fieldName);
             }
