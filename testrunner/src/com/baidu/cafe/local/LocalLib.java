@@ -35,6 +35,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
@@ -48,7 +49,6 @@ import android.widget.Checkable;
 import android.widget.CheckedTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -59,9 +59,16 @@ import com.baidu.cafe.local.ShellExecute.CommandResult;
 import dalvik.system.DexFile;
 
 /**
- * It can help you as below. 1.get or set a object's private property and invoke
- * a object's private function 2.find view by text 3.get views generated
- * dynamically 4.record hands operation and generate Robotium code
+ * It can help you as below.
+ * 
+ * 1.get or set a object's private property and invoke a object's private
+ * function
+ * 
+ * 2.find view by text
+ * 
+ * 3.get views generated dynamically
+ * 
+ * 4.record hands operation and generate Cafe code
  * 
  * @author luxiaoyu01@baidu.com
  * @date 2011-5-17
@@ -224,14 +231,20 @@ public class LocalLib extends SoloEx {
             return null;
         }
         try {
-            return ReflectHelper.getObjectProperty(view, level, fieldName);
+            if (Build.VERSION.SDK_INT > 14) {// API Level: 14. Android 4.0
+                Object mListenerInfo = ReflectHelper
+                        .getObjectProperty(view, level, "mListenerInfo");
+                return ReflectHelper.getObjectProperty(mListenerInfo, 0, fieldName);
+            } else {
+                return ReflectHelper.getObjectProperty(view, level, fieldName);
+            }
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
             // eat it
-            e.printStackTrace();
+            //            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -1195,7 +1208,6 @@ public class LocalLib extends SoloEx {
     private boolean isResIdShow(String resId, boolean isVisiable) {
         boolean flag = false;
         ArrayList<View> viewArray = getViews();
-        int size = viewArray.size();
         for (View view : viewArray) {
             if ((true == isVisiable)
                     && ((view.getVisibility() == View.GONE) || (view.getVisibility() == View.INVISIBLE))) {
@@ -1261,55 +1273,6 @@ public class LocalLib extends SoloEx {
         }
 
         return false;
-    }
-
-    private boolean isLineShow(ListView listView, int line) {
-        return (listView.getLastVisiblePosition() >= line && listView.getFirstVisiblePosition() <= line);
-    }
-
-    /**
-     * Click in list
-     * 
-     * @param line
-     *            the line that should be clicked
-     * @param index
-     *            the index of the list. E.g. Index 1 if two lists are available
-     * @param scroll
-     *            whether you need scroll the list automatically or not
-     * @return a {@code List} of the {@code TextView}s located in the list line
-     */
-    @SuppressWarnings("unchecked")
-    public ArrayList<TextView> clickInList(int line, int index, boolean scroll) {
-        boolean foundList = (Boolean) invoke(mWaiter, "waitForView", new Class[] { Class.class,
-                int.class }, new Object[] { ListView.class, index });//waiter.waitForView(ListView.class, index);
-        if (!foundList) {
-            Assert.assertTrue("No ListView with index " + index + " is available!", false);
-        }
-
-        final ListView listView = (ListView) invoke(mViewFetcher, "getView", new Class[] {
-                Class.class, ArrayList.class, int.class }, new Object[] { ListView.class, null,
-                index });//viewFetcher.getView(ListView.class, null, index);
-        if (listView == null) {
-            Assert.assertTrue("ListView is null!", false);
-        }
-
-        if (isLineShow(listView, line - 1)) {
-            int visibleLine = line - listView.getFirstVisiblePosition();
-            print("visibleLine:" + visibleLine);
-            return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class,
-                    Boolean.class, int.class }, new Object[] { index, false, 0 }); // mClicker.clickInList(index,
-            // false, 0);
-        }
-
-        if (scroll
-                && (Boolean) invoke(mScroller, "scroll", new Class[] { int.class },
-                        new Object[] { getField(mScroller, "DOWN") })) {//scroller.scroll(Scroller.DOWN)
-            return (ArrayList<TextView>) invoke(mClicker, "clickInList", new Class[] { int.class,
-                    int.class, Boolean.class }, new Object[] { line, index, scroll }); // mClicker.clickInList(line,
-            // index, scroll);
-        }
-
-        return null;
     }
 
     /**
@@ -1543,4 +1506,5 @@ public class LocalLib extends SoloEx {
     public float toPercentY(float y) {
         return y / getDisplayY();
     }
+
 }

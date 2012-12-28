@@ -145,7 +145,7 @@ public class JUnitReportListener implements TestListener {
 
         // added by luxiaoyu01@baidu.com
         // activity == null, so we can no use those fuction in Locallib which use it.
-//        this.mLocalLib = new LocalLib(instrumentation, null);
+        this.mLocalLib = new LocalLib(instrumentation, null);
     }
 
     @Override
@@ -269,7 +269,7 @@ public class JUnitReportListener implements TestListener {
 
     private void addProblem(String tag, Throwable error) {
         // added by luxiaoyu01@baidu.com
-//        mLocalLib.screenShotNamedSuffix(mName, mTargetContext.getFilesDir().toString());
+        mLocalLib.screenShotNamedSuffix(mName, mTargetContext.getFilesDir().toString());
         try {
             recordTestTime();
 

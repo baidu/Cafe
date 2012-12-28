@@ -85,9 +85,8 @@ done
 
 target="$1"
 compile
-serial="MT-7LHA6PGY998TD68H"
 #serial="HT068P801969"
-#serial="0146BF540701201A"
+serial="0146BF540701201A"
 ADB="adb -s $serial"
 $ADB install -r $_PWD/Cafe.apk
 $ADB install -r $APK

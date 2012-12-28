@@ -206,6 +206,17 @@ public class ViewRecorder {
         print("ViewRecorder", message);
     }
 
+    private void printLayout(View view) {
+        String rId = local.getRIdNameByValue(mPackageName, view.getId());
+        String rString = "".equals(rId) ? "" : "R.id." + rId;
+        String text = local.getViewText(view);
+        int[] xy = new int[2];
+        view.getLocationOnScreen(xy);
+        String msg = String.format("[%s][%s][%s][%s][%s,%s,%s,%s]", mCurrentActivity, rString,
+                view, text, xy[0], xy[1], view.getWidth(), view.getHeight());
+        print("ViewLayout", msg);
+    }
+
     private void printCode(String message) {
         print("RecorderCode", message);
 
@@ -304,12 +315,21 @@ public class ViewRecorder {
 
     private void init() {
         mPackageName = local.getCurrentActivity().getPackageName();
+
+        // init activity
+        Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
+        mCurrentActivity = activityClass.getName();
+        outputAnActivityEvent(activityClass);
+
+        // init cafe dir
         mPath = "/data/data/" + mPackageName + "/cafe";
         File cafe = new File(mPath);
         if (!cafe.exists()) {
             cafe.mkdir();
             LocalLib.executeOnDevice("chmod 777 " + mPath, "/");
         }
+
+        // init template
         mRecord = new File(mPath + "/record");
         if (mRecord.exists()) {
             mRecord.delete();
@@ -373,13 +393,8 @@ public class ViewRecorder {
                 while (true) {
                     Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
                     String activity = activityClass.getName();
-                    String activitySimpleName = activityClass.getSimpleName();
                     if (!activity.equals(mCurrentActivity)) {
-                        ActivityEvent activityEvent = new ActivityEvent(null);
-                        activityEvent.setCode(String.format("local.waitForActivity(\"%s\");",
-                                activitySimpleName));
-                        activityEvent.setLog(String.format("Wait for Activity(%s)", activity));
-                        outputAnEvent(activityEvent);
+                        outputAnActivityEvent(activityClass);
                         mCurrentActivity = activity;
                     }
 
@@ -387,6 +402,15 @@ public class ViewRecorder {
                 }
             }
         }).start();
+    }
+
+    private void outputAnActivityEvent(Class<? extends Activity> activityClass) {
+        String activity = activityClass.getName();
+        String activitySimpleName = activityClass.getSimpleName();
+        ActivityEvent activityEvent = new ActivityEvent(null);
+        activityEvent.setCode(String.format("local.waitForActivity(\"%s\");", activitySimpleName));
+        activityEvent.setLog(String.format("Wait for Activity(%s)", activity));
+        outputAnEvent(activityEvent);
     }
 
     private ArrayList<View> getTargetViews(ArrayList<View> views) {
@@ -397,6 +421,7 @@ public class ViewRecorder {
             if (!mAllViews.contains(viewID)) {
                 targetViews.add(view);
                 mAllViews.add(viewID);
+                printLayout(view);
             } else {
                 // get views who have unhooked listeners
                 if (hasUnhookedListener(view)) {
@@ -526,7 +551,7 @@ public class ViewRecorder {
             }
             return true;
         } else {
-            printLog("onClickListener == null " + view + local.getViewText(view));
+            //            printLog("onClickListener == null " + view + local.getViewText(view));
         }
         return false;
     }
@@ -536,14 +561,15 @@ public class ViewRecorder {
         int viewIndex = local.getCurrentViewIndex(v);
         String rString = getRString(v);
         String text = local.getViewText(v);
-
+        String comments = String.format("[%s]%s[%s] ", v, rString, text);
         String importLine = String.format("import %s;", getViewString(v));
-        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s));%s(%s)", viewClass,
-                viewIndex + 1, WAIT_TIMEOUT, rString, text);
-        String click = String.format("local.clickOn(%s, %s);%s", viewClass, viewIndex, rString);
+        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s));// %s%s", viewClass,
+                viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
+        String click = String.format("local.clickOn(%s, %s);// %s%s", viewClass, viewIndex,
+                "Click On ", comments);
 
         clickEvent.setCode(importLine + "\n" + wait + "\n" + click);
-        clickEvent.setLog(String.format("Click On View [%s(%s)] ", v, text));
+        //        clickEvent.setLog();
     }
 
     private String getRString(View view) {
@@ -551,7 +577,7 @@ public class ViewRecorder {
         if ("".equals(str)) {
             return "";
         } else {
-            return "//R.id." + str;
+            return "[R.id." + str + "]";
         }
     }
 
@@ -647,7 +673,7 @@ public class ViewRecorder {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     ClickEvent clickEvent = new ClickEvent(parent);
-                    clickEvent.setCode(String.format("local.clickInList(%s, %s, false);", position,
+                    clickEvent.setCode(String.format("local.clickInList(%s, %s);", position,
                             local.getCurrentViewIndex(parent)));
                     clickEvent.setLog("parent: " + parent + " view: " + view + " position: "
                             + position + " click ");
