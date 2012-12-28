@@ -1455,7 +1455,7 @@ public class LocalLib extends SoloEx {
         if (null == view) {
             return -1;
         }
-        ArrayList<? extends View> views = getCurrentViews(view.getClass());
+        ArrayList<? extends View> views = getCurrentViews(view.getClass(), true);
         for (int i = 0; i < views.size(); i++) {
             if (views.get(i).equals(view)) {
                 return i;
@@ -1506,6 +1506,16 @@ public class LocalLib extends SoloEx {
 
     public float toPercentY(float y) {
         return y / getDisplayY();
+    }
+
+    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, boolean visible) {
+        ArrayList<T> views = getCurrentViews(classToFilterBy);
+        return visible ? removeInvisibleViews(views) : views;
+    }
+
+    public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> views) {
+        return (ArrayList<T>) invoke(mRobotiumUtils, "removeInvisibleViews",
+                new Class[] { ArrayList.class }, new Object[] { views });
     }
 
 }
