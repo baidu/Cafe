@@ -316,11 +316,6 @@ public class ViewRecorder {
     private void init() {
         mPackageName = local.getCurrentActivity().getPackageName();
 
-        // init activity
-        Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
-        mCurrentActivity = activityClass.getName();
-        outputAnActivityEvent(activityClass);
-
         // init cafe dir
         mPath = "/data/data/" + mPackageName + "/cafe";
         File cafe = new File(mPath);
@@ -335,6 +330,11 @@ public class ViewRecorder {
             mRecord.delete();
         }
         writeToFile(template);
+
+        // init activity
+        Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
+        mCurrentActivity = activityClass.getName();
+        outputAnActivityEvent(activityClass);
     }
 
     String template = "package com.example.demo.test;\n"
