@@ -36,8 +36,6 @@ import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -58,6 +56,14 @@ import android.widget.EditText;
  */
 public class ViewRecorder {
     private final static int                         WAIT_TIMEOUT              = 20000;
+
+    /**
+     * These classes can not be used directly, only their names can be
+     * used.Because of com.android.internal.view.menu.MenuView.ItemView can not
+     * be compiled with sdk.
+     */
+    private final static String[]                    MENU_INTERFACES           = new String[] {
+            "android.view.MenuItem", "com.android.internal.view.menu.MenuView.ItemView" };
 
     /**
      * For judging whether a view is an old one.
@@ -483,15 +489,14 @@ public class ViewRecorder {
         return false;
     }
 
-    @SuppressWarnings("rawtypes")
     private void setHookListenerOnView(View view) {
-        //        if (view instanceof MenuView.ItemView) {
-        //            printLog("Menu: " + view);
-        //        }
+        if (ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0) {
+            printLog("Menu: " + view);
+        }
 
         if (view instanceof AdapterView) {
             printLog("AdapterView [" + view + "]");
-            hookOnItemClickListener((AdapterView) view);
+            hookOnItemClickListener((AdapterView<?>) view);
             //            adapterView.setOnItemLongClickListener(listener);
             //            adapterView.setOnItemSelectedListener(listener);
             // MenuItem.OnMenuItemClickListener
@@ -672,8 +677,7 @@ public class ViewRecorder {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    private void hookOnItemClickListener(AdapterView view) {
+    private void hookOnItemClickListener(AdapterView<?> view) {
         if (hasHookedListener(view, "mOnItemClickListener")) {
             return;
         }
@@ -939,10 +943,7 @@ public class ViewRecorder {
             String code = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
             hardKeyEvent.setCode(code);
             hardKeyEvent.setLog("view: " + view + " " + event);
-            Class<?>[] interfaces = view.getClass().getInterfaces();
-            for (Class interfaceClass : interfaces) {
-                printLog("interfaceClass: " + interfaceClass.getName());
-            }
+
             mOutputEventQueue.offer(hardKeyEvent);
         }
     }

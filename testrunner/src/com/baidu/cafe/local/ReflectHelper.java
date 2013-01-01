@@ -28,8 +28,8 @@ import java.util.ArrayList;
  * @todo
  */
 public class ReflectHelper {
-    private static Class  mType;
-    private static Object mValue;
+    private static Class<?> mType;
+    private static Object   mValue;
 
     /**
      * invoke object's method including private method
@@ -53,11 +53,11 @@ public class ReflectHelper {
      * @throws IllegalArgumentException
      */
     public static Object invoke(Object owner, int classLevel, String methodName,
-            Class[] parameterTypes, Object[] parameters) throws SecurityException,
+            Class<?>[] parameterTypes, Object[] parameters) throws SecurityException,
             NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
         // get class
-        Class ownerclass = getOwnerclass(owner, classLevel);
+        Class<?> ownerclass = getOwnerclass(owner, classLevel);
 
         // get property
         Method method = ownerclass.getDeclaredMethod(methodName, parameterTypes);
@@ -89,7 +89,7 @@ public class ReflectHelper {
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
         System.out.println(function + "(" + parameter + ")");
-        Class[] types = null;
+        Class<?>[] types = null;
         Object[] values = null;
 
         // get parameter
@@ -158,7 +158,7 @@ public class ReflectHelper {
             Object value) throws SecurityException, NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
         // get class
-        Class ownerclass = getOwnerclass(owner, classLevel);
+        Class<?> ownerclass = getOwnerclass(owner, classLevel);
 
         // get property
         Field field = ownerclass.getDeclaredField(fieldName);
@@ -187,7 +187,7 @@ public class ReflectHelper {
             throws SecurityException, NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
         // get class
-        Class ownerclass = getOwnerclass(owner, classLevel);
+        Class<?> ownerclass = getOwnerclass(owner, classLevel);
 
         // get property
         Field field = ownerclass.getDeclaredField(fieldName);
@@ -198,8 +198,8 @@ public class ReflectHelper {
         return property;
     }
 
-    private static Class getOwnerclass(Object owner, int classLevel) {
-        Class ownerclass = owner.getClass();
+    private static Class<?> getOwnerclass(Object owner, int classLevel) {
+        Class<?> ownerclass = owner.getClass();
         for (int i = 0; i < classLevel; i++) {
             ownerclass = ownerclass.getSuperclass();
         }
@@ -215,10 +215,11 @@ public class ReflectHelper {
      *            e.g. String.class
      * @return ArrayList<String> of property's name
      */
-    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, Class type) {
+    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel,
+            Class<?> type) {
         ArrayList<String> names = new ArrayList<String>();
         // get class
-        Class ownerclass = getOwnerclass(owner, classLevel);
+        Class<?> ownerclass = getOwnerclass(owner, classLevel);
 
         // get type
         for (Field field : ownerclass.getDeclaredFields()) {
@@ -234,7 +235,7 @@ public class ReflectHelper {
         return names;
     }
 
-    private static String getClassName(Class type) {
+    private static String getClassName(Class<?> type) {
         String fieldString = type.toString();
         if (fieldString.startsWith("class ")) {
             fieldString = fieldString.substring("class ".length());
@@ -256,9 +257,10 @@ public class ReflectHelper {
      * @throws IllegalArgumentException
      */
     public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel,
-            Class valueType, Object value) throws IllegalArgumentException, IllegalAccessException {
+            Class<?> valueType, Object value) throws IllegalArgumentException,
+            IllegalAccessException {
         ArrayList<String> names = new ArrayList<String>();
-        Class ownerclass = getOwnerclass(owner, classLevel);
+        Class<?> ownerclass = getOwnerclass(owner, classLevel);
 
         // get type
         for (Field field : ownerclass.getDeclaredFields()) {
@@ -272,6 +274,19 @@ public class ReflectHelper {
             }
         }
         return names;
+    }
+
+    public static ArrayList<Class<?>> getObjectInterfaces(Object owner, String[] interfaceStrings) {
+        ArrayList<Class<?>> targetInterfaces = new ArrayList<Class<?>>();
+        Class<?>[] interfaceClasses = owner.getClass().getInterfaces();
+        for (Class<?> interfaceClass : interfaceClasses) {
+            for (String interfaceName : interfaceStrings) {
+                if (interfaceClass.getName().contains(interfaceName)) {
+                    targetInterfaces.add(interfaceClass);
+                }
+            }
+        }
+        return targetInterfaces;
     }
 
 }
