@@ -357,6 +357,7 @@ public class ViewRecorder {
     String template = "package com.example.demo.test;\n"
                             + "\n"
                             + "import com.baidu.cafe.CafeTestCase;\n"
+                            + "import android.view.KeyEvent;\n"
                             + "// next import\n"
                             + "\n"
                             + "public class TestCafe extends CafeTestCase {\n"
@@ -928,10 +929,15 @@ public class ViewRecorder {
     }
 
     private void setOnKey(View view, int keyCode, KeyEvent event) {
-        HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
-        //        hardKeyEvent.setCode(String.format("local.sendKey(%s);", args));
+        // ignore KeyEvent.ACTION_DOWN
+        if (event.getAction() == KeyEvent.ACTION_UP) {
+            HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
+            String code = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
+            hardKeyEvent.setCode(code);
+            hardKeyEvent.setLog("" + event);
 
-        mOutputEventQueue.offer(hardKeyEvent);
+            mOutputEventQueue.offer(hardKeyEvent);
+        }
     }
 
     private String getViewID(View view) {
@@ -949,8 +955,6 @@ public class ViewRecorder {
 
     private void initKeyTable() {
         KeyEvent keyEvent = new KeyEvent(0, 0);
-
-        //        KeyEvent.KEYCODE_0
         ArrayList<String> names = LocalLib.getPropertyNameByType(keyEvent, 0, int.class);
         try {
             for (String name : names) {
