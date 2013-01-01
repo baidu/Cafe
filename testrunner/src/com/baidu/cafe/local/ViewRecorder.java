@@ -63,7 +63,7 @@ public class ViewRecorder {
      * be compiled with sdk.
      */
     private final static String[]                    MENU_INTERFACES           = new String[] {
-            "android.view.MenuItem", "com.android.internal.view.menu.MenuView.ItemView" };
+            "android.view.MenuItem", "com.android.internal.view.menu.MenuView" };
 
     /**
      * For judging whether a view is an old one.
@@ -111,6 +111,8 @@ public class ViewRecorder {
     private String                                   mPackageName              = null;
     private String                                   mCurrentActivity          = null;
     private String                                   mPath                     = null;
+    private boolean                                  mIsMenuOpen               = false;
+    private long                                     mLastMenuAppearsTime      = 0;
 
     /**
      * interval between events
@@ -450,6 +452,8 @@ public class ViewRecorder {
     private ArrayList<View> getTargetViews() {
         ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
         ArrayList<View> targetViews = new ArrayList<View>();
+        boolean hasMenu = false;
+
         for (View view : views) {
             // get new views
             String viewID = getViewID(view);
@@ -464,7 +468,23 @@ public class ViewRecorder {
                     targetViews.add(view);
                 }
             }
+
+            // handle menu view
+            if (isMenuView(view)) {
+                hasMenu = true;
+                if (!mIsMenuOpen) {
+                    mLastMenuAppearsTime = System.currentTimeMillis();
+                    mIsMenuOpen = true;
+                    outputMenuEvent(view);
+                }
+            }
         }
+
+        if (!hasMenu && System.currentTimeMillis() - mLastMenuAppearsTime > 1000) {
+            mIsMenuOpen = false;
+            printLog("Menu is closed");
+        }
+
         return targetViews;
     }
 
@@ -489,11 +509,21 @@ public class ViewRecorder {
         return false;
     }
 
-    private void setHookListenerOnView(View view) {
-        if (ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0) {
-            printLog("Menu: " + view);
-        }
+    private boolean isMenuView(View view) {
+        return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
+    }
 
+    private void outputMenuEvent(View view) {
+        HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
+        String code = String.format("local.sendKey(KeyEvent.%s);",
+                mKeyCodeMap.get(KeyEvent.KEYCODE_MENU));
+        hardKeyEvent.setCode(code);
+        hardKeyEvent.setLog("Menu: " + view);
+
+        mOutputEventQueue.offer(hardKeyEvent);
+    }
+
+    private void setHookListenerOnView(View view) {
         if (view instanceof AdapterView) {
             printLog("AdapterView [" + view + "]");
             hookOnItemClickListener((AdapterView<?>) view);
