@@ -36,7 +36,7 @@ import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
-import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -484,7 +484,7 @@ public class ViewRecorder {
 
     @SuppressWarnings("rawtypes")
     private void setHookListenerOnView(View view) {
-        if (view instanceof Menu) {
+        if (view instanceof MenuItem) {
             printLog("Menu: " + view);
         }
 
