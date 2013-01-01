@@ -36,6 +36,7 @@ import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -484,9 +485,9 @@ public class ViewRecorder {
 
     @SuppressWarnings("rawtypes")
     private void setHookListenerOnView(View view) {
-        if (view instanceof MenuItem) {
-            printLog("Menu: " + view);
-        }
+        //        if (view instanceof MenuView.ItemView) {
+        //            printLog("Menu: " + view);
+        //        }
 
         if (view instanceof AdapterView) {
             printLog("AdapterView [" + view + "]");
@@ -938,7 +939,10 @@ public class ViewRecorder {
             String code = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
             hardKeyEvent.setCode(code);
             hardKeyEvent.setLog("view: " + view + " " + event);
-
+            Class<?>[] interfaces = view.getClass().getInterfaces();
+            for (Class interfaceClass : interfaces) {
+                printLog("interfaceClass: " + interfaceClass.getName());
+            }
             mOutputEventQueue.offer(hardKeyEvent);
         }
     }
