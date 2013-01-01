@@ -934,7 +934,7 @@ public class ViewRecorder {
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
             String code = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
             hardKeyEvent.setCode(code);
-            hardKeyEvent.setLog("" + event);
+            hardKeyEvent.setLog("view: " + view + " " + event);
 
             mOutputEventQueue.offer(hardKeyEvent);
         }
