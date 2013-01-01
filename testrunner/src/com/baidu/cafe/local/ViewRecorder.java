@@ -453,6 +453,7 @@ public class ViewRecorder {
         ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
         ArrayList<View> targetViews = new ArrayList<View>();
         boolean hasMenu = false;
+        boolean hasFocusView = hasFocusView();
 
         for (View view : views) {
             // get new views
@@ -470,7 +471,8 @@ public class ViewRecorder {
             }
 
             // handle menu view
-            if (isMenuView(view)) {
+            // if has focus view, KeyEvent.KEYCODE_MENU will be repsonding by the view
+            if (!hasFocusView && isMenuView(view)) {
                 hasMenu = true;
                 if (!mIsMenuOpen) {
                     mLastMenuAppearsTime = System.currentTimeMillis();
@@ -480,12 +482,16 @@ public class ViewRecorder {
             }
         }
 
-        if (!hasMenu && System.currentTimeMillis() - mLastMenuAppearsTime > 1000) {
+        if (mIsMenuOpen && !hasMenu && System.currentTimeMillis() - mLastMenuAppearsTime > 1000) {
             mIsMenuOpen = false;
             printLog("Menu is closed");
         }
 
         return targetViews;
+    }
+
+    private boolean hasFocusView() {
+        return local.getCurrentActivity().getCurrentFocus() == null ? false : true;
     }
 
     private boolean hasUnhookedListener(View view) {
