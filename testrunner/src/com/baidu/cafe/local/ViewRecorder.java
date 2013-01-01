@@ -56,6 +56,7 @@ import android.widget.EditText;
  */
 public class ViewRecorder {
     private final static int                         WAIT_TIMEOUT              = 20000;
+
     /**
      * For judging whether a view is an old one.
      */
@@ -81,6 +82,11 @@ public class ViewRecorder {
      * keeped by their priorities.
      */
     private Queue<OutputEvent>                       mOutputEventQueue         = new LinkedList<OutputEvent>();
+
+    /**
+     * For mapping keycode to keyname
+     */
+    private HashMap<Integer, String>                 mKeyCodeMap               = new HashMap<Integer, String>();
 
     /**
      * Saving old listener for invoking when needed
@@ -133,7 +139,8 @@ public class ViewRecorder {
     class OutputEvent {
         final static int PRIORITY_ACTIVITY = 0;
         final static int PRIORITY_DRAG     = 1;
-        final static int PRIORITY_CLICK    = 2;
+        final static int PRIORITY_KEY      = 2;
+        final static int PRIORITY_CLICK    = 3;
 
         public int       proity            = 0;
         public View      view              = null;
@@ -181,6 +188,13 @@ public class ViewRecorder {
         public ActivityEvent(View view) {
             this.view = view;
             this.proity = PRIORITY_ACTIVITY;
+        }
+    }
+
+    class HardKeyEvent extends OutputEvent {
+        public HardKeyEvent(View view) {
+            this.view = view;
+            this.proity = PRIORITY_KEY;
         }
     }
 
@@ -315,6 +329,9 @@ public class ViewRecorder {
 
     private void init() {
         mPackageName = local.getCurrentActivity().getPackageName();
+        initKeyTable();
+        //        KeyEvent.KEYCODE_BACK
+        printLog(getKeyNameByValue(4));
 
         // init cafe dir
         mPath = "/data/data/" + mPackageName + "/cafe";
@@ -359,16 +376,16 @@ public class ViewRecorder {
                             + "    }\n" + "\n" + "}\n";
 
     /**
-     * add listeners on all views for generating cafe code automatically
+     * Add listeners on all views for generating cafe code automatically
      */
     public void beginRecordCode() {
         monitorCurrentActivity();
+
         // keep hooking new views
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
                     ArrayList<View> newViews = getTargetViews();
-                    //                    print("newViews=" + newViews.size());
                     for (View view : newViews) {
                         try {
                             setHookListenerOnView(view);
@@ -398,6 +415,16 @@ public class ViewRecorder {
                         mCurrentActivity = activity;
                     }
 
+                    // hook decor view
+                    //                    View recentDecorview = local.getRecentDecorView();
+                    //                    Object listener = local.getListener(recentDecorview, "mOnKeyListener");
+                    //                    if (listener == null || !mAllListenerHashcodes.contains(listener.hashCode())) {
+                    //                        hookOnKeyListener(recentDecorview);
+                    //                    }
+                    //                    String viewID = getViewID(recentDecorview);
+                    //                    if (!mAllViews.contains(viewID)) {
+                    //                        mAllViews.add(viewID);
+                    //                    }
                     sleep(1000);
                 }
             }
@@ -423,6 +450,7 @@ public class ViewRecorder {
                 targetViews.add(view);
                 mAllViews.add(viewID);
                 printLayout(view);
+                hookOnKeyListener(view);
             } else {
                 // get views who have unhooked listeners
                 if (hasUnhookedListener(view)) {
@@ -435,7 +463,7 @@ public class ViewRecorder {
 
     private boolean hasUnhookedListener(View view) {
         String[] listenerNames = new String[] { "mOnItemClickListener", "mOnClickListener",
-                "mOnTouchListener" };
+                "mOnTouchListener", "mOnKeyListener" };
         for (String listenerName : listenerNames) {
             Object listener = local.getListener(view, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
@@ -531,16 +559,7 @@ public class ViewRecorder {
             view.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ClickEvent clickEvent = new ClickEvent(v);
-                    setClickOutput(clickEvent, v);
-                    mOutputEventQueue.offer(clickEvent);
-
-                    OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
-                    if (onClickListener != null) {
-                        onClickListener.onClick(v);
-                    } else {
-                        printLog("onClickListener == null");
-                    }
+                    setOnClick(v);
                 }
             });
 
@@ -557,7 +576,9 @@ public class ViewRecorder {
         return false;
     }
 
-    private void setClickOutput(ClickEvent clickEvent, View v) {
+    private void setOnClick(View v) {
+        // set click event output
+        ClickEvent clickEvent = new ClickEvent(v);
         String viewClass = getViewClassString(v);
         int viewIndex = local.getCurrentViewIndex(v);
         String rString = getRString(v);
@@ -571,6 +592,15 @@ public class ViewRecorder {
 
         clickEvent.setCode(importLine + "\n" + wait + "\n" + click);
         //        clickEvent.setLog();
+
+        mOutputEventQueue.offer(clickEvent);
+
+        OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
+        if (onClickListener != null) {
+            onClickListener.onClick(v);
+        } else {
+            printLog("onClickListener == null");
+        }
     }
 
     private String getRString(View view) {
@@ -858,22 +888,17 @@ public class ViewRecorder {
 
     }
 
-    /**
-     * for KeyEvent
-     * 
-     * @param editText
-     */
-    private void hookOnKeyListener(EditText editText) {
-        OnKeyListener onKeyListener = (OnKeyListener) local.getListener(editText, "mOnKeyListener");
+    private void hookOnKeyListener(View view) {
+        OnKeyListener onKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
         if (null != onKeyListener) {
-            printLog("hookOnKeyListener [" + editText + "]");
-            mOnKeyListeners.put(getViewID(editText), onKeyListener);
-            editText.setOnKeyListener(new OnKeyListener() {
+            printLog("hookOnKeyListener [" + view + "]");
+            mOnKeyListeners.put(getViewID(view), onKeyListener);
+            view.setOnKeyListener(new OnKeyListener() {
 
                 @Override
                 public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    setOnKey(v, keyCode, event);
                     OnKeyListener onKeyListener = mOnKeyListeners.get(getViewID(v));
-                    printLog(event + " on " + v);
                     if (null != onKeyListener) {
                         onKeyListener.onKey(v, keyCode, event);
                     } else {
@@ -883,15 +908,30 @@ public class ViewRecorder {
                 }
             });
         } else {
-            editText.setOnKeyListener(new OnKeyListener() {
+            printLog("setOnKeyListener [" + view + "]");
+            view.setOnKeyListener(new OnKeyListener() {
 
                 @Override
                 public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    printLog(event + " new on " + v);
+                    setOnKey(v, keyCode, event);
                     return false;
                 }
             });
         }
+
+        // save hashcode of hooked listener
+        OnKeyListener onKeyListenerHooked = (OnKeyListener) local.getListener(view,
+                "mOnKeyListener");
+        if (onKeyListenerHooked != null) {
+            mAllListenerHashcodes.add(onKeyListenerHooked.hashCode());
+        }
+    }
+
+    private void setOnKey(View view, int keyCode, KeyEvent event) {
+        HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
+        //        hardKeyEvent.setCode(String.format("local.sendKey(%s);", args));
+
+        mOutputEventQueue.offer(hardKeyEvent);
     }
 
     private String getViewID(View view) {
@@ -907,4 +947,30 @@ public class ViewRecorder {
         return view.getClass().toString().split(" ")[1];
     }
 
+    private void initKeyTable() {
+        KeyEvent keyEvent = new KeyEvent(0, 0);
+
+        //        KeyEvent.KEYCODE_0
+        ArrayList<String> names = LocalLib.getPropertyNameByType(keyEvent, 0, int.class);
+        try {
+            for (String name : names) {
+                if (name.startsWith("KEYCODE_")) {
+                    Integer keyCode = (Integer) LocalLib.getObjectProperty(keyEvent, 0, name);
+                    mKeyCodeMap.put(keyCode, name);
+                }
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getKeyNameByValue(int value) {
+        return mKeyCodeMap.get(value);
+    }
 }

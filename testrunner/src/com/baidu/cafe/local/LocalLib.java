@@ -1324,25 +1324,28 @@ public class LocalLib extends SoloEx {
      * Take an activity snapshot.
      */
     public void takeActivitySnapshot(final String path) {
-        View[] views = getWindowDecorViews();
-
-        if (0 == views.length) {
-            print("0 == views.length at takeActivitySnapshot");
-            return;
-        }
-
-        View recentDecorview = getRecentDecorView(views);
-        if (null == recentDecorview) {
-            print("null == rview; use views[0]: " + views[0]);
-            recentDecorview = views[0];
-        }
-
-        final View view = recentDecorview;
+        final View view = getRecentDecorView();
         mInstrumentation.runOnMainSync(new Runnable() {
             public void run() {
                 SnapshotHelper.takeViewSnapshot(view, path);
             }
         });
+    }
+
+    public View getRecentDecorView() {
+        View[] views = getWindowDecorViews();
+
+        if (0 == views.length) {
+            print("0 == views.length at takeActivitySnapshot");
+            return null;
+        }
+        
+        View recentDecorview = getRecentDecorView(views);
+        if (null == recentDecorview) {
+            print("null == rview; use views[0]: " + views[0]);
+            recentDecorview = views[0];
+        }
+        return recentDecorview;
     }
 
     /**
@@ -1464,10 +1467,6 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
-    /**
-     * @param pid
-     * @return
-     */
     public String getAppNameByPID(int pid) {
         ActivityManager manager = (ActivityManager) mInstrumentation.getTargetContext()
                 .getSystemService(Context.ACTIVITY_SERVICE);
