@@ -36,6 +36,7 @@ import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -330,8 +331,6 @@ public class ViewRecorder {
     private void init() {
         mPackageName = local.getCurrentActivity().getPackageName();
         initKeyTable();
-        //        KeyEvent.KEYCODE_BACK
-        printLog(getKeyNameByValue(4));
 
         // init cafe dir
         mPath = "/data/data/" + mPackageName + "/cafe";
@@ -485,6 +484,10 @@ public class ViewRecorder {
 
     @SuppressWarnings("rawtypes")
     private void setHookListenerOnView(View view) {
+        if (view instanceof Menu) {
+            printLog("Menu: " + view);
+        }
+
         if (view instanceof AdapterView) {
             printLog("AdapterView [" + view + "]");
             hookOnItemClickListener((AdapterView) view);
@@ -909,7 +912,7 @@ public class ViewRecorder {
                 }
             });
         } else {
-            printLog("setOnKeyListener [" + view + "]");
+            //            printLog("setOnKeyListener [" + view + "]");
             view.setOnKeyListener(new OnKeyListener() {
 
                 @Override
@@ -974,7 +977,4 @@ public class ViewRecorder {
         }
     }
 
-    private String getKeyNameByValue(int value) {
-        return mKeyCodeMap.get(value);
-    }
 }
