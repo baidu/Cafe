@@ -452,6 +452,7 @@ public class ViewRecorder {
                 targetViews.add(view);
                 mAllViews.add(viewID);
                 printLayout(view);
+                hookOnKeyListener(view);
             } else {
                 // get views who have unhooked listeners
                 if (hasUnhookedListener(view)) {
@@ -519,7 +520,6 @@ public class ViewRecorder {
     }
 
     private void setHookListenerOnView(View view) {
-        hookOnKeyListener(view);
         if (view instanceof AdapterView) {
             printLog("AdapterView [" + view + "]");
             hookOnItemClickListener((AdapterView<?>) view);
