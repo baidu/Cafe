@@ -58,7 +58,7 @@ public class ViewRecorder {
     private final static int                         WAIT_TIMEOUT              = 20000;
 
     /**
-     * These classes can not be used directly, only their names can be
+     * These classes can not be used directly, only their class names can be
      * used.Because of com.android.internal.view.menu.MenuView.ItemView can not
      * be compiled with sdk.
      */
