@@ -103,8 +103,6 @@ public class ViewRecorder {
     private String                                   mPackageName              = null;
     private String                                   mCurrentActivity          = null;
     private String                                   mPath                     = null;
-    private boolean                                  mIsMenuOpen               = false;
-    private long                                     mLastMenuAppearsTime      = 0;
 
     /**
      * interval between events
@@ -435,8 +433,6 @@ public class ViewRecorder {
     private ArrayList<View> getTargetViews() {
         ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
         ArrayList<View> targetViews = new ArrayList<View>();
-//        boolean hasMenu = false;
-//        boolean hasFocusView = hasFocusView();
 
         for (View view : views) {
             // get new views
@@ -452,23 +448,7 @@ public class ViewRecorder {
                     targetViews.add(view);
                 }
             }
-
-            // handle menu view
-            // if has focus view, KeyEvent.KEYCODE_MENU will be repsonding by the view
-//            if (!hasFocusView && isMenuView(view)) {
-//                hasMenu = true;
-//                if (!mIsMenuOpen) {
-//                    mLastMenuAppearsTime = System.currentTimeMillis();
-//                    mIsMenuOpen = true;
-//                    outputMenuEvent(view);
-//                }
-//            }
         }
-
-//        if (mIsMenuOpen && !hasMenu && System.currentTimeMillis() - mLastMenuAppearsTime > 1000) {
-//            mIsMenuOpen = false;
-//            printLog("Menu is closed");
-//        }
 
         return targetViews;
     }
@@ -477,7 +457,7 @@ public class ViewRecorder {
         if (!hasFocusView()) {
             View view = local.getRecentDecorView();
             boolean hasFocus = local.requestFocus(view);
-            printLog(view + " hasFocus: " + hasFocus);
+            //            printLog(view + " hasFocus: " + hasFocus);
             String viewID = getViewID(view);
             if (!mAllViews.contains(viewID)) {
                 mAllViews.add(viewID);
@@ -509,16 +489,6 @@ public class ViewRecorder {
             return true;
         }
         return false;
-    }
-
-    private void outputMenuEvent(View view) {
-        HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
-        String code = String.format("local.sendKey(KeyEvent.%s);",
-                mKeyCodeMap.get(KeyEvent.KEYCODE_MENU));
-        hardKeyEvent.setCode(code);
-        hardKeyEvent.setLog("Menu: " + view);
-
-        mOutputEventQueue.offer(hardKeyEvent);
     }
 
     private void setHookListenerOnView(View view) {
@@ -560,12 +530,19 @@ public class ViewRecorder {
             return;
         }
 
+        final int viewIndex = local.getCurrentViewIndex(editText);
+
         // all TextWatcher works at the same time
         editText.addTextChangedListener(new TextWatcher() {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                printLog("text:" + s);
+                String code = String.format("local.enterText(%s, %s);", viewIndex, s);
+                HardKeyEvent hardKeyEvent = new HardKeyEvent(null);
+                hardKeyEvent.setCode(code);
+                hardKeyEvent.setLog("text:" + s);
+
+                mOutputEventQueue.offer(hardKeyEvent);
             }
 
             @Override
