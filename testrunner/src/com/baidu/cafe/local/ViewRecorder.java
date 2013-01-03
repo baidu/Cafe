@@ -485,6 +485,11 @@ public class ViewRecorder {
         if (!hasFocusView()) {
             View view = local.getRecentDecorView();
             boolean hasFocus = local.requestFocus(view);
+            String viewID = getViewID(view);
+            if (!mAllViews.contains(viewID)) {
+                mAllViews.add(viewID);
+                hookOnKeyListener(view);
+            }
             printLog(view + " hasFocus: " + hasFocus);
         }
     }
