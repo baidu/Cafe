@@ -37,7 +37,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.SystemClock;
-import android.text.StaticLayout;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
@@ -88,7 +87,6 @@ public class LocalLib extends SoloEx {
     private Instrumentation mInstrumentation;
     private Activity        mActivity;
     private Context         mContext                     = null;
-    private boolean         hasFocus                     = false;
 
     public LocalLib(Instrumentation instrumentation, Activity activity) {
         super(instrumentation, activity);
@@ -1520,6 +1518,8 @@ public class LocalLib extends SoloEx {
                 new Class[] { ArrayList.class }, new Object[] { views });
     }
 
+    boolean hasFocus = false;
+
     public boolean requestFocus(final View view) {
         mInstrumentation.runOnMainSync(new Runnable() {
             public void run() {
@@ -1530,4 +1530,17 @@ public class LocalLib extends SoloEx {
         });
         return hasFocus;
     }
+
+    /**
+     * These classes can not be used directly, only their class names can be
+     * used.Because of com.android.internal.view.menu.MenuView.ItemView can not
+     * be compiled with sdk.
+     */
+    final static String[] MENU_INTERFACES = new String[] { "android.view.MenuItem",
+            "com.android.internal.view.menu.MenuView" };
+
+    public boolean isMenu(View view) {
+        return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
+    }
+
 }

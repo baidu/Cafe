@@ -58,14 +58,6 @@ public class ViewRecorder {
     private final static int                         WAIT_TIMEOUT              = 20000;
 
     /**
-     * These classes can not be used directly, only their class names can be
-     * used.Because of com.android.internal.view.menu.MenuView.ItemView can not
-     * be compiled with sdk.
-     */
-    private final static String[]                    MENU_INTERFACES           = new String[] {
-            "android.view.MenuItem", "com.android.internal.view.menu.MenuView" };
-
-    /**
      * For judging whether a view is an old one.
      */
     private ArrayList<String>                        mAllViews                 = new ArrayList<String>();
@@ -443,8 +435,8 @@ public class ViewRecorder {
     private ArrayList<View> getTargetViews() {
         ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
         ArrayList<View> targetViews = new ArrayList<View>();
-        boolean hasMenu = false;
-        boolean hasFocusView = hasFocusView();
+//        boolean hasMenu = false;
+//        boolean hasFocusView = hasFocusView();
 
         for (View view : views) {
             // get new views
@@ -463,20 +455,20 @@ public class ViewRecorder {
 
             // handle menu view
             // if has focus view, KeyEvent.KEYCODE_MENU will be repsonding by the view
-            if (!hasFocusView && isMenuView(view)) {
-                hasMenu = true;
-                if (!mIsMenuOpen) {
-                    mLastMenuAppearsTime = System.currentTimeMillis();
-                    mIsMenuOpen = true;
-                    outputMenuEvent(view);
-                }
-            }
+//            if (!hasFocusView && isMenuView(view)) {
+//                hasMenu = true;
+//                if (!mIsMenuOpen) {
+//                    mLastMenuAppearsTime = System.currentTimeMillis();
+//                    mIsMenuOpen = true;
+//                    outputMenuEvent(view);
+//                }
+//            }
         }
 
-        if (mIsMenuOpen && !hasMenu && System.currentTimeMillis() - mLastMenuAppearsTime > 1000) {
-            mIsMenuOpen = false;
-            printLog("Menu is closed");
-        }
+//        if (mIsMenuOpen && !hasMenu && System.currentTimeMillis() - mLastMenuAppearsTime > 1000) {
+//            mIsMenuOpen = false;
+//            printLog("Menu is closed");
+//        }
 
         return targetViews;
     }
@@ -485,12 +477,12 @@ public class ViewRecorder {
         if (!hasFocusView()) {
             View view = local.getRecentDecorView();
             boolean hasFocus = local.requestFocus(view);
+            printLog(view + " hasFocus: " + hasFocus);
             String viewID = getViewID(view);
             if (!mAllViews.contains(viewID)) {
                 mAllViews.add(viewID);
                 hookOnKeyListener(view);
             }
-            printLog(view + " hasFocus: " + hasFocus);
         }
     }
 
@@ -517,10 +509,6 @@ public class ViewRecorder {
             return true;
         }
         return false;
-    }
-
-    private boolean isMenuView(View view) {
-        return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
     }
 
     private void outputMenuEvent(View view) {
