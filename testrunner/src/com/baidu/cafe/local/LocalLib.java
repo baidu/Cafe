@@ -123,7 +123,7 @@ public class LocalLib extends SoloEx {
      * @throws IllegalArgumentException
      */
     public Object invokeObjectMethod(Object owner, int classLevel, String methodName,
-            Class[] parameterTypes, Object[] parameters) throws SecurityException,
+            Class<?>[] parameterTypes, Object[] parameters) throws SecurityException,
             NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
         return ReflectHelper.invoke(owner, classLevel, methodName, parameterTypes, parameters);
@@ -183,7 +183,8 @@ public class LocalLib extends SoloEx {
      *            e.g. java.lang.String
      * @return ArrayList<String> of property's name
      */
-    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel, Class type) {
+    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel,
+            Class<?> type) {
         return ReflectHelper.getPropertyNameByType(owner, classLevel, type);
     }
 
@@ -201,7 +202,8 @@ public class LocalLib extends SoloEx {
      * @throws IllegalArgumentException
      */
     public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel,
-            Class valueType, Object value) throws IllegalArgumentException, IllegalAccessException {
+            Class<?> valueType, Object value) throws IllegalArgumentException,
+            IllegalAccessException {
         return ReflectHelper.getPropertyNameByValue(owner, classLevel, valueType, value);
     }
 
@@ -231,7 +233,7 @@ public class LocalLib extends SoloEx {
             return null;
         }
         try {
-            if (Build.VERSION.SDK_INT > 14) {// API Level: 14. Android 4.0
+            if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API Level: 14. Android 4.0
                 Object mListenerInfo = ReflectHelper
                         .getObjectProperty(view, level, "mListenerInfo");
                 return null == mListenerInfo ? null : ReflectHelper.getObjectProperty(
@@ -245,7 +247,6 @@ public class LocalLib extends SoloEx {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
             // eat it
-            //            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -261,9 +262,9 @@ public class LocalLib extends SoloEx {
      *            target father
      * @return positive means level from father; -1 means not found
      */
-    private int countLevelFromViewToFather(View view, Class father) {
+    private int countLevelFromViewToFather(View view, Class<?> father) {
         int level = 0;
-        Class originalClass = view.getClass();
+        Class<?> originalClass = view.getClass();
         // find its parent
         while (true) {
             if (originalClass.equals(Object.class)) {
@@ -360,7 +361,7 @@ public class LocalLib extends SoloEx {
     }
 
     private int getRStringId(String packageName, String stringName) {
-        Class stringClass = getRClass(packageName, "string");
+        Class<?> stringClass = getRClass(packageName, "string");
         if (null == stringClass) {
             return -1;
         }
@@ -382,7 +383,7 @@ public class LocalLib extends SoloEx {
     }
 
     public String getRIdNameByValue(String packageName, int value) {
-        Class idClass = getRClass(packageName, "id");
+        Class<?> idClass = getRClass(packageName, "id");
         if (null == idClass) {
             return "";
         }
@@ -403,9 +404,9 @@ public class LocalLib extends SoloEx {
         return "";
     }
 
-    private Class getRClass(String packageName, String className) {
+    private Class<?> getRClass(String packageName, String className) {
         try {
-            Class[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
+            Class<?>[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
             for (int i = 0; i < classes.length; i++) {
                 if (classes[i].getName().indexOf("$" + className) != -1) {
                     return classes[i];
@@ -1339,7 +1340,7 @@ public class LocalLib extends SoloEx {
             print("0 == views.length at takeActivitySnapshot");
             return null;
         }
-        
+
         View recentDecorview = getRecentDecorView(views);
         if (null == recentDecorview) {
             print("null == rview; use views[0]: " + views[0]);
