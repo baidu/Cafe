@@ -484,9 +484,7 @@ public class ViewRecorder {
     private void setDefaultFocusView() {
         if (!hasFocusView()) {
             View view = local.getRecentDecorView();
-            view.setFocusable(true);
-            view.setFocusableInTouchMode(true);
-            boolean hasFocus = view.requestFocus();
+            boolean hasFocus = local.requestFocus(view);
             printLog(view + " hasFocus: " + hasFocus);
         }
     }

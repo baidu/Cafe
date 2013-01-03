@@ -1518,4 +1518,13 @@ public class LocalLib extends SoloEx {
                 new Class[] { ArrayList.class }, new Object[] { views });
     }
 
+    public boolean requestFocus(final View view) {
+        mInstrumentation.runOnMainSync(new Runnable() {
+            public void run() {
+                view.setFocusable(true);
+                view.setFocusableInTouchMode(true);
+            }
+        });
+        return view.requestFocus();
+    }
 }
