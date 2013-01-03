@@ -394,6 +394,7 @@ public class ViewRecorder {
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
+                    setDefaultFocusView();
                     ArrayList<View> newViews = getTargetViews();
                     for (View view : newViews) {
                         try {
@@ -478,6 +479,16 @@ public class ViewRecorder {
         }
 
         return targetViews;
+    }
+
+    private void setDefaultFocusView() {
+        if (!hasFocusView()) {
+            View view = local.getRecentDecorView();
+            view.setFocusable(true);
+            view.setFocusableInTouchMode(true);
+            boolean hasFocus = view.requestFocus();
+            printLog(view + " hasFocus: " + hasFocus);
+        }
     }
 
     private boolean hasFocusView() {
