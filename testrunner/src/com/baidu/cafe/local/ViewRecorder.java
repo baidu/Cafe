@@ -203,6 +203,12 @@ public class ViewRecorder {
      */
     class SortByView implements Comparator<OutputEvent> {
         public int compare(OutputEvent e1, OutputEvent e2) {
+            if (null == e1) {
+                return 0;
+            }
+            if (null == e2) {
+                return 1;
+            }
             if (e1.view.hashCode() > e2.view.hashCode()) {
                 return 1;
             }
