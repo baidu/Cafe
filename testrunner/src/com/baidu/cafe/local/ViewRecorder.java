@@ -142,8 +142,11 @@ public class ViewRecorder {
         final static int PRIORITY_KEY      = 2;
         final static int PRIORITY_CLICK    = 3;
 
-        public int       proity            = 0;
+        /**
+         * NOTICE: This field can not be null!
+         */
         public View      view              = null;
+        public int       proity            = 0;
         protected String code              = "";
         protected String log               = "";
 
@@ -506,6 +509,8 @@ public class ViewRecorder {
             // MenuItem.OnMenuItemClickListener
         }
 
+        hookOnLongClickListener(view);
+
         if (view instanceof EditText) {
             hookEditText((EditText) view);
             return;
@@ -515,20 +520,6 @@ public class ViewRecorder {
             // If view has ClickListener, do not add a TouchListener.
             hookOnTouchListener(view);
         }
-
-        /*
-                mOnLongClickListener = (OnLongClickListener) local.getListener(view, "mOnLongClickListener");
-                if (null != mOnLongClickListener) {
-                    view.setOnLongClickListener(new View.OnLongClickListener() {
-                        public boolean onLongClick(View v) {
-                            print("id:" + v.getId() + "\t long_click");
-                            mOnLongClickListener.onLongClick(v);
-                            return false;
-                        }
-                    });
-                }
-
-        */
     }
 
     private void hookEditText(EditText editText) {
@@ -705,39 +696,9 @@ public class ViewRecorder {
             // set hook listener
             view.setOnItemClickListener(new OnItemClickListener() {
 
-                /**
-                 * Callback method to be invoked when an item in this
-                 * AdapterView has been clicked.
-                 * <p>
-                 * Implementers can call getItemAtPosition(position) if they
-                 * need to access the data associated with the selected item.
-                 * 
-                 * @param parent
-                 *            The AdapterView where the click happened.
-                 * @param view
-                 *            The view within the AdapterView that was clicked
-                 *            (this will be a view provided by the adapter)
-                 * @param position
-                 *            The position of the view in the adapter.
-                 * @param id
-                 *            The row id of the item that was clicked.
-                 */
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ClickEvent clickEvent = new ClickEvent(parent);
-                    clickEvent.setCode(String.format("local.clickInList(%s, %s);", position,
-                            local.getCurrentViewIndex(parent)));
-                    clickEvent.setLog("parent: " + parent + " view: " + view + " position: "
-                            + position + " click ");
-                    mOutputEventQueue.offer(clickEvent);
-
-                    OnItemClickListener onItemClickListener = mOnItemClickListeners
-                            .get(getViewID(parent));
-                    if (onItemClickListener != null) {
-                        onItemClickListener.onItemClick(parent, view, position, id);
-                    } else {
-                        printLog("onItemClickListener == null");
-                    }
+                    setOnItemClick(parent, view, position, id);
                 }
             });
 
@@ -752,20 +713,58 @@ public class ViewRecorder {
         }
     }
 
+    private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ClickEvent clickEvent = new ClickEvent(parent);
+        clickEvent.setCode(String.format("local.clickInList(%s, %s);", position,
+                local.getCurrentViewIndex(parent)));
+        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
+                + " click ");
+        mOutputEventQueue.offer(clickEvent);
+
+        OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
+        if (onItemClickListener != null) {
+            onItemClickListener.onItemClick(parent, view, position, id);
+        } else {
+            printLog("onItemClickListener == null");
+        }
+    }
+
     private void hookOnLongClickListener(View view) {
+        if (hasHookedListener(view, "mOnLongClickListener")) {
+            return;
+        }
+
         OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view,
                 "mOnLongClickListener");
         if (null != onLongClickListener) {
             printLog("hookOnLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
+
+            // save old listener
             mOnLongClickListeners.put(getViewID(view), onLongClickListener);
+
+            // set hook listener
             view.setOnLongClickListener(new OnLongClickListener() {
 
                 @Override
                 public boolean onLongClick(View v) {
-
+                    printLog("local.clickLongOnView(view): " + v);
+                    OnLongClickListener onLongClickListener = mOnLongClickListeners
+                            .get(getViewID(v));
+                    if (onLongClickListener != null) {
+                        onLongClickListener.onLongClick(v);
+                    } else {
+                        printLog("onLongClickListener == null");
+                    }
                     return false;
                 }
             });
+
+            // save hashcode of hooked listener
+            OnLongClickListener onLongClickListenerHooked = (OnLongClickListener) local
+                    .getListener(view, "mOnLongClickListener");
+            if (onLongClickListenerHooked != null) {
+                mAllListenerHashcodes.add(onLongClickListenerHooked.hashCode());
+            }
         }
     }
 
@@ -908,10 +907,13 @@ public class ViewRecorder {
     }
 
     private void hookOnItemSelectedListener(AdapterView view) {
-
     }
 
     private void hookOnKeyListener(View view) {
+        if (hasHookedListener(view, "mOnKeyListener")) {
+            return;
+        }
+
         OnKeyListener onKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
         if (null != onKeyListener) {
             printLog("hookOnKeyListener [" + view + "]");
