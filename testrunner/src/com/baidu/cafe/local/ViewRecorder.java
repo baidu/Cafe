@@ -537,6 +537,7 @@ public class ViewRecorder {
         }
 
         final int viewIndex = local.getCurrentViewIndex(editText);
+        final EditText tempEditText = editText;
 
         // all TextWatcher works at the same time
         editText.addTextChangedListener(new TextWatcher() {
@@ -544,7 +545,7 @@ public class ViewRecorder {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String code = String.format("local.enterText(%s, %s);", viewIndex, s);
-                HardKeyEvent hardKeyEvent = new HardKeyEvent(null);
+                HardKeyEvent hardKeyEvent = new HardKeyEvent(tempEditText);
                 hardKeyEvent.setCode(code);
                 hardKeyEvent.setLog("text:" + s);
 
@@ -817,6 +818,8 @@ public class ViewRecorder {
                             outputAnEvent(nextEvent);
                         } else {
                             printLog("event.proity == nextEvent.proity");
+                            outputAnEvent(event);
+                            outputAnEvent(nextEvent);
                         }
                     } else {
                         i++;
