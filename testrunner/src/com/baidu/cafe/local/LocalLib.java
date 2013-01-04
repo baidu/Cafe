@@ -1543,4 +1543,38 @@ public class LocalLib extends SoloEx {
         return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
     }
 
+    /**
+     * Returns an {@code ArrayList} of {@code View}s of the specified
+     * {@code Class} located in the current {@code Activity}.
+     * 
+     * @param classToFilterBy
+     *            return all instances of this class, e.g. {@code Button.class}
+     *            or {@code GridView.class}
+     * @return an {@code ArrayList} of {@code View}s of the specified
+     *         {@code Class} located in the current {@code Activity}
+     */
+    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, View parent) {
+        return (ArrayList<T>) invoke(mViewFetcher, "getCurrentViews", new Class[] { Class.class,
+                View.class }, new Object[] { classToFilterBy, parent });
+    }
+
+    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy) {
+        return getCurrentViews(classToFilterBy, null);
+    }
+
+    /**
+     * Clicks on a {@code View} of a specific class, with a certain index.
+     * 
+     * @param viewClass
+     *            what kind of {@code View} to click, e.g. {@code Button.class}
+     *            or {@code ImageView.class}
+     * @param index
+     *            the index of the {@code View} to be clicked, within
+     *            {@code View}s of the specified class
+     */
+    public <T extends View> void clickOn(Class<T> viewClass, int index) {
+        invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
+                viewClass, index });
+    }
+
 }

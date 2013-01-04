@@ -59,8 +59,12 @@ public class ViewRecorder {
 
     /**
      * For judging whether a view is an old one.
+     * 
+     * Key is string of view id.
+     * 
+     * Value is position array of view.
      */
-    private ArrayList<String>                        mAllViews                 = new ArrayList<String>();
+    private HashMap<String, int[]>                   mAllViewPosition          = new HashMap<String, int[]>();
 
     /**
      * For judging whether a view has been hooked.
@@ -444,12 +448,19 @@ public class ViewRecorder {
         ArrayList<View> targetViews = new ArrayList<View>();
 
         for (View view : views) {
-            // get new views
             String viewID = getViewID(view);
-            if (!mAllViews.contains(viewID)) {
-                targetViews.add(view);
-                mAllViews.add(viewID);
+            boolean isOld = mAllViewPosition.containsKey(viewID);
+
+            // refresh view layout
+            if (hasChange(view)) {
+                saveView(view);
                 printLayout(view);
+            }
+
+            // get new views
+            if (!isOld) {
+                saveView(view);
+                targetViews.add(view);
                 hookOnKeyListener(view);
             } else {
                 // get views who have unhooked listeners
@@ -462,14 +473,33 @@ public class ViewRecorder {
         return targetViews;
     }
 
+    private void saveView(View view) {
+        String viewID = getViewID(view);
+        int[] xy = new int[2];
+        view.getLocationOnScreen(xy);
+        mAllViewPosition.put(viewID, xy);
+    }
+
+    private boolean hasChange(View view) {
+        String viewID = getViewID(view);
+        int[] oldXy = mAllViewPosition.get(viewID);
+        if (null == oldXy) {
+            return true;
+        }
+
+        int[] xy = new int[2];
+        view.getLocationOnScreen(xy);
+        return xy[0] != oldXy[0] || xy[1] != oldXy[1] ? true : false;
+    }
+
     private void setDefaultFocusView() {
         if (!hasFocusView()) {
             View view = local.getRecentDecorView();
             boolean hasFocus = local.requestFocus(view);
             //            printLog(view + " hasFocus: " + hasFocus);
             String viewID = getViewID(view);
-            if (!mAllViews.contains(viewID)) {
-                mAllViews.add(viewID);
+            if (!mAllViewPosition.containsKey(viewID)) {
+                saveView(view);
                 hookOnKeyListener(view);
             }
         }
