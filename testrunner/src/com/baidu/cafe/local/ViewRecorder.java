@@ -33,6 +33,7 @@ import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
 
 import android.app.Activity;
+import android.app.LauncherActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -266,7 +267,7 @@ public class ViewRecorder {
             while ((line = reader.readLine()) != null) {
                 linesBeforNextImport.add(line);
                 // add import line
-                if (!importLine.isEmpty() && line.contains("next import")
+                if (!importLine.equals("") && line.contains("next import")
                         && !linesBeforNextImport.contains(importLine)) {
                     //                    sb.append(importLine + "\n");
                     //                    sb.append("// next import" + "\n");
@@ -342,6 +343,7 @@ public class ViewRecorder {
 
     private void init() {
         mPackageName = local.getCurrentActivity().getPackageName();
+        String launcherActivity = local.getCurrentActivity().getClass().getName();
         initKeyTable();
 
         // init cafe dir
@@ -357,30 +359,24 @@ public class ViewRecorder {
         if (mRecord.exists()) {
             mRecord.delete();
         }
-        writeToFile(template);
+        String code = String.format(template, launcherActivity, mPackageName);
+        writeToFile(code);
 
         // init activity
-        Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
-        mCurrentActivity = activityClass.getName();
-        outputAnActivityEvent(activityClass);
+        outputAnActivityEvent(updateCurrentActivity());
     }
 
-    String template = "package com.example.demo.test;\n"
-                            + "\n"
+    String template = "package com.example.demo.test;\n" + "\n"
                             + "import com.baidu.cafe.CafeTestCase;\n"
-                            + "import android.view.KeyEvent;\n"
-                            + "// next import\n"
-                            + "\n"
+                            + "import android.view.KeyEvent;\n" + "// next import\n" + "\n"
                             + "public class TestCafe extends CafeTestCase {\n"
                             + "    private static Class<?>     launcherActivityClass;\n"
-                            + "    static {\n"
-                            + "        try {\n"
-                            + "            launcherActivityClass = Class.forName(LAUNCHER_ACTIVITY_FULL_CLASSNAME);\n"
+                            + "    static {\n" + "        try {\n"
+                            + "            launcherActivityClass = Class.forName(\"%s\");\n"
                             + "        } catch (ClassNotFoundException e) {\n" + "        }\n"
                             + "    }\n" + "\n" + "    public TestCafe() {\n"
-                            + "        super(TARGET_PACKAGE, launcherActivityClass);\n" + "    }\n"
-                            + "\n" + "    @Override\n"
-                            + "    protected void setUp() throws Exception {\n"
+                            + "        super(\"%s\", launcherActivityClass);\n" + "    }\n" + "\n"
+                            + "    @Override\n" + "    protected void setUp() throws Exception {\n"
                             + "        super.setUp();\n" + "    }\n" + "\n" + "    @Override\n"
                             + "    protected void tearDown() throws Exception {\n"
                             + "        super.tearDown();\n" + "    }\n" + "\n"
@@ -443,9 +439,19 @@ public class ViewRecorder {
         outputAnEvent(activityEvent);
     }
 
+    /**
+     * @return new activity class
+     */
+    private Class<? extends Activity> updateCurrentActivity() {
+        Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
+        mCurrentActivity = activityClass.getName();
+        return activityClass;
+    }
+
     private ArrayList<View> getTargetViews() {
         ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
         ArrayList<View> targetViews = new ArrayList<View>();
+        boolean isNewActivity = false;
 
         for (View view : views) {
             String viewID = getViewID(view);
@@ -453,6 +459,10 @@ public class ViewRecorder {
 
             // refresh view layout
             if (hasChange(view)) {
+                if (!isNewActivity) {
+                    isNewActivity = true;
+                    updateCurrentActivity();
+                }
                 saveView(view);
                 printLayout(view);
             }
@@ -986,8 +996,15 @@ public class ViewRecorder {
         // ignore KeyEvent.ACTION_DOWN
         if (event.getAction() == KeyEvent.ACTION_UP) {
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
-            String code = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
-            hardKeyEvent.setCode(code);
+            String sendKey = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
+            String sleep = "";
+            if (mLastEventTime != 0) {
+                sleep = String.format("local.sleep(%s);", System.currentTimeMillis()
+                        - mLastEventTime);
+                hardKeyEvent.setCode(sleep + "\n" + sendKey);
+            } else {
+                hardKeyEvent.setCode(sendKey);
+            }
             hardKeyEvent.setLog("view: " + view + " " + event);
 
             mOutputEventQueue.offer(hardKeyEvent);
