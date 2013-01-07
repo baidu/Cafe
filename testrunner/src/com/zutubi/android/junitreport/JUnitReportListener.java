@@ -163,6 +163,7 @@ public class JUnitReportListener implements TestListener {
 
                 // added by luxiaoyu01@baidu.com
                 mName = testCase.getName();
+                LocalLib.mTestCaseName = mName;
                 LocalLib.executeOnDevice("chmod 777 " + mTargetContext.getFilesDir().toString(),
                         "/");
                 mPackageRcv = LocalLib.getPackageRcv(mTargetContext.getPackageName());

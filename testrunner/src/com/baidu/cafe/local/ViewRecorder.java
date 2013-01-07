@@ -33,7 +33,6 @@ import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
 
 import android.app.Activity;
-import android.app.LauncherActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -108,6 +107,8 @@ public class ViewRecorder {
     private String                                   mPackageName              = null;
     private String                                   mCurrentActivity          = null;
     private String                                   mPath                     = null;
+    private String                                   mCurrentEditTextString    = null;
+    private int                                      mCurrentEditTextIndex     = 0;
 
     /**
      * interval between events
@@ -451,7 +452,7 @@ public class ViewRecorder {
     private ArrayList<View> getTargetViews() {
         ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
         ArrayList<View> targetViews = new ArrayList<View>();
-        boolean isNewActivity = false;
+        boolean hasChange = false;
 
         for (View view : views) {
             String viewID = getViewID(view);
@@ -459,12 +460,8 @@ public class ViewRecorder {
 
             // refresh view layout
             if (hasChange(view)) {
-                if (!isNewActivity) {
-                    isNewActivity = true;
-                    updateCurrentActivity();
-                }
+                hasChange = true;
                 saveView(view);
-                printLayout(view);
             }
 
             // get new views
@@ -480,7 +477,24 @@ public class ViewRecorder {
             }
         }
 
+        if (hasChange) {
+            flushViewLayout(views);
+        }
+
         return targetViews;
+    }
+
+    /**
+     * For mtc client
+     * 
+     * @param views
+     */
+    private void flushViewLayout(ArrayList<View> views) {
+        updateCurrentActivity();
+        print("ViewLayout", String.format("[%s]ViewLayout refreshed.", mCurrentActivity));
+        for (View view : views) {
+            printLayout(view);
+        }
     }
 
     private void saveView(View view) {
@@ -542,7 +556,6 @@ public class ViewRecorder {
 
     private void setHookListenerOnView(View view) {
         if (view instanceof AdapterView) {
-            printLog("AdapterView [" + view + "]");
             hookOnItemClickListener((AdapterView<?>) view);
             //            adapterView.setOnItemLongClickListener(listener);
             //            adapterView.setOnItemSelectedListener(listener);
@@ -575,12 +588,18 @@ public class ViewRecorder {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String code = String.format("local.enterText(%s, %s);", viewIndex, s);
-                HardKeyEvent hardKeyEvent = new HardKeyEvent(tempEditText);
-                hardKeyEvent.setCode(code);
-                hardKeyEvent.setLog("text:" + s);
+                if ("".equals(s)) {
+                    return;
+                }
 
-                mOutputEventQueue.offer(hardKeyEvent);
+                mCurrentEditTextIndex = viewIndex;
+                mCurrentEditTextString = s.toString();
+                //                String code = String.format("local.enterText(%s, \"%s\");", viewIndex, s);
+                //                HardKeyEvent hardKeyEvent = new HardKeyEvent(tempEditText);
+                //                hardKeyEvent.setCode(code);
+                //                hardKeyEvent.setLog("text:" + s);
+                //
+                //                mOutputEventQueue.offer(hardKeyEvent);
             }
 
             @Override
@@ -713,8 +732,8 @@ public class ViewRecorder {
     }
 
     private void addEvent(View v, MotionEvent event) {
-        if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
-                event.getRawY()))) {
+        if (!mMotionEventQueue.offer(new RecordMotionEvent(v, event.getAction(), event.getX(),
+                event.getY()))) {
             printLog("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
                     + "mMotionEventQueue.size=" + mMotionEventQueue.size());
         }
@@ -732,31 +751,38 @@ public class ViewRecorder {
 
             // save old listener
             mOnItemClickListeners.put(getViewID(view), onItemClickListener);
-
-            // set hook listener
-            view.setOnItemClickListener(new OnItemClickListener() {
-
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    setOnItemClick(parent, view, position, id);
-                }
-            });
-
-            // save hashcode of hooked listener
-            OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) local
-                    .getListener(view, "mOnItemClickListener");
-            if (onItemClickListenerHooked != null) {
-                mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
-            }
         } else {
-            printLog("onItemClickListener == null at [" + view + "]");
+            printLog("set onItemClickListener at [" + view + "]");
+        }
+
+        // set hook listener
+        view.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                setOnItemClick(parent, view, position, id);
+            }
+        });
+
+        // save hashcode of hooked listener
+        OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) local.getListener(
+                view, "mOnItemClickListener");
+        if (onItemClickListenerHooked != null) {
+            mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
         }
     }
 
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
         ClickEvent clickEvent = new ClickEvent(parent);
-        clickEvent.setCode(String.format("local.clickInList(%s, %s);", position,
-                local.getCurrentViewIndex(parent)));
+        String click = String.format("local.clickInList(%s, %s);", position,
+                local.getCurrentViewIndex(parent));
+        String sleep = "";
+        if (mLastEventTime != 0) {
+            sleep = String.format("local.sleep(%s);", System.currentTimeMillis() - mLastEventTime);
+            clickEvent.setCode(sleep + "\n" + click);
+        } else {
+            clickEvent.setCode(click);
+        }
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click ");
         mOutputEventQueue.offer(clickEvent);
@@ -870,6 +896,18 @@ public class ViewRecorder {
     }
 
     private void outputAnEvent(OutputEvent event) {
+        if (mCurrentEditTextString != null) {
+            // flush EditText event
+            String code = String.format("local.enterText(%s, \"%s\");", mCurrentEditTextIndex,
+                    mCurrentEditTextString);
+            printCode(code);
+            printLog("text:" + mCurrentEditTextString);
+
+            // restore var
+            mCurrentEditTextString = null;
+            mCurrentEditTextIndex = 0;
+        }
+
         printCode(event.getCode());
         printLog(event.getLog());
         mLastEventTime = System.currentTimeMillis();
@@ -924,7 +962,8 @@ public class ViewRecorder {
     private void mergeMotionEvents(ArrayList<RecordMotionEvent> events) {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
-        int stepCount = events.size();
+        //        int stepCount = events.size();
+        int stepCount = events.size() / 2;
         stepCount = stepCount >= 0 ? stepCount : 0;
         DragEvent dragEvent = new DragEvent(up.view);
 

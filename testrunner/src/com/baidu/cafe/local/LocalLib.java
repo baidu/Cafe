@@ -82,6 +82,8 @@ public class LocalLib extends SoloEx {
     public final static int SEARCHMODE_INCLUDE_MATCHING  = 2;
     public final static int WAIT_INTERVAL                = 1000;
 
+    public static String    mTestCaseName                = null;
+
     private boolean         mHasBegin                    = false;
     private ArrayList<View> mViews                       = null;
     private Instrumentation mInstrumentation;
@@ -1283,6 +1285,10 @@ public class LocalLib extends SoloEx {
      */
     public void screenShotNamedTimeStamp() {
         screenShot(getTimeStamp());
+    }
+
+    public void screenShotNamedCaseName(String suffix) {
+        screenShot(mTestCaseName + "_" + suffix);
     }
 
     public void screenShotNamedSuffix(String suffix, String packagePath) {
