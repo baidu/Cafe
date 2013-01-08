@@ -49,6 +49,7 @@ import android.widget.Checkable;
 import android.widget.CheckedTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -223,14 +224,15 @@ public class LocalLib extends SoloEx {
      * 
      * @param view
      *            target view
+     * @param targetClass
+     *            the class which fieldName belong to
      * @param fieldName
      *            target listener. e.g. mOnClickListener, mOnLongClickListener,
      *            mOnTouchListener, mOnKeyListener
      * @return listener object; null means no listeners has been found
      */
-    public Object getListener(View view, String fieldName) {
-        int level = view instanceof AdapterView ? countLevelFromViewToFather(view,
-                AdapterView.class) : countLevelFromViewToFather(view, View.class);
+    public Object getListener(View view, Class<?> targetClass, String fieldName) {
+        int level = countLevelFromViewToFather(view, targetClass);
         if (-1 == level) {
             return null;
         }
@@ -704,7 +706,7 @@ public class LocalLib extends SoloEx {
         if (index <= checkBoxs.size()) {
             final Checkable checkBox = checkBoxs.get(index);
             final boolean fChecked = checked;
-            mInstrumentation.runOnMainSync(new Runnable() {
+            runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
                     checkBox.setChecked(fChecked);
@@ -1129,12 +1131,7 @@ public class LocalLib extends SoloEx {
             return false;
         }
 
-        mInstrumentation.runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                view.performClick();
-            }
-        });
+        clickOnView(view);
         return true;
     }
 
@@ -1332,7 +1329,7 @@ public class LocalLib extends SoloEx {
      */
     public void takeActivitySnapshot(final String path) {
         final View view = getRecentDecorView();
-        mInstrumentation.runOnMainSync(new Runnable() {
+        runOnMainSync(new Runnable() {
             public void run() {
                 SnapshotHelper.takeViewSnapshot(view, path);
             }
@@ -1527,7 +1524,7 @@ public class LocalLib extends SoloEx {
     boolean hasFocus = false;
 
     public boolean requestFocus(final View view) {
-        mInstrumentation.runOnMainSync(new Runnable() {
+        runOnMainSync(new Runnable() {
             public void run() {
                 view.setFocusable(true);
                 view.setFocusableInTouchMode(true);
@@ -1583,4 +1580,77 @@ public class LocalLib extends SoloEx {
                 viewClass, index });
     }
 
+    /**
+     * Sets an {@code EditText} text
+     * 
+     * @param index
+     *            the index of the {@code EditText}
+     * @param text
+     *            the text that should be set
+     */
+
+    public void setEditText(final EditText editText, final String text,
+            final boolean keepPreviousText) {
+        if (editText == null) {
+            return;
+        }
+
+        if (!editText.isEnabled()) {
+            Assert.assertTrue("Edit text is not enabled!", false);
+        }
+
+        final String previousText = editText.getText().toString();
+        runOnMainSync(new Runnable() {
+            public void run() {
+                editText.setInputType(0);
+                editText.performClick();
+                if (keepPreviousText) {
+                    editText.setText(previousText + text);
+                } else {
+                    editText.setText(text);
+                }
+                editText.setCursorVisible(false);
+            }
+        });
+    }
+
+    private ExpandableListView getExpandableListView(int index) {
+        ArrayList<ExpandableListView> expandableListViews = getCurrentViews(
+                ExpandableListView.class, true);
+
+        if (expandableListViews.size() < index + 1) {
+            print(String.format("expandableListViews.size()[%s] < index[%s] + 1",
+                    expandableListViews.size(), index));
+            return null;
+        }
+        return expandableListViews.get(index);
+    }
+
+    boolean isClicked = false;
+
+    public boolean clickOnExpandableListView(int index, final int flatListPosition) {
+        final ExpandableListView expandableListView = getExpandableListView(index);
+        if (null == expandableListView) {
+            return false;
+        }
+
+        runOnMainSync(new Runnable() {
+
+            @Override
+            public void run() {
+                View v = (View) expandableListView.getItemAtPosition(flatListPosition);
+                long id = expandableListView.getItemIdAtPosition(flatListPosition);
+                isClicked = expandableListView.performItemClick(v, flatListPosition, id);
+            }
+        });
+        return isClicked;
+    }
+
+    public void runOnMainSync(Runnable r) {
+        mInstrumentation.runOnMainSync(r);
+    }
+
+    public Instrumentation getInstrumentation() {
+        return mInstrumentation;
+    }
 }

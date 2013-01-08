@@ -47,6 +47,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupClickListener;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -100,6 +103,8 @@ public class ViewRecorder {
     private HashMap<String, OnTouchListener>         mOnTouchListeners         = new HashMap<String, OnTouchListener>();
     private HashMap<String, OnKeyListener>           mOnKeyListeners           = new HashMap<String, OnKeyListener>();
     private HashMap<String, OnItemClickListener>     mOnItemClickListeners     = new HashMap<String, OnItemClickListener>();
+    private HashMap<String, OnGroupClickListener>    mOnGroupClickListeners    = new HashMap<String, OnGroupClickListener>();
+    private HashMap<String, OnChildClickListener>    mOnChildClickListeners    = new HashMap<String, OnChildClickListener>();
     private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners = new HashMap<String, OnItemLongClickListener>();
     private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
     private LocalLib                                 local                     = null;
@@ -270,8 +275,8 @@ public class ViewRecorder {
                 // add import line
                 if (!importLine.equals("") && line.contains("next import")
                         && !linesBeforNextImport.contains(importLine)) {
-                    //                    sb.append(importLine + "\n");
-                    //                    sb.append("// next import" + "\n");
+                    // sb.append(importLine + "\n");
+                    // sb.append("// next import" + "\n");
                 } else if (line.contains("next line")) {// add code line
                     sb.append(formatCode(codeLine));
                     sb.append(formatCode("// next line"));
@@ -320,9 +325,6 @@ public class ViewRecorder {
 
     /**
      * For indent code line
-     * 
-     * @param code
-     * @return
      */
     private String formatCode(String code) {
         String[] lines = code.split("\n");
@@ -455,22 +457,20 @@ public class ViewRecorder {
         boolean hasChange = false;
 
         for (View view : views) {
-            String viewID = getViewID(view);
-            boolean isOld = mAllViewPosition.containsKey(viewID);
-
+            boolean isOld = mAllViewPosition.containsKey(getViewID(view));
             // refresh view layout
             if (hasChange(view)) {
                 hasChange = true;
                 saveView(view);
             }
 
-            // get new views
             if (!isOld) {
+                // save new view
                 saveView(view);
                 targetViews.add(view);
-                hookOnKeyListener(view);
+                handleOnKeyListener(view);
             } else {
-                // get views who have unhooked listeners
+                // get view who have unhooked listeners
                 if (hasUnhookedListener(view)) {
                     targetViews.add(view);
                 }
@@ -517,135 +517,248 @@ public class ViewRecorder {
     }
 
     private void setDefaultFocusView() {
-        if (!hasFocusView()) {
-            View view = local.getRecentDecorView();
-            boolean hasFocus = local.requestFocus(view);
-            //            printLog(view + " hasFocus: " + hasFocus);
-            String viewID = getViewID(view);
-            if (!mAllViewPosition.containsKey(viewID)) {
-                saveView(view);
-                hookOnKeyListener(view);
-            }
+        if (local.getCurrentActivity().getCurrentFocus() != null) {
+            return;
+        }
+
+        View view = local.getRecentDecorView();
+        boolean hasFocus = local.requestFocus(view);
+        // printLog(view + " hasFocus: " + hasFocus);
+        String viewID = getViewID(view);
+        if (!mAllViewPosition.containsKey(viewID)) {
+            saveView(view);
+            handleOnKeyListener(view);
         }
     }
 
-    private boolean hasFocusView() {
-        return local.getCurrentActivity().getCurrentFocus() == null ? false : true;
-    }
-
     private boolean hasUnhookedListener(View view) {
+        // TODO listenerNames is not enough
         String[] listenerNames = new String[] { "mOnItemClickListener", "mOnClickListener",
                 "mOnTouchListener", "mOnKeyListener" };
         for (String listenerName : listenerNames) {
-            Object listener = local.getListener(view, listenerName);
+            Object listener = local.getListener(view, View.class, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
-                //                print("has unhooked " + listenerName + ": " + view);
+                // print("has unhooked " + listenerName + ": " + view);
                 return true;
             }
         }
         return false;
     }
 
-    private boolean hasHookedListener(View view, String listenerName) {
-        Object listener = local.getListener(view, listenerName);
-        if (listener != null && mAllListenerHashcodes.contains(listener.hashCode())) {
-            return true;
-        }
-        return false;
-    }
-
     private void setHookListenerOnView(View view) {
         if (view instanceof AdapterView) {
-            hookOnItemClickListener((AdapterView<?>) view);
-            //            adapterView.setOnItemLongClickListener(listener);
-            //            adapterView.setOnItemSelectedListener(listener);
+            if (view instanceof ExpandableListView) {
+                handleExpandableListView((ExpandableListView) view);
+            } else {
+                handleOnItemClickListener((AdapterView<?>) view);
+            }
+            // adapterView.setOnItemLongClickListener(listener);
+            // adapterView.setOnItemSelectedListener(listener);
             // MenuItem.OnMenuItemClickListener
         }
 
-        hookOnLongClickListener(view);
+        handleOnLongClickListener(view);
 
         if (view instanceof EditText) {
             hookEditText((EditText) view);
             return;
         }
 
-        if (!hookOnClickListener(view)) {
+        if (!handleOnClickListener(view)) {
             // If view has ClickListener, do not add a TouchListener.
-            hookOnTouchListener(view);
+            handleOnTouchListener(view);
         }
     }
 
-    private void hookEditText(EditText editText) {
-        if (mAllEditTexts.contains(editText)) {
+    private void handleExpandableListView(ExpandableListView expandableListView) {
+        handleOnGroupClickListener(expandableListView);
+        handleOnChildClickListener(expandableListView);
+    }
+
+    private void handleOnGroupClickListener(final ExpandableListView expandableListView) {
+        OnGroupClickListener onGroupClickListener = (OnGroupClickListener) local.getListener(
+                expandableListView, ExpandableListView.class, "mOnGroupClickListener");
+
+        // has hooked listener
+        if (onGroupClickListener != null
+                && mAllListenerHashcodes.contains(onGroupClickListener.hashCode())) {
             return;
         }
 
-        final int viewIndex = local.getCurrentViewIndex(editText);
-        final EditText tempEditText = editText;
+        if (null != onGroupClickListener) {
+            hookOnGroupClickListener(expandableListView, onGroupClickListener);
+        } else {
+            printLog("set onGroupClickListener [" + expandableListView + "]");
+            expandableListView.setOnGroupClickListener(new OnGroupClickListener() {
 
-        // all TextWatcher works at the same time
-        editText.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if ("".equals(s)) {
-                    return;
+                @Override
+                public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition,
+                        long id) {
+                    setOnGroupClick(parent, groupPosition);
+                    return false;
                 }
+            });
+        }
 
-                mCurrentEditTextIndex = viewIndex;
-                mCurrentEditTextString = s.toString();
-                //                String code = String.format("local.enterText(%s, \"%s\");", viewIndex, s);
-                //                HardKeyEvent hardKeyEvent = new HardKeyEvent(tempEditText);
-                //                hardKeyEvent.setCode(code);
-                //                hardKeyEvent.setLog("text:" + s);
-                //
-                //                mOutputEventQueue.offer(hardKeyEvent);
-            }
+        // save hashcode of hooked listener
+        OnGroupClickListener onGroupClickListenerHooked = (OnGroupClickListener) local.getListener(
+                expandableListView, ExpandableListView.class, "mOnGroupClickListener");
+        if (onGroupClickListenerHooked != null) {
+            mAllListenerHashcodes.add(onGroupClickListenerHooked.hashCode());
+        }
+    }
+
+    private void setOnGroupClick(ExpandableListView parent, int groupPosition) {
+        int flatListPosition = parent.getFlatListPosition(ExpandableListView
+                .getPackedPositionForGroup(groupPosition));
+        int viewIndex = local.getCurrentViewIndex(parent);
+        ClickEvent clickEvent = new ClickEvent(parent);
+        String code = String.format("local.clickOnExpandableListView(%s, %s);", viewIndex,
+                flatListPosition);
+        clickEvent.setCode(code);
+        clickEvent.setLog(String.format("click on group[%s]", groupPosition));
+
+        mOutputEventQueue.offer(clickEvent);
+    }
+
+    private void hookOnGroupClickListener(final ExpandableListView expandableListView,
+            OnGroupClickListener onGroupClickListener) {
+        printLog("hook onGroupCollapseListener [" + expandableListView + "]");
+
+        // save old listener
+        mOnGroupClickListeners.put(getViewID(expandableListView), onGroupClickListener);
+
+        // set hook listener
+        expandableListView.setOnGroupClickListener(new OnGroupClickListener() {
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition,
+                    long id) {
+                setOnGroupClick(parent, groupPosition);
+                OnGroupClickListener onGroupClickListener = mOnGroupClickListeners
+                        .get(getViewID(expandableListView));
+                if (onGroupClickListener != null) {
+                    onGroupClickListener.onGroupClick(parent, v, groupPosition, id);
+                } else {
+                    printLog("onGroupClickListener == null");
+                }
+                return false;
             }
+        });
+    }
+
+    private void handleOnChildClickListener(final ExpandableListView expandableListView) {
+        OnChildClickListener onChildClickListener = (OnChildClickListener) local.getListener(
+                expandableListView, ExpandableListView.class, "mOnChildClickListener");
+
+        // has hooked listener
+        if (onChildClickListener != null
+                && mAllListenerHashcodes.contains(onChildClickListener.hashCode())) {
+            return;
+        }
+
+        if (null != onChildClickListener) {
+            hookOnChildClickListener(expandableListView, onChildClickListener);
+        } else {
+            printLog("set onChildClickListener [" + expandableListView + "]");
+            expandableListView.setOnChildClickListener(new OnChildClickListener() {
+
+                @Override
+                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition,
+                        int childPosition, long id) {
+                    setOnChildClick(expandableListView, groupPosition, childPosition);
+                    return false;
+                }
+            });
+        }
+
+        // save hashcode of hooked listener
+        OnChildClickListener onChildClickListenerHooked = (OnChildClickListener) local.getListener(
+                expandableListView, ExpandableListView.class, "mOnChildClickListener");
+        if (onChildClickListenerHooked != null) {
+            mAllListenerHashcodes.add(onChildClickListenerHooked.hashCode());
+        }
+    }
+
+    private void setOnChildClick(ExpandableListView parent, int groupPosition, int childPosition) {
+        int flatListPosition = parent.getFlatListPosition(ExpandableListView
+                .getPackedPositionForChild(groupPosition, childPosition));
+        int viewIndex = local.getCurrentViewIndex(parent);
+        ClickEvent clickEvent = new ClickEvent(parent);
+        String code = String.format("local.clickOnExpandableListView(%s, %s);", viewIndex,
+                flatListPosition);
+        clickEvent.setCode(code);
+        clickEvent.setLog(String.format("click on group[%s] child[%s]", groupPosition,
+                childPosition));
+
+        mOutputEventQueue.offer(clickEvent);
+    }
+
+    private void hookOnChildClickListener(final ExpandableListView expandableListView,
+            OnChildClickListener onChildClickListener) {
+        printLog("hook onChildClickListener [" + expandableListView + "]");
+
+        // save old listener
+        mOnChildClickListeners.put(getViewID(expandableListView), onChildClickListener);
+
+        // set hook listener
+        expandableListView.setOnChildClickListener(new OnChildClickListener() {
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition,
+                    int childPosition, long id) {
+                setOnChildClick(expandableListView, groupPosition, childPosition);
+                OnChildClickListener onChildClickListener = mOnChildClickListeners
+                        .get(getViewID(expandableListView));
+                if (onChildClickListener != null) {
+                    onChildClickListener.onChildClick(parent, v, groupPosition, childPosition, id);
+                } else {
+                    printLog("onChildClickListener == null");
+                }
+                return false;
+            }
+        });
+    }
+
+    private boolean handleOnClickListener(View view) {
+        OnClickListener onClickListener = (OnClickListener) local.getListener(view, View.class,
+                "mOnClickListener");
+
+        // has hooked listener
+        if (onClickListener != null && mAllListenerHashcodes.contains(onClickListener.hashCode())) {
+            return true;
+        }
+
+        if (onClickListener != null) {
+            hookOnClickListener(view, onClickListener);
+            return true;
+        } else {
+            // printLog("onClickListener == null " + view + local.getViewText(view));
+        }
+
+        return false;
+    }
+
+    private void hookOnClickListener(View view, OnClickListener onClickListener) {
+        printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
+
+        // save old listener
+        mOnClickListeners.put(getViewID(view), onClickListener);
+
+        // set hook listener
+        view.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setOnClick(v);
             }
         });
 
-        printLog("hookEditText [" + editText + "]");
-        mAllEditTexts.add(editText);
-    }
-
-    private boolean hookOnClickListener(View view) {
-        if (hasHookedListener(view, "mOnClickListener")) {
-            return true;
+        // save hashcode of hooked listener
+        OnClickListener onClickListenerHooked = (OnClickListener) local.getListener(view,
+                View.class, "mOnClickListener");
+        if (onClickListenerHooked != null) {
+            mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
         }
-        OnClickListener onClickListener = (OnClickListener) local.getListener(view,
-                "mOnClickListener");
-        if (null != onClickListener) {
-            printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
-
-            // save old listener
-            mOnClickListeners.put(getViewID(view), onClickListener);
-
-            // set hook listener
-            view.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setOnClick(v);
-                }
-            });
-
-            // save hashcode of hooked listener
-            OnClickListener onClickListenerHooked = (OnClickListener) local.getListener(view,
-                    "mOnClickListener");
-            if (onClickListenerHooked != null) {
-                mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
-            }
-            return true;
-        } else {
-            //            printLog("onClickListener == null " + view + local.getViewText(view));
-        }
-        return false;
     }
 
     private void setOnClick(View v) {
@@ -663,7 +776,7 @@ public class ViewRecorder {
                 "Click On ", comments);
 
         clickEvent.setCode(importLine + "\n" + wait + "\n" + click);
-        //        clickEvent.setLog();
+        // clickEvent.setLog();
 
         mOutputEventQueue.offer(clickEvent);
 
@@ -684,34 +797,49 @@ public class ViewRecorder {
         }
     }
 
-    private void hookOnTouchListener(View view) {
-        if (hasHookedListener(view, "mOnTouchListener")) {
+    private void hookEditText(EditText editText) {
+        if (mAllEditTexts.contains(editText)) {
             return;
         }
-        OnTouchListener onTouchListener = (OnTouchListener) local.getListener(view,
-                "mOnTouchListener");
-        //        print("hookOnTouchListener [" + view + "(" + local.getViewText(view) + ")]"
-        //                + (view instanceof ViewGroup ? "ViewGroup" : "View"));
-        if (null != onTouchListener) {
 
-            // save old listener
-            mOnTouchListeners.put(getViewID(view), onTouchListener);
+        final int viewIndex = local.getCurrentViewIndex(editText);
 
-            // set hook listener
-            view.setOnTouchListener(new OnTouchListener() {
+        // all TextWatcher works at the same time
+        editText.addTextChangedListener(new TextWatcher() {
 
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    OnTouchListener onTouchListener = mOnTouchListeners.get(getViewID(v));
-                    addEvent(v, event);
-                    if (onTouchListener != null) {
-                        onTouchListener.onTouch(v, event);
-                    } else {
-                        printLog("onTouchListener == null");
-                    }
-                    return false;
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if ("".equals(s.toString())) {
+                    return;
                 }
-            });
+                mCurrentEditTextIndex = viewIndex;
+                mCurrentEditTextString = s.toString();
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        printLog("hookEditText [" + editText + "]");
+        mAllEditTexts.add(editText);
+    }
+
+    private void handleOnTouchListener(View view) {
+        OnTouchListener onTouchListener = (OnTouchListener) local.getListener(view, View.class,
+                "mOnTouchListener");
+
+        // has hooked listener
+        if (onTouchListener != null && mAllListenerHashcodes.contains(onTouchListener.hashCode())) {
+            return;
+        }
+
+        if (null != onTouchListener) {
+            hookOnTouchListener(view, onTouchListener);
         } else {
             view.setOnTouchListener(new OnTouchListener() {
 
@@ -725,10 +853,34 @@ public class ViewRecorder {
 
         // save hashcode of hooked listener
         OnTouchListener onTouchListenerHooked = (OnTouchListener) local.getListener(view,
-                "mOnTouchListener");
+                View.class, "mOnTouchListener");
         if (onTouchListenerHooked != null) {
             mAllListenerHashcodes.add(onTouchListenerHooked.hashCode());
         }
+    }
+
+    private void hookOnTouchListener(View view, OnTouchListener onTouchListener) {
+        //        print("hookOnTouchListener [" + view + "(" + local.getViewText(view) + ")]"
+        //                + (view instanceof ViewGroup ? "ViewGroup" : "View"));
+
+        // save old listener
+        mOnTouchListeners.put(getViewID(view), onTouchListener);
+
+        // set hook listener
+        view.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                OnTouchListener onTouchListener = mOnTouchListeners.get(getViewID(v));
+                addEvent(v, event);
+                if (onTouchListener != null) {
+                    onTouchListener.onTouch(v, event);
+                } else {
+                    printLog("onTouchListener == null");
+                }
+                return false;
+            }
+        });
     }
 
     private void addEvent(View v, MotionEvent event) {
@@ -739,12 +891,15 @@ public class ViewRecorder {
         }
     }
 
-    private void hookOnItemClickListener(AdapterView<?> view) {
-        if (hasHookedListener(view, "mOnItemClickListener")) {
+    private void handleOnItemClickListener(AdapterView<?> view) {
+        OnItemClickListener onItemClickListener = (OnItemClickListener) local.getListener(view,
+                AdapterView.class, "mOnItemClickListener");
+
+        // has hooked listener
+        if (onItemClickListener != null
+                && mAllListenerHashcodes.contains(onItemClickListener.hashCode())) {
             return;
         }
-        OnItemClickListener onItemClickListener = (OnItemClickListener) local.getListener(view,
-                "mOnItemClickListener");
 
         if (null != onItemClickListener) {
             printLog("hook AdapterView [" + view + "]");
@@ -766,7 +921,7 @@ public class ViewRecorder {
 
         // save hashcode of hooked listener
         OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) local.getListener(
-                view, "mOnItemClickListener");
+                view, AdapterView.class, "mOnItemClickListener");
         if (onItemClickListenerHooked != null) {
             mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
         }
@@ -792,16 +947,20 @@ public class ViewRecorder {
             onItemClickListener.onItemClick(parent, view, position, id);
         } else {
             printLog("onItemClickListener == null");
+            //parent.performItemClick(view, position, id);
         }
     }
 
-    private void hookOnLongClickListener(View view) {
-        if (hasHookedListener(view, "mOnLongClickListener")) {
+    private void handleOnLongClickListener(View view) {
+        OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view,
+                View.class, "mOnLongClickListener");
+
+        // has hooked listener
+        if (onLongClickListener != null
+                && mAllListenerHashcodes.contains(onLongClickListener.hashCode())) {
             return;
         }
 
-        OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view,
-                "mOnLongClickListener");
         if (null != onLongClickListener) {
             printLog("hookOnLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
 
@@ -827,7 +986,7 @@ public class ViewRecorder {
 
             // save hashcode of hooked listener
             OnLongClickListener onLongClickListenerHooked = (OnLongClickListener) local
-                    .getListener(view, "mOnLongClickListener");
+                    .getListener(view, View.class, "mOnLongClickListener");
             if (onLongClickListenerHooked != null) {
                 mAllListenerHashcodes.add(onLongClickListenerHooked.hashCode());
             }
@@ -854,52 +1013,51 @@ public class ViewRecorder {
 
                         Collections.sort(events, new SortByView());
                         outputEvents(events);
-
                         events.clear();
                     } else {
                         sleep(50);
                     }
                 }
             }
-
-            private void outputEvents(ArrayList<OutputEvent> events) {
-                int maxIndex = events.size() - 1;
-                for (int i = 0; i <= maxIndex;) {
-                    OutputEvent event = events.get(i);
-                    if (i == maxIndex) {
-                        outputAnEvent(event);
-                        break;
-                    }
-
-                    // NOTICE: Assume that one action just generates two outputevents.
-                    OutputEvent nextEvent = events.get(i + 1);
-                    if (event.view.equals(nextEvent.view)) {
-                        i += 2;
-                        if (event.proity > nextEvent.proity) {
-                            //printLog("event.proity > nextEvent.proity");
-                            outputAnEvent(event);
-                        } else if (event.proity < nextEvent.proity) {
-                            //printLog("event.proity < nextEvent.proity");
-                            outputAnEvent(nextEvent);
-                        } else {
-                            printLog("event.proity == nextEvent.proity");
-                            outputAnEvent(event);
-                            outputAnEvent(nextEvent);
-                        }
-                    } else {
-                        i++;
-                        outputAnEvent(event);
-                    }
-                }
-            }
         }).start();
+    }
+
+    private void outputEvents(ArrayList<OutputEvent> events) {
+        int maxIndex = events.size() - 1;
+        for (int i = 0; i <= maxIndex;) {
+            OutputEvent event = events.get(i);
+            if (i == maxIndex) {
+                outputAnEvent(event);
+                break;
+            }
+
+            // NOTICE: Assume that one action just generates two outputevents.
+            OutputEvent nextEvent = events.get(i + 1);
+            if (event.view.equals(nextEvent.view)) {
+                i += 2;
+                if (event.proity > nextEvent.proity) {
+                    //printLog("event.proity > nextEvent.proity");
+                    outputAnEvent(event);
+                } else if (event.proity < nextEvent.proity) {
+                    //printLog("event.proity < nextEvent.proity");
+                    outputAnEvent(nextEvent);
+                } else {
+                    printLog("event.proity == nextEvent.proity");
+                    outputAnEvent(event);
+                    outputAnEvent(nextEvent);
+                }
+            } else {
+                i++;
+                outputAnEvent(event);
+            }
+        }
     }
 
     private void outputAnEvent(OutputEvent event) {
         if (mCurrentEditTextString != null) {
             // flush EditText event
-            String code = String.format("local.enterText(%s, \"%s\");", mCurrentEditTextIndex,
-                    mCurrentEditTextString);
+            String code = String.format("local.enterText(%s, \"%s\", false);",
+                    mCurrentEditTextIndex, mCurrentEditTextString);
             printCode(code);
             printLog("text:" + mCurrentEditTextString);
 
@@ -928,7 +1086,6 @@ public class ViewRecorder {
                     boolean isUp = false;
                     while ((e = mMotionEventQueue.poll()) != null) {
                         events.add(e);
-                        //                        print("" + e);
                         if (MotionEvent.ACTION_UP == e.action) {
                             isUp = true;
                             break;
@@ -956,8 +1113,6 @@ public class ViewRecorder {
 
     /**
      * Merge events from ACTION_DOWN to ACTION_UP.
-     * 
-     * @param events
      */
     private void mergeMotionEvents(ArrayList<RecordMotionEvent> events) {
         RecordMotionEvent down = events.get(0);
@@ -988,31 +1143,19 @@ public class ViewRecorder {
     private void hookOnItemSelectedListener(AdapterView view) {
     }
 
-    private void hookOnKeyListener(View view) {
-        if (hasHookedListener(view, "mOnKeyListener")) {
+    private void handleOnKeyListener(View view) {
+        OnKeyListener onKeyListener = (OnKeyListener) local.getListener(view, View.class,
+                "mOnKeyListener");
+
+        // has hooked listener
+        if (onKeyListener != null && mAllListenerHashcodes.contains(onKeyListener.hashCode())) {
             return;
         }
 
-        OnKeyListener onKeyListener = (OnKeyListener) local.getListener(view, "mOnKeyListener");
         if (null != onKeyListener) {
-            printLog("hookOnKeyListener [" + view + "]");
-            mOnKeyListeners.put(getViewID(view), onKeyListener);
-            view.setOnKeyListener(new OnKeyListener() {
-
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    setOnKey(v, keyCode, event);
-                    OnKeyListener onKeyListener = mOnKeyListeners.get(getViewID(v));
-                    if (null != onKeyListener) {
-                        onKeyListener.onKey(v, keyCode, event);
-                    } else {
-                        printLog("onKeyListener == null");
-                    }
-                    return false;
-                }
-            });
+            hookOnKeyListener(view, onKeyListener);
         } else {
-            //            printLog("setOnKeyListener [" + view + "]");
+            // printLog("setOnKeyListener [" + view + "]");
             view.setOnKeyListener(new OnKeyListener() {
 
                 @Override
@@ -1024,11 +1167,30 @@ public class ViewRecorder {
         }
 
         // save hashcode of hooked listener
-        OnKeyListener onKeyListenerHooked = (OnKeyListener) local.getListener(view,
+        OnKeyListener onKeyListenerHooked = (OnKeyListener) local.getListener(view, View.class,
                 "mOnKeyListener");
         if (onKeyListenerHooked != null) {
             mAllListenerHashcodes.add(onKeyListenerHooked.hashCode());
         }
+    }
+
+    private void hookOnKeyListener(View view, OnKeyListener onKeyListener) {
+        printLog("hookOnKeyListener [" + view + "]");
+        mOnKeyListeners.put(getViewID(view), onKeyListener);
+        view.setOnKeyListener(new OnKeyListener() {
+
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                setOnKey(v, keyCode, event);
+                OnKeyListener onKeyListener = mOnKeyListeners.get(getViewID(v));
+                if (null != onKeyListener) {
+                    onKeyListener.onKey(v, keyCode, event);
+                } else {
+                    printLog("onKeyListener == null");
+                }
+                return false;
+            }
+        });
     }
 
     private void setOnKey(View view, int keyCode, KeyEvent event) {
