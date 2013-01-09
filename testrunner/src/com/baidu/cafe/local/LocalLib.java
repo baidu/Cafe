@@ -1654,29 +1654,33 @@ public class LocalLib extends SoloEx {
         return mInstrumentation;
     }
 
-    public View getViewByR(String R) {
+    /**
+     * @param R
+     * @return
+     */
+    public View getViewByRString(String R) {
         Class<?> idClass = getRClass(mActivity.getPackageName(), "id");
         if (null == idClass) {
             return null;
         }
 
-        for (Field field : idClass.getDeclaredFields()) {
-            System.out.println(field);
+        try {
+            Integer id = (Integer) idClass.getDeclaredField(R).get(idClass.newInstance());
+            if (null == id) {
+                return null;
+            }
+            return getCurrentActivity().findViewById(id);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
         }
         return null;
-        //        try {
-        //            return (Integer) idClass.getDeclaredField(R)
-        //                    .get(idClass.newInstance());
-        //        } catch (IllegalArgumentException e) {
-        //            e.printStackTrace();
-        //        } catch (SecurityException e) {
-        //            e.printStackTrace();
-        //        } catch (IllegalAccessException e) {
-        //            e.printStackTrace();
-        //        } catch (NoSuchFieldException e) {
-        //            e.printStackTrace();
-        //        } catch (InstantiationException e) {
-        //            e.printStackTrace();
-        //        }
     }
 }

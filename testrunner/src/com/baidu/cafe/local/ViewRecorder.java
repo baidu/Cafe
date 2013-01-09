@@ -368,7 +368,7 @@ public class ViewRecorder {
         // init activity
         outputAnActivityEvent(updateCurrentActivity());
 
-        local.getViewByR("");
+        printLog(getRString(local.getViewByRString("detailsview")));
     }
 
     String template = "package com.example.demo.test;\n" + "\n"
