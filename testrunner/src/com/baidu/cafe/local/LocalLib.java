@@ -1653,4 +1653,30 @@ public class LocalLib extends SoloEx {
     public Instrumentation getInstrumentation() {
         return mInstrumentation;
     }
+
+    public View getViewByR(String R) {
+        Class<?> idClass = getRClass(mActivity.getPackageName(), "id");
+        if (null == idClass) {
+            return null;
+        }
+
+        for (Field field : idClass.getDeclaredFields()) {
+            System.out.println(field);
+        }
+        return null;
+        //        try {
+        //            return (Integer) idClass.getDeclaredField(R)
+        //                    .get(idClass.newInstance());
+        //        } catch (IllegalArgumentException e) {
+        //            e.printStackTrace();
+        //        } catch (SecurityException e) {
+        //            e.printStackTrace();
+        //        } catch (IllegalAccessException e) {
+        //            e.printStackTrace();
+        //        } catch (NoSuchFieldException e) {
+        //            e.printStackTrace();
+        //        } catch (InstantiationException e) {
+        //            e.printStackTrace();
+        //        }
+    }
 }

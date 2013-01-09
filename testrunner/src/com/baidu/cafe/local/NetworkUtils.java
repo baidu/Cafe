@@ -16,7 +16,16 @@
 
 package com.baidu.cafe.local;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.CookiePolicy;
+import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.os.Build;
 
@@ -155,4 +164,24 @@ class NetworkUtils {
         return getPackageTraffic(packageName, MODE_SND);
     }
 
+    /**
+     * download via a url
+     * 
+     * @param url
+     * @param outputStream
+     *            openFileOutput("networktester.download",
+     *            Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE)
+     */
+    public static void httpDownload(String url, OutputStream outputStream) {
+        try {
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpClientParams.setCookiePolicy(httpClient.getParams(),
+                    CookiePolicy.BROWSER_COMPATIBILITY);
+            httpClient.execute(new HttpGet(url)).getEntity().writeTo(outputStream);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

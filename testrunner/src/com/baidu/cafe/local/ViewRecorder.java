@@ -367,6 +367,8 @@ public class ViewRecorder {
 
         // init activity
         outputAnActivityEvent(updateCurrentActivity());
+
+        local.getViewByR("");
     }
 
     String template = "package com.example.demo.test;\n" + "\n"
@@ -486,8 +488,6 @@ public class ViewRecorder {
 
     /**
      * For mtc client
-     * 
-     * @param views
      */
     private void flushViewLayout(ArrayList<View> views) {
         updateCurrentActivity();
@@ -505,12 +505,14 @@ public class ViewRecorder {
     }
 
     private boolean hasChange(View view) {
+        // new view
         String viewID = getViewID(view);
         int[] oldXy = mAllViewPosition.get(viewID);
         if (null == oldXy) {
             return true;
         }
 
+        // location change
         int[] xy = new int[2];
         view.getLocationOnScreen(xy);
         return xy[0] != oldXy[0] || xy[1] != oldXy[1] ? true : false;
