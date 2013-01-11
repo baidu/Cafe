@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import android.os.Build;
 import android.view.View;
 import android.webkit.WebView;
 import android.graphics.Bitmap;
@@ -79,6 +80,47 @@ class SnapshotHelper {
         Canvas c = new Canvas(bmp);
         picture.draw(c);
         outputToFile(savePath, bmp);
+    }
+
+    public static void dumpPic(WebView view, String filename) {
+        Picture picture = view.capturePicture();
+        print("[picture]width: " + picture.getWidth() + ", height:" + picture.getHeight()
+                + "| [view]width:" + view.getWidth() + ", contentheight:" + view.getContentHeight());
+        if (picture.getWidth() == 0 || picture.getHeight() == 0) {
+            print("something error!");
+            return;
+        }
+
+        int width, height;
+        //        if (Build.VERSION.SDK_INT < 17) {
+        float i = view.getScale();
+        print("scale: " + i);
+        width = (int) (picture.getWidth() * i);
+        height = (int) (picture.getHeight() * i);
+        //        } else {
+        //            float sx = view.getScaleX();
+        //            float sy = view.getScaleY();
+        //            print("scaleX: " + sx + "scaleY: " + sy);
+        //            width = (int) (picture.getWidth() * sx);
+        //            height = (int) (picture.getHeight() * sy);
+        //        }
+
+        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        //picture.draw( c );
+        //c.drawPicture(picture);
+        view.draw(c);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(filename);
+            if (fos != null) {
+                b.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                fos.close();
+                print("create file success");
+            }
+        } catch (Exception e) {
+            print(e.toString());
+        }
     }
 
     /**

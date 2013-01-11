@@ -39,6 +39,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
@@ -364,11 +365,6 @@ public class ViewRecorder {
         }
         String code = String.format(template, launcherActivity, mPackageName);
         writeToFile(code);
-
-        // init activity
-        outputAnActivityEvent(updateCurrentActivity());
-
-        printLog(getRString(local.getViewByRString("detailsview")));
     }
 
     String template = "package com.example.demo.test;\n" + "\n"
@@ -449,7 +445,11 @@ public class ViewRecorder {
      */
     private Class<? extends Activity> updateCurrentActivity() {
         Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
-        mCurrentActivity = activityClass.getName();
+        String activity = activityClass.getName();
+        if (!activity.equals(mCurrentActivity)) {
+            outputAnActivityEvent(activityClass);
+            mCurrentActivity = activity;
+        }
         return activityClass;
     }
 
@@ -772,9 +772,9 @@ public class ViewRecorder {
         String text = local.getViewText(v);
         String comments = String.format("[%s]%s[%s] ", v, rString, text);
         String importLine = String.format("import %s;", getViewString(v));
-        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s, false));// %s%s",
+        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s, false));//%s%s",
                 viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
-        String click = String.format("local.clickOn(%s, %s);// %s%s", viewClass, viewIndex,
+        String click = String.format("local.clickOn(%s, %s);//%s%s", viewClass, viewIndex,
                 "Click On ", comments);
 
         clickEvent.setCode(importLine + "\n" + wait + "\n" + click);
@@ -799,14 +799,33 @@ public class ViewRecorder {
         }
     }
 
-    private void hookEditText(EditText editText) {
+    private void hookEditText(final EditText editText) {
         if (mAllEditTexts.contains(editText)) {
             return;
         }
 
-        final int viewIndex = local.getCurrentViewIndex(editText);
+        editText.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus || null == mCurrentEditTextString) {
+                    return;
+                }
+
+                // flush EditText event
+                String code = String.format("local.enterText(%s, \"%s\", false);",
+                        mCurrentEditTextIndex, mCurrentEditTextString);
+                printCode(code);
+                printLog("text:" + mCurrentEditTextString);
+
+                // restore var
+                mCurrentEditTextString = null;
+                mCurrentEditTextIndex = 0;
+            }
+        });
 
         // all TextWatcher works at the same time
+        final int viewIndex = local.getCurrentViewIndex(editText);
         editText.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -1198,6 +1217,14 @@ public class ViewRecorder {
     private void setOnKey(View view, int keyCode, KeyEvent event) {
         // ignore KeyEvent.ACTION_DOWN
         if (event.getAction() == KeyEvent.ACTION_UP) {
+            if (view instanceof EditText
+                    && (keyCode == KeyEvent.KEYCODE_0 || keyCode == KeyEvent.KEYCODE_1
+                            || keyCode == KeyEvent.KEYCODE_2 || keyCode == KeyEvent.KEYCODE_3
+                            || keyCode == KeyEvent.KEYCODE_4 || keyCode == KeyEvent.KEYCODE_5
+                            || keyCode == KeyEvent.KEYCODE_6 || keyCode == KeyEvent.KEYCODE_7
+                            || keyCode == KeyEvent.KEYCODE_8 || keyCode == KeyEvent.KEYCODE_9)) {
+                return;
+            }
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
             String sendKey = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
             String sleep = "";

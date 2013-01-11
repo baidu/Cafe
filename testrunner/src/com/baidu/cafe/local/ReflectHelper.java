@@ -276,6 +276,13 @@ public class ReflectHelper {
         return names;
     }
 
+    /**
+     * @param owner
+     *            target object
+     * @param interfaceStrings
+     *            target interface strings
+     * @return target interface classes
+     */
     public static ArrayList<Class<?>> getObjectInterfaces(Object owner, String[] interfaceStrings) {
         ArrayList<Class<?>> targetInterfaces = new ArrayList<Class<?>>();
         Class<?>[] interfaceClasses = owner.getClass().getInterfaces();

@@ -1312,7 +1312,8 @@ public class LocalLib extends SoloEx {
     }
 
     public static void takeWebViewSnapshot(WebView webView, String savePath) {
-        SnapshotHelper.takeWebViewSnapshot(webView, savePath);
+        // SnapshotHelper.takeWebViewSnapshot(webView, savePath);
+        SnapshotHelper.dumpPic(webView, savePath);
     }
 
     /**
@@ -1589,11 +1590,14 @@ public class LocalLib extends SoloEx {
      *            the text that should be set
      */
 
-    public void setEditText(final EditText editText, final String text,
-            final boolean keepPreviousText) {
-        if (editText == null) {
+    public void enterText(int index, final String text, final boolean keepPreviousText) {
+        ArrayList<EditText> editTexts = getCurrentViews(EditText.class, true);
+
+        if (editTexts.size() < index + 1) {
+            print(String.format("editTexts.size()[%s] < index[%s] + 1", editTexts.size(), index));
             return;
         }
+        final EditText editText = editTexts.get(index);
 
         if (!editText.isEnabled()) {
             Assert.assertTrue("Edit text is not enabled!", false);
@@ -1669,7 +1673,8 @@ public class LocalLib extends SoloEx {
             if (null == id) {
                 return null;
             }
-            return getCurrentActivity().findViewById(id);
+            // getCurrentActivity().findViewById(id) dose not work
+            return getRecentDecorView().findViewById(id);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (SecurityException e) {
