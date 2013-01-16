@@ -454,7 +454,8 @@ public class ViewRecorder {
     }
 
     private ArrayList<View> getTargetViews() {
-        ArrayList<View> views = local.removeInvisibleViews(local.getCurrentViews());
+        ArrayList<View> views = local
+                .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
         ArrayList<View> targetViews = new ArrayList<View>();
         boolean hasChange = false;
 
@@ -518,14 +519,19 @@ public class ViewRecorder {
         return xy[0] != oldXy[0] || xy[1] != oldXy[1] ? true : false;
     }
 
+    private View getCurrentFocusView() {
+        ArrayList<View> views = local.getViews();/*onlySufficientlyVisible == false*/
+        return local.getFocusView(views);
+    }
+
     private void setDefaultFocusView() {
-        if (local.getCurrentActivity().getCurrentFocus() != null) {
+        if (local.getCurrentActivity().getCurrentFocus() != null || getCurrentFocusView() != null) {
             return;
         }
 
         View view = local.getRecentDecorView();
         boolean hasFocus = local.requestFocus(view);
-        // printLog(view + " hasFocus: " + hasFocus);
+        //        printLog(view + " hasFocus: " + hasFocus);
         String viewID = getViewID(view);
         if (!mAllViewPosition.containsKey(viewID)) {
             saveView(view);
@@ -1217,12 +1223,8 @@ public class ViewRecorder {
     private void setOnKey(View view, int keyCode, KeyEvent event) {
         // ignore KeyEvent.ACTION_DOWN
         if (event.getAction() == KeyEvent.ACTION_UP) {
-            if (view instanceof EditText
-                    && (keyCode == KeyEvent.KEYCODE_0 || keyCode == KeyEvent.KEYCODE_1
-                            || keyCode == KeyEvent.KEYCODE_2 || keyCode == KeyEvent.KEYCODE_3
-                            || keyCode == KeyEvent.KEYCODE_4 || keyCode == KeyEvent.KEYCODE_5
-                            || keyCode == KeyEvent.KEYCODE_6 || keyCode == KeyEvent.KEYCODE_7
-                            || keyCode == KeyEvent.KEYCODE_8 || keyCode == KeyEvent.KEYCODE_9)) {
+            if (view instanceof EditText && keyCode != KeyEvent.KEYCODE_MENU
+                    && keyCode != KeyEvent.KEYCODE_BACK) {
                 return;
             }
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);

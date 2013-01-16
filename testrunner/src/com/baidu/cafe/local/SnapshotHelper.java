@@ -53,6 +53,7 @@ class SnapshotHelper {
                 fos.close();
             }
         } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             if (fos != null) {
                 try {
@@ -105,22 +106,12 @@ class SnapshotHelper {
         //            height = (int) (picture.getHeight() * sy);
         //        }
 
-        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(b);
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bitmap);
         //picture.draw( c );
         //c.drawPicture(picture);
         view.draw(c);
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(filename);
-            if (fos != null) {
-                b.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-                fos.close();
-                print("create file success");
-            }
-        } catch (Exception e) {
-            print(e.toString());
-        }
+        outputToFile(filename, bitmap);
     }
 
     /**

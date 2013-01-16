@@ -4,7 +4,7 @@ source ../util.sh
 _PWD=`pwd`
 ANDROID_TOP=$_PWD/../..
 APK=""
-QUERY="767E5EA6"
+QUERY="100"
 
 start_monkey_server()
 {
@@ -45,24 +45,25 @@ run()
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
     logcat_pid=$!
-    $ADB shell am instrument -e custom "$QUERY" -w \
-        $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
+    $ADB shell am instrument -e custom "$QUERY" -e class $test_package.TestCafe#$test_case -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
     kill -9 $logcat_pid
     $ADB pull /data/data/$package_name/files/$package_name.jpg .
 }
 
-while getopts "rca" option
+serial="$2"
+package_name="$3"
+test_package="$package_name.test"
+QUERY="$4"
+echo "serial_number:$serial"
+echo "package_name:$package_name"
+echo "query:$QUERY"
+
+while getopts "card" option
 do
 	case $option in
 		r)  
             #APK=$_PWD/$2
-            serial="$2"
-            package_name="$3"
-            test_package="$package_name.test"
-            QUERY="$4"
-            echo "serial_number:$serial"
-            echo "package_name:$package_name"
-            echo "query:$QUERY"
+            test_case="test_query"
             run 
 			exit 0
 			;;  
@@ -70,8 +71,8 @@ do
             target="$2"
             compile 
 			exit 0
-			;;  
-		a)
+            ;;  
+        a)
             ls | grep Test | while read dir
         do
             target=$dir
@@ -80,6 +81,11 @@ do
         done
         exit 0
         ;;  
+		d)
+            test_case="test_dump"
+            run
+			exit 0
+            ;;  
 esac
 done
 
@@ -92,4 +98,8 @@ $ADB install -r $_PWD/Cafe.apk
 $ADB install -r $APK
 test_package=`aapt dump badging $APK | grep "package:" | awk -F "'" '{print $2}'`
 echo "$test_package"
+test_case="test_dump"
+echo "$test_case"
+QUERY="100"
+echo "QUERY:$QUERY"
 run

@@ -1298,20 +1298,24 @@ public class LocalLib extends SoloEx {
         return localTime.format("%Y-%m-%d_%H-%M-%S");
     }
 
-    private void screenShot(String fileName, String packagePath) {
+    private void screenShot(final String fileName, final String packagePath) {
         File cafe = new File(packagePath);
         if (!cafe.exists()) {
             cafe.mkdir();
         }
         executeOnDevice("chmod 777 " + packagePath, "/");
-        takeActivitySnapshot(packagePath + "/" + fileName + ".jpg");
+        runOnMainSync(new Runnable() {
+            public void run() {
+                takeActivitySnapshot(packagePath + "/" + fileName + ".jpg");
+            }
+        });
     }
 
     public void screenShot(String fileName) {
         screenShot(fileName, mInstrumentation.getTargetContext().getFilesDir().toString());
     }
 
-    public static void takeWebViewSnapshot(WebView webView, String savePath) {
+    public void takeWebViewSnapshot(final WebView webView, final String savePath) {
         // SnapshotHelper.takeWebViewSnapshot(webView, savePath);
         SnapshotHelper.dumpPic(webView, savePath);
     }
@@ -1330,11 +1334,11 @@ public class LocalLib extends SoloEx {
      */
     public void takeActivitySnapshot(final String path) {
         final View view = getRecentDecorView();
-        runOnMainSync(new Runnable() {
-            public void run() {
-                SnapshotHelper.takeViewSnapshot(view, path);
-            }
-        });
+        SnapshotHelper.takeViewSnapshot(view, path);
+        //        runOnMainSync(new Runnable() {
+        //            public void run() {
+        //            }
+        //        });
     }
 
     public View getRecentDecorView() {
@@ -1654,6 +1658,10 @@ public class LocalLib extends SoloEx {
         mInstrumentation.runOnMainSync(r);
     }
 
+    public void runOnUiThread(Runnable r) {
+        getCurrentActivity().runOnUiThread(r);
+    }
+
     public Instrumentation getInstrumentation() {
         return mInstrumentation;
     }
@@ -1687,5 +1695,31 @@ public class LocalLib extends SoloEx {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public View getFocusView(ArrayList<View> views) {
+        for (View view : views) {
+            if (view.isFocused()) {
+                return view;
+            }
+        }
+        return null;
+    }
+
+    public boolean isInScreen(View view) {
+        int[] location = new int[2];
+        view.getLocationOnScreen(location);
+        return location[0] < 0 || location[0] > getDisplayX() || location[1] < 0
+                || location[1] > getDisplayY() ? false : true;
+    }
+
+    public <T extends View> ArrayList<T> removeOutOfScreenViews(ArrayList<T> viewList) {
+        ArrayList<T> views = new ArrayList<T>(viewList.size());
+        for (T view : viewList) {
+            if (view != null && isInScreen(view)) {
+                views.add(view);
+            }
+        }
+        return views;
     }
 }
