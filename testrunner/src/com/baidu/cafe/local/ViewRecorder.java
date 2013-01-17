@@ -965,6 +965,7 @@ public class ViewRecorder {
         } else {
             clickEvent.setCode(click);
         }
+        printLog("getScrollY:" + parent.getScrollY());
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click ");
         mOutputEventQueue.offer(clickEvent);
