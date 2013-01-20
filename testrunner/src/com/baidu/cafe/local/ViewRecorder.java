@@ -630,9 +630,16 @@ public class ViewRecorder {
 
     private void setOnScrollStateChanged(AbsListView view, int scrollState) {
         if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
-            printCode(String.format("local.scrollListToLine(%s);", mFirstVisibleItem));
+            outputAScroll(view);
         }
 
+    }
+
+    private void outputAScroll(AbsListView view) {
+        int viewIndex = local.getCurrentViewIndex(view);
+        String code = String
+                .format("local.scrollListToLine(%s, %s);", viewIndex, mFirstVisibleItem);
+        printCode(code);
     }
 
     private void setOnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
@@ -644,7 +651,7 @@ public class ViewRecorder {
         mTotalItemCount = totalItemCount;
 
         if (firstVisibleItem + visibleItemCount == totalItemCount) {
-            printCode(String.format("local.scrollListToLine(%s);", firstVisibleItem));
+            outputAScroll(view);
         }
     }
 

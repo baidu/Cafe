@@ -1517,11 +1517,6 @@ public class LocalLib extends SoloEx {
         return y / getDisplayY();
     }
 
-    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, boolean visible) {
-        ArrayList<T> views = getCurrentViews(classToFilterBy);
-        return visible ? removeInvisibleViews(views) : views;
-    }
-
     public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> views) {
         return (ArrayList<T>) invoke(mRobotiumUtils, "removeInvisibleViews",
                 new Class[] { ArrayList.class }, new Object[] { views });
@@ -1571,6 +1566,11 @@ public class LocalLib extends SoloEx {
         return getCurrentViews(classToFilterBy, null);
     }
 
+    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, boolean visible) {
+        ArrayList<T> views = getCurrentViews(classToFilterBy);
+        return visible ? removeInvisibleViews(views) : views;
+    }
+
     /**
      * Clicks on a {@code View} of a specific class, with a certain index.
      * 
@@ -1596,13 +1596,13 @@ public class LocalLib extends SoloEx {
      */
 
     public void enterText(int index, final String text, final boolean keepPreviousText) {
-        ArrayList<EditText> editTexts = getCurrentViews(EditText.class, true);
-
-        if (editTexts.size() < index + 1) {
-            print(String.format("editTexts.size()[%s] < index[%s] + 1", editTexts.size(), index));
-            return;
-        }
-        final EditText editText = editTexts.get(index);
+        //        ArrayList<EditText> editTexts = getCurrentViews(EditText.class, true);
+        //
+        //        if (editTexts.size() < index + 1) {
+        //            print(String.format("editTexts.size()[%s] < index[%s] + 1", editTexts.size(), index));
+        //            return;
+        //        }
+        final EditText editText = (EditText) getView(EditText.class, index);
 
         if (!editText.isEnabled()) {
             Assert.assertTrue("Edit text is not enabled!", false);
@@ -1623,22 +1623,11 @@ public class LocalLib extends SoloEx {
         });
     }
 
-    private ExpandableListView getExpandableListView(int index) {
-        ArrayList<ExpandableListView> expandableListViews = getCurrentViews(
-                ExpandableListView.class, true);
-
-        if (expandableListViews.size() < index + 1) {
-            print(String.format("expandableListViews.size()[%s] < index[%s] + 1",
-                    expandableListViews.size(), index));
-            return null;
-        }
-        return expandableListViews.get(index);
-    }
-
     boolean isClicked = false;
 
     public boolean clickOnExpandableListView(int index, final int flatListPosition) {
-        final ExpandableListView expandableListView = getExpandableListView(index);
+        final ExpandableListView expandableListView = (ExpandableListView) getView(
+                ExpandableListView.class, index);
         if (null == expandableListView) {
             return false;
         }
@@ -1724,7 +1713,8 @@ public class LocalLib extends SoloEx {
         return views;
     }
 
-    public <T extends AbsListView> void scrollListToLine(final T view, final int line) {
+    public void scrollListToLine(final int index, final int line) {
+        AbsListView view = (AbsListView) getView(AbsListView.class, index);
         invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
                 new Object[] { view, line });
     }
