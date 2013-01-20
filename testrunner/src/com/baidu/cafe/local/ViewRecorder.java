@@ -122,6 +122,7 @@ public class ViewRecorder {
     private int                                      mFirstVisibleItem         = 0;
     private int                                      mVisibleItemCount         = 0;
     private int                                      mTotalItemCount           = 0;
+    private int                                      mLastFirstVisibleItem     = 0;
 
     /**
      * interval between events
@@ -633,11 +634,15 @@ public class ViewRecorder {
         if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
             outputAScroll(view);
         }
+        if (OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == scrollState) {
+            mLastFirstVisibleItem = view.getFirstVisiblePosition();
+        }
 
     }
 
     private void outputAScroll(AbsListView view) {
-        if (mTotalItemCount == 0 || mVisibleItemCount == 0) {
+        if (mTotalItemCount == 0 || mVisibleItemCount == 0
+                || mLastFirstVisibleItem == mFirstVisibleItem) {
             return;
         }
 
