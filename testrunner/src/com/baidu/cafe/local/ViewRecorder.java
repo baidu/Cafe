@@ -659,9 +659,7 @@ public class ViewRecorder {
 
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-                if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
-                    printLog("SCROLL_STATE_IDLE");
-                }
+                setOnScrollStateChanged(view, scrollState);
                 OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
                 if (onScrollListener != null) {
                     onScrollListener.onScrollStateChanged(view, scrollState);
@@ -673,8 +671,7 @@ public class ViewRecorder {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                     int totalItemCount) {
-                printLog(String.format("firstVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
-                        firstVisibleItem, visibleItemCount, totalItemCount));
+                setOnScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
                 OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
                 if (onScrollListener != null) {
                     onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
