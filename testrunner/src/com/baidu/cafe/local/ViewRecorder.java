@@ -43,6 +43,8 @@ import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -560,6 +562,10 @@ public class ViewRecorder {
             } else {
                 handleOnItemClickListener((AdapterView<?>) view);
             }
+
+            if (view instanceof AbsListView) {
+                handleOnScrollListener((AbsListView) view);
+            }
             // adapterView.setOnItemLongClickListener(listener);
             // adapterView.setOnItemSelectedListener(listener);
             // MenuItem.OnMenuItemClickListener
@@ -581,6 +587,49 @@ public class ViewRecorder {
     private void handleExpandableListView(ExpandableListView expandableListView) {
         handleOnGroupClickListener(expandableListView);
         handleOnChildClickListener(expandableListView);
+    }
+
+    private void handleOnScrollListener(AbsListView absListView) {
+        OnScrollListener onScrollListener = (OnScrollListener) local.getListener(absListView,
+                AbsListView.class, "mOnScrollListener");
+        // has hooked listener
+        if (onScrollListener != null && mAllListenerHashcodes.contains(onScrollListener.hashCode())) {
+            return;
+        }
+
+        if (null != onScrollListener) {
+            hookOnScrollListener(absListView, onScrollListener);
+        } else {
+            printLog("set onScrollListener [" + absListView + "]");
+            absListView.setOnScrollListener(new OnScrollListener() {
+
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+                    if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
+                        printLog("SCROLL_STATE_IDLE");
+                    }
+                }
+
+                @Override
+                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+                        int totalItemCount) {
+                    printLog(String.format(
+                            "firstVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
+                            firstVisibleItem, visibleItemCount, totalItemCount));
+                }
+            });
+        }
+
+        // save hashcode of hooked listener
+        OnScrollListener onScrollListenerHooked = (OnScrollListener) local.getListener(absListView,
+                AbsListView.class, "mOnScrollListener");
+        if (onScrollListenerHooked != null) {
+            mAllListenerHashcodes.add(onScrollListenerHooked.hashCode());
+        }
+    }
+
+    private void hookOnScrollListener(AbsListView absListView, OnScrollListener onScrollListener) {
+        printLog("hook onScrollListener [" + absListView + "]");
     }
 
     private void handleOnGroupClickListener(final ExpandableListView expandableListView) {
@@ -965,7 +1014,6 @@ public class ViewRecorder {
         } else {
             clickEvent.setCode(click);
         }
-        printLog("getScrollY:" + parent.getScrollY());
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click ");
         mOutputEventQueue.offer(clickEvent);
