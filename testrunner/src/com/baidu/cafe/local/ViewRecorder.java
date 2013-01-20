@@ -325,7 +325,7 @@ public class ViewRecorder {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                LocalLib.executeOnDevice("chmod 777 " + mPath + "/record", "/");
+                LocalLib.executeOnDevice("chmod 777 " + mPath + "/CafeReplay.java", "/");
             }
         }
     }
