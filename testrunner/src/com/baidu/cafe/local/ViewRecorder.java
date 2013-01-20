@@ -118,6 +118,9 @@ public class ViewRecorder {
     private String                                   mPath                     = null;
     private String                                   mCurrentEditTextString    = null;
     private int                                      mCurrentEditTextIndex     = 0;
+    private int                                      mFirstVisibleItem         = 0;
+    private int                                      mVisibleItemCount         = 0;
+    private int                                      mTotalItemCount           = 0;
 
     /**
      * interval between events
@@ -545,7 +548,7 @@ public class ViewRecorder {
     private boolean hasUnhookedListener(View view) {
         // TODO listenerNames is not enough
         String[] listenerNames = new String[] { "mOnItemClickListener", "mOnClickListener",
-                "mOnTouchListener", "mOnKeyListener" };
+                "mOnTouchListener", "mOnKeyListener", "mOnScrollListener" };
         for (String listenerName : listenerNames) {
             Object listener = local.getListener(view, View.class, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
@@ -606,17 +609,13 @@ public class ViewRecorder {
 
                 @Override
                 public void onScrollStateChanged(AbsListView view, int scrollState) {
-                    if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
-                        printLog("SCROLL_STATE_IDLE");
-                    }
+                    setOnScrollStateChanged(view, scrollState);
                 }
 
                 @Override
                 public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                         int totalItemCount) {
-                    printLog(String.format(
-                            "firstVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
-                            firstVisibleItem, visibleItemCount, totalItemCount));
+                    setOnScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
                 }
             });
         }
@@ -626,6 +625,26 @@ public class ViewRecorder {
                 AbsListView.class, "mOnScrollListener");
         if (onScrollListenerHooked != null) {
             mAllListenerHashcodes.add(onScrollListenerHooked.hashCode());
+        }
+    }
+
+    private void setOnScrollStateChanged(AbsListView view, int scrollState) {
+        if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
+            printCode(String.format("local.scrollListToLine(%s);", mFirstVisibleItem));
+        }
+
+    }
+
+    private void setOnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+            int totalItemCount) {
+        printLog(String.format("firstVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
+                firstVisibleItem, visibleItemCount, totalItemCount));
+        mFirstVisibleItem = firstVisibleItem;
+        mVisibleItemCount = visibleItemCount;
+        mTotalItemCount = totalItemCount;
+
+        if (firstVisibleItem + visibleItemCount == totalItemCount) {
+            printCode(String.format("local.scrollListToLine(%s);", firstVisibleItem));
         }
     }
 

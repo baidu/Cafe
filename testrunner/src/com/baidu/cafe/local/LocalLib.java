@@ -44,6 +44,7 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Checkable;
 import android.widget.CheckedTextView;
@@ -1721,5 +1722,10 @@ public class LocalLib extends SoloEx {
             }
         }
         return views;
+    }
+
+    public <T extends AbsListView> void scrollListToLine(final T view, final int line) {
+        invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
+                new Object[] { view, line });
     }
 }
