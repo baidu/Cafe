@@ -108,6 +108,7 @@ public class ViewRecorder {
     private HashMap<String, OnItemClickListener>     mOnItemClickListeners     = new HashMap<String, OnItemClickListener>();
     private HashMap<String, OnGroupClickListener>    mOnGroupClickListeners    = new HashMap<String, OnGroupClickListener>();
     private HashMap<String, OnChildClickListener>    mOnChildClickListeners    = new HashMap<String, OnChildClickListener>();
+    private HashMap<String, OnScrollListener>        mOnScrollListeners        = new HashMap<String, OnScrollListener>();
     private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners = new HashMap<String, OnItemLongClickListener>();
     private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
     private LocalLib                                 local                     = null;
@@ -630,6 +631,41 @@ public class ViewRecorder {
 
     private void hookOnScrollListener(AbsListView absListView, OnScrollListener onScrollListener) {
         printLog("hook onScrollListener [" + absListView + "]");
+
+        // save old listener
+        mOnScrollListeners.put(getViewID(absListView), onScrollListener);
+
+        // set hook listener
+        absListView.setOnScrollListener(new OnScrollListener() {
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
+                    printLog("SCROLL_STATE_IDLE");
+                }
+                OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
+                if (onScrollListener != null) {
+                    onScrollListener.onScrollStateChanged(view, scrollState);
+                } else {
+                    printLog("onScrollListener == null");
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+                    int totalItemCount) {
+                printLog(String.format("firstVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
+                        firstVisibleItem, visibleItemCount, totalItemCount));
+                OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
+                if (onScrollListener != null) {
+                    onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
+                            totalItemCount);
+                } else {
+                    printLog("onScrollListener == null");
+                }
+            }
+        });
+
     }
 
     private void handleOnGroupClickListener(final ExpandableListView expandableListView) {
