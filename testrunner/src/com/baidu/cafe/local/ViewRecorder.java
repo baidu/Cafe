@@ -62,6 +62,7 @@ import android.widget.ExpandableListView.OnGroupClickListener;
  */
 public class ViewRecorder {
     private final static int                         WAIT_TIMEOUT              = 20000;
+    private final static String                      REPLAY_FILE_NAME          = "CafeReplay.java";
 
     /**
      * For judging whether a view is an old one.
@@ -325,7 +326,7 @@ public class ViewRecorder {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                LocalLib.executeOnDevice("chmod 777 " + mPath + "/CafeReplay.java", "/");
+                LocalLib.executeOnDevice("chmod 777 " + mPath + "/" + REPLAY_FILE_NAME, "/");
             }
         }
     }
@@ -365,7 +366,7 @@ public class ViewRecorder {
         }
 
         // init template
-        mRecord = new File(mPath + "/record");
+        mRecord = new File(mPath + "/" + REPLAY_FILE_NAME);
         if (mRecord.exists()) {
             mRecord.delete();
         }
