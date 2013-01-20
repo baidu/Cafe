@@ -636,6 +636,10 @@ public class ViewRecorder {
     }
 
     private void outputAScroll(AbsListView view) {
+        if (mTotalItemCount == 0 || mVisibleItemCount == 0) {
+            return;
+        }
+
         int viewIndex = local.getCurrentViewIndex(view);
         String code = String
                 .format("local.scrollListToLine(%s, %s);", viewIndex, mFirstVisibleItem);
