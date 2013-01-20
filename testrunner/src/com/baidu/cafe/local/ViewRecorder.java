@@ -890,12 +890,12 @@ public class ViewRecorder {
         String text = local.getViewText(v);
         String comments = String.format("[%s]%s[%s] ", v, rString, text);
         String importLine = String.format("import %s;", getViewString(v));
-        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s, false));//%s%s",
-                viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
+        //        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s, false));//%s%s",
+        //                viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
         String click = String.format("local.clickOn(%s, %s);//%s%s", viewClass, viewIndex,
                 "Click On ", comments);
 
-        clickEvent.setCode(importLine + "\n" + wait + "\n" + click);
+        clickEvent.setCode(importLine + /*"\n" + wait + */"\n" + click);
         // clickEvent.setLog();
 
         mOutputEventQueue.offer(clickEvent);

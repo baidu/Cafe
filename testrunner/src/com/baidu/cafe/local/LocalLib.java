@@ -1574,6 +1574,8 @@ public class LocalLib extends SoloEx {
     /**
      * Clicks on a {@code View} of a specific class, with a certain index.
      * 
+     * This method is protected by assert.
+     * 
      * @param viewClass
      *            what kind of {@code View} to click, e.g. {@code Button.class}
      *            or {@code ImageView.class}
