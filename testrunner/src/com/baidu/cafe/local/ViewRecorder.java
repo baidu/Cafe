@@ -61,7 +61,6 @@ import android.widget.ExpandableListView.OnGroupClickListener;
  * @todo
  */
 public class ViewRecorder {
-    private final static int                         WAIT_TIMEOUT              = 20000;
     private final static String                      REPLAY_FILE_NAME          = "CafeReplay.java";
 
     /**
