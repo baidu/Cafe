@@ -552,13 +552,27 @@ public class ViewRecorder {
         String[] listenerNames = new String[] { "mOnItemClickListener", "mOnClickListener",
                 "mOnTouchListener", "mOnKeyListener", "mOnScrollListener" };
         for (String listenerName : listenerNames) {
-            Object listener = local.getListener(view, View.class, listenerName);
+            Object listener = getListener(view, listenerName);
             if (listener != null && !mAllListenerHashcodes.contains(listener.hashCode())) {
                 // print("has unhooked " + listenerName + ": " + view);
                 return true;
             }
         }
         return false;
+    }
+
+    private Object getListener(View view, String listenerName) {
+        if ("mOnItemClickListener".equals(listenerName)) {
+            return local.getListener(view, AdapterView.class, "mOnItemClickListener");
+        } else if ("mOnScrollListener".equals(listenerName)) {
+            return local.getListener(view, AbsListView.class, "mOnScrollListener");
+        } else if ("mOnChildClickListener".equals(listenerName)) {
+            return local.getListener(view, ExpandableListView.class, "mOnChildClickListener");
+        } else if ("mOnGroupClickListener".equals(listenerName)) {
+            return local.getListener(view, ExpandableListView.class, "mOnGroupClickListener");
+        } else {
+            return local.getListener(view, View.class, listenerName);
+        }
     }
 
     private void setHookListenerOnView(View view) {
@@ -596,8 +610,8 @@ public class ViewRecorder {
     }
 
     private void handleOnScrollListener(AbsListView absListView) {
-        OnScrollListener onScrollListener = (OnScrollListener) local.getListener(absListView,
-                AbsListView.class, "mOnScrollListener");
+        OnScrollListener onScrollListener = (OnScrollListener) getListener(absListView,
+                "mOnScrollListener");
         // has hooked listener
         if (onScrollListener != null && mAllListenerHashcodes.contains(onScrollListener.hashCode())) {
             return;
@@ -623,8 +637,8 @@ public class ViewRecorder {
         }
 
         // save hashcode of hooked listener
-        OnScrollListener onScrollListenerHooked = (OnScrollListener) local.getListener(absListView,
-                AbsListView.class, "mOnScrollListener");
+        OnScrollListener onScrollListenerHooked = (OnScrollListener) getListener(absListView,
+                "mOnScrollListener");
         if (onScrollListenerHooked != null) {
             mAllListenerHashcodes.add(onScrollListenerHooked.hashCode());
         }
@@ -702,8 +716,8 @@ public class ViewRecorder {
     }
 
     private void handleOnGroupClickListener(final ExpandableListView expandableListView) {
-        OnGroupClickListener onGroupClickListener = (OnGroupClickListener) local.getListener(
-                expandableListView, ExpandableListView.class, "mOnGroupClickListener");
+        OnGroupClickListener onGroupClickListener = (OnGroupClickListener) getListener(
+                expandableListView, "mOnGroupClickListener");
 
         // has hooked listener
         if (onGroupClickListener != null
@@ -727,8 +741,8 @@ public class ViewRecorder {
         }
 
         // save hashcode of hooked listener
-        OnGroupClickListener onGroupClickListenerHooked = (OnGroupClickListener) local.getListener(
-                expandableListView, ExpandableListView.class, "mOnGroupClickListener");
+        OnGroupClickListener onGroupClickListenerHooked = (OnGroupClickListener) getListener(
+                expandableListView, "mOnGroupClickListener");
         if (onGroupClickListenerHooked != null) {
             mAllListenerHashcodes.add(onGroupClickListenerHooked.hashCode());
         }
@@ -774,8 +788,8 @@ public class ViewRecorder {
     }
 
     private void handleOnChildClickListener(final ExpandableListView expandableListView) {
-        OnChildClickListener onChildClickListener = (OnChildClickListener) local.getListener(
-                expandableListView, ExpandableListView.class, "mOnChildClickListener");
+        OnChildClickListener onChildClickListener = (OnChildClickListener) getListener(
+                expandableListView, "mOnChildClickListener");
 
         // has hooked listener
         if (onChildClickListener != null
@@ -799,8 +813,8 @@ public class ViewRecorder {
         }
 
         // save hashcode of hooked listener
-        OnChildClickListener onChildClickListenerHooked = (OnChildClickListener) local.getListener(
-                expandableListView, ExpandableListView.class, "mOnChildClickListener");
+        OnChildClickListener onChildClickListenerHooked = (OnChildClickListener) getListener(
+                expandableListView, "mOnChildClickListener");
         if (onChildClickListenerHooked != null) {
             mAllListenerHashcodes.add(onChildClickListenerHooked.hashCode());
         }
@@ -847,8 +861,7 @@ public class ViewRecorder {
     }
 
     private boolean handleOnClickListener(View view) {
-        OnClickListener onClickListener = (OnClickListener) local.getListener(view, View.class,
-                "mOnClickListener");
+        OnClickListener onClickListener = (OnClickListener) getListener(view, "mOnClickListener");
 
         // has hooked listener
         if (onClickListener != null && mAllListenerHashcodes.contains(onClickListener.hashCode())) {
@@ -880,8 +893,8 @@ public class ViewRecorder {
         });
 
         // save hashcode of hooked listener
-        OnClickListener onClickListenerHooked = (OnClickListener) local.getListener(view,
-                View.class, "mOnClickListener");
+        OnClickListener onClickListenerHooked = (OnClickListener) getListener(view,
+                "mOnClickListener");
         if (onClickListenerHooked != null) {
             mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
         }
@@ -975,8 +988,7 @@ public class ViewRecorder {
     }
 
     private void handleOnTouchListener(View view) {
-        OnTouchListener onTouchListener = (OnTouchListener) local.getListener(view, View.class,
-                "mOnTouchListener");
+        OnTouchListener onTouchListener = (OnTouchListener) getListener(view, "mOnTouchListener");
 
         // has hooked listener
         if (onTouchListener != null && mAllListenerHashcodes.contains(onTouchListener.hashCode())) {
@@ -997,8 +1009,8 @@ public class ViewRecorder {
         }
 
         // save hashcode of hooked listener
-        OnTouchListener onTouchListenerHooked = (OnTouchListener) local.getListener(view,
-                View.class, "mOnTouchListener");
+        OnTouchListener onTouchListenerHooked = (OnTouchListener) getListener(view,
+                "mOnTouchListener");
         if (onTouchListenerHooked != null) {
             mAllListenerHashcodes.add(onTouchListenerHooked.hashCode());
         }
@@ -1037,8 +1049,8 @@ public class ViewRecorder {
     }
 
     private void handleOnItemClickListener(AdapterView<?> view) {
-        OnItemClickListener onItemClickListener = (OnItemClickListener) local.getListener(view,
-                AdapterView.class, "mOnItemClickListener");
+        OnItemClickListener onItemClickListener = (OnItemClickListener) getListener(view,
+                "mOnItemClickListener");
 
         // has hooked listener
         if (onItemClickListener != null
@@ -1065,8 +1077,8 @@ public class ViewRecorder {
         });
 
         // save hashcode of hooked listener
-        OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) local.getListener(
-                view, AdapterView.class, "mOnItemClickListener");
+        OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) getListener(view,
+                "mOnItemClickListener");
         if (onItemClickListenerHooked != null) {
             mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
         }
@@ -1097,8 +1109,8 @@ public class ViewRecorder {
     }
 
     private void handleOnLongClickListener(View view) {
-        OnLongClickListener onLongClickListener = (OnLongClickListener) local.getListener(view,
-                View.class, "mOnLongClickListener");
+        OnLongClickListener onLongClickListener = (OnLongClickListener) getListener(view,
+                "mOnLongClickListener");
 
         // has hooked listener
         if (onLongClickListener != null
@@ -1289,8 +1301,7 @@ public class ViewRecorder {
     }
 
     private void handleOnKeyListener(View view) {
-        OnKeyListener onKeyListener = (OnKeyListener) local.getListener(view, View.class,
-                "mOnKeyListener");
+        OnKeyListener onKeyListener = (OnKeyListener) getListener(view, "mOnKeyListener");
 
         // has hooked listener
         if (onKeyListener != null && mAllListenerHashcodes.contains(onKeyListener.hashCode())) {
@@ -1312,8 +1323,7 @@ public class ViewRecorder {
         }
 
         // save hashcode of hooked listener
-        OnKeyListener onKeyListenerHooked = (OnKeyListener) local.getListener(view, View.class,
-                "mOnKeyListener");
+        OnKeyListener onKeyListenerHooked = (OnKeyListener) getListener(view, "mOnKeyListener");
         if (onKeyListenerHooked != null) {
             mAllListenerHashcodes.add(onKeyListenerHooked.hashCode());
         }
