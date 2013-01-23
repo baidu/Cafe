@@ -35,11 +35,13 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -51,6 +53,8 @@ import android.widget.CheckedTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -1583,9 +1587,14 @@ public class LocalLib extends SoloEx {
      *            the index of the {@code View} to be clicked, within
      *            {@code View}s of the specified class
      */
-    public <T extends View> void clickOn(Class<T> viewClass, int index) {
-        invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
-                viewClass, index });
+    public <T extends View> void clickOn(String className, int index) {
+        try {
+            Class<?> viewClass = Class.forName(className);
+            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
+                    viewClass, index });
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -1719,5 +1728,73 @@ public class LocalLib extends SoloEx {
         AbsListView view = (AbsListView) getView(AbsListView.class, index);
         invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
                 new Object[] { view, line });
+    }
+
+    public void scrollScrollViewTo(final int index, final int x, final int y) {
+        final ScrollView scrollView = (ScrollView) getView(ScrollView.class, index);
+        runOnMainSync(new Runnable() {
+            public void run() {
+                scrollView.scrollBy(x, y);
+            }
+        });
+    }
+
+    /**
+     * @param view
+     * @return
+     */
+    public boolean isViewCovered(final View view) {
+        View currentView = view;
+        Rect currentViewRect = new Rect();
+        boolean partVisible = currentView.getGlobalVisibleRect(currentViewRect);
+        boolean totalHeightVisible = (currentViewRect.bottom - currentViewRect.top) >= view
+                .getMeasuredHeight();
+        boolean totalWidthVisible = (currentViewRect.right - currentViewRect.left) >= view
+                .getMeasuredWidth();
+        boolean totalViewVisible = partVisible && totalHeightVisible && totalWidthVisible;
+        //if any part of the view is clipped by any of its parents,return true
+        if (!totalViewVisible) {
+            return true;
+        }
+
+        while (currentView.getParent() instanceof ViewGroup) {
+            ViewGroup currentParent = (ViewGroup) currentView.getParent();
+            //if the parent of view is not visible,return true
+            if (currentParent.getVisibility() != View.VISIBLE) {
+                return true;
+            }
+
+            int start = indexOfViewInParent(currentView, currentParent);
+            for (int i = start + 1; i < currentParent.getChildCount(); i++) {
+                Rect viewRect = new Rect();
+                view.getGlobalVisibleRect(viewRect);
+                View otherView = currentParent.getChildAt(i);
+                Rect otherViewRect = new Rect();
+                otherView.getGlobalVisibleRect(otherViewRect);
+                //if view intersects its older brother(covered),return true
+                if (Rect.intersects(viewRect, otherViewRect)) {
+                    return true;
+                }
+            }
+            currentView = currentParent;
+        }
+        return false;
+    }
+
+    private int indexOfViewInParent(View view, ViewGroup parent) {
+        int index;
+        for (index = 0; index < parent.getChildCount(); index++) {
+            if (parent.getChildAt(index) == view)
+                break;
+        }
+        return index;
+    }
+
+    public boolean waitForActivityWithSleep(String name) {
+        boolean ret = waitForActivity(name);
+        if (ret) {
+            sleep(1000);// wait for activity loading completed
+        }
+        return ret;
     }
 }

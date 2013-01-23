@@ -53,6 +53,7 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
+import android.widget.ScrollView;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -61,7 +62,9 @@ import android.widget.ExpandableListView.OnGroupClickListener;
  * @todo
  */
 public class ViewRecorder {
-    private final static String                      REPLAY_FILE_NAME          = "CafeReplay.java";
+    private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
+    private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
+                                                                                       + ".java";
 
     /**
      * For judging whether a view is an old one.
@@ -119,6 +122,7 @@ public class ViewRecorder {
     private String                                   mCurrentEditTextString    = null;
     private int                                      mCurrentEditTextIndex     = 0;
     private int                                      mFirstVisibleItem         = 0;
+    private int                                      mLastVisibleItem          = 0;
     private int                                      mVisibleItemCount         = 0;
     private int                                      mTotalItemCount           = 0;
     private int                                      mLastFirstVisibleItem     = 0;
@@ -160,6 +164,7 @@ public class ViewRecorder {
         final static int PRIORITY_DRAG     = 1;
         final static int PRIORITY_KEY      = 2;
         final static int PRIORITY_CLICK    = 3;
+        final static int PRIORITY_SCROLL   = 4;
 
         /**
          * NOTICE: This field can not be null!
@@ -217,6 +222,13 @@ public class ViewRecorder {
         public HardKeyEvent(View view) {
             this.view = view;
             this.proity = PRIORITY_KEY;
+        }
+    }
+
+    class ScrollEvent extends OutputEvent {
+        public ScrollEvent(View view) {
+            this.view = view;
+            this.proity = PRIORITY_SCROLL;
         }
     }
 
@@ -377,19 +389,36 @@ public class ViewRecorder {
     String template = "package com.example.demo.test;\n" + "\n"
                             + "import com.baidu.cafe.CafeTestCase;\n"
                             + "import android.view.KeyEvent;\n" + "// next import\n" + "\n"
-                            + "public class TestCafe extends CafeTestCase {\n"
+                            + "public class "
+                            + REPLAY_CLASS_NAME
+                            + " extends CafeTestCase {\n"
                             + "    private static Class<?>     launcherActivityClass;\n"
-                            + "    static {\n" + "        try {\n"
+                            + "    static {\n"
+                            + "        try {\n"
                             + "            launcherActivityClass = Class.forName(\"%s\");\n"
-                            + "        } catch (ClassNotFoundException e) {\n" + "        }\n"
-                            + "    }\n" + "\n" + "    public TestCafe() {\n"
-                            + "        super(\"%s\", launcherActivityClass);\n" + "    }\n" + "\n"
-                            + "    @Override\n" + "    protected void setUp() throws Exception {\n"
-                            + "        super.setUp();\n" + "    }\n" + "\n" + "    @Override\n"
+                            + "        } catch (ClassNotFoundException e) {\n"
+                            + "        }\n"
+                            + "    }\n"
+                            + "\n"
+                            + "    public "
+                            + REPLAY_CLASS_NAME
+                            + "() {\n"
+                            + "        super(\"%s\", launcherActivityClass);\n"
+                            + "    }\n"
+                            + "\n"
+                            + "    @Override\n"
+                            + "    protected void setUp() throws Exception {\n"
+                            + "        super.setUp();\n"
+                            + "    }\n"
+                            + "\n"
+                            + "    @Override\n"
                             + "    protected void tearDown() throws Exception {\n"
-                            + "        super.tearDown();\n" + "    }\n" + "\n"
-                            + "    public void testRecorded() {\n" + "        // next line\n"
-                            + "    }\n" + "\n" + "}\n";
+                            + "        super.tearDown();\n"
+                            + "    }\n"
+                            + "\n"
+                            + "    public void testRecorded() {\n"
+                            + "        // next line\n"
+                            + "        local.sleep(3000);\n" + "    }\n" + "\n" + "}\n";
 
     /**
      * Add listeners on all views for generating cafe code automatically
@@ -442,7 +471,8 @@ public class ViewRecorder {
         String activity = activityClass.getName();
         String activitySimpleName = activityClass.getSimpleName();
         ActivityEvent activityEvent = new ActivityEvent(null);
-        activityEvent.setCode(String.format("local.waitForActivity(\"%s\");", activitySimpleName));
+        activityEvent.setCode(String.format("assertTrue(local.waitForActivityWithSleep(\"%s\"));",
+                activitySimpleName));
         activityEvent.setLog(String.format("Wait for Activity(%s)", activity));
         outputAnEvent(activityEvent);
     }
@@ -547,7 +577,6 @@ public class ViewRecorder {
     }
 
     private boolean hasUnhookedListener(View view) {
-        // TODO listenerNames is not enough
         String[] listenerNames = new String[] { "mOnItemClickListener", "mOnClickListener",
                 "mOnTouchListener", "mOnKeyListener", "mOnScrollListener" };
         for (String listenerName : listenerNames) {
@@ -561,17 +590,19 @@ public class ViewRecorder {
     }
 
     private Object getListener(View view, String listenerName) {
+        Class<?> viewClass = null;
         if ("mOnItemClickListener".equals(listenerName)) {
-            return local.getListener(view, AdapterView.class, "mOnItemClickListener");
+            viewClass = AdapterView.class;
         } else if ("mOnScrollListener".equals(listenerName)) {
-            return local.getListener(view, AbsListView.class, "mOnScrollListener");
-        } else if ("mOnChildClickListener".equals(listenerName)) {
-            return local.getListener(view, ExpandableListView.class, "mOnChildClickListener");
-        } else if ("mOnGroupClickListener".equals(listenerName)) {
-            return local.getListener(view, ExpandableListView.class, "mOnGroupClickListener");
+            viewClass = AbsListView.class;
+        } else if ("mOnChildClickListener".equals(listenerName)
+                || "mOnGroupClickListener".equals(listenerName)) {
+            viewClass = ExpandableListView.class;
         } else {
-            return local.getListener(view, View.class, listenerName);
+            viewClass = View.class;
         }
+
+        return local.getListener(view, viewClass, listenerName);
     }
 
     private void setHookListenerOnView(View view) {
@@ -601,11 +632,6 @@ public class ViewRecorder {
             // If view has ClickListener, do not add a TouchListener.
             handleOnTouchListener(view);
         }
-    }
-
-    private void handleExpandableListView(ExpandableListView expandableListView) {
-        handleOnGroupClickListener(expandableListView);
-        handleOnChildClickListener(expandableListView);
     }
 
     private void handleOnScrollListener(AbsListView absListView) {
@@ -650,7 +676,6 @@ public class ViewRecorder {
         if (OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == scrollState) {
             mLastFirstVisibleItem = view.getFirstVisiblePosition();
         }
-
     }
 
     private void outputAScroll(AbsListView view) {
@@ -659,17 +684,22 @@ public class ViewRecorder {
             return;
         }
 
+        ScrollEvent scrollEvent = new ScrollEvent(view);
         int viewIndex = local.getCurrentViewIndex(view);
-        String code = String
-                .format("local.scrollListToLine(%s, %s);", viewIndex, mFirstVisibleItem);
-        printCode(code);
+        String code = String.format("local.scrollListToLine(%s, %s);", viewIndex,
+                mFirstVisibleItem + 1);
+        scrollEvent.setCode(code);
+
+        mOutputEventQueue.offer(scrollEvent);
     }
 
     private void setOnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
             int totalItemCount) {
-        printLog(String.format("firstVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
-                firstVisibleItem, visibleItemCount, totalItemCount));
+        printLog(String.format(
+                "firstVisibleItem:%s lastVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
+                firstVisibleItem, view.getLastVisiblePosition(), visibleItemCount, totalItemCount));
         mFirstVisibleItem = firstVisibleItem;
+        mLastVisibleItem = view.getLastVisiblePosition();
         mVisibleItemCount = visibleItemCount;
         mTotalItemCount = totalItemCount;
 
@@ -712,6 +742,11 @@ public class ViewRecorder {
             }
         });
 
+    }
+
+    private void handleExpandableListView(ExpandableListView expandableListView) {
+        handleOnGroupClickListener(expandableListView);
+        handleOnChildClickListener(expandableListView);
     }
 
     private void handleOnGroupClickListener(final ExpandableListView expandableListView) {
@@ -902,7 +937,7 @@ public class ViewRecorder {
     private void setOnClick(View v) {
         // set click event output
         ClickEvent clickEvent = new ClickEvent(v);
-        String viewClass = getViewClassString(v);
+        String viewClass = getViewString(v);
         int viewIndex = local.getCurrentViewIndex(v);
         String rString = getRString(v);
         String text = local.getViewText(v);
@@ -910,7 +945,7 @@ public class ViewRecorder {
         String importLine = String.format("import %s;", getViewString(v));
         //        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s, false));//%s%s",
         //                viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
-        String click = String.format("local.clickOn(%s, %s);//%s%s", viewClass, viewIndex,
+        String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, viewIndex,
                 "Click On ", comments);
 
         clickEvent.setCode(importLine + /*"\n" + wait + */"\n" + click);
@@ -1085,8 +1120,11 @@ public class ViewRecorder {
 
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
         ClickEvent clickEvent = new ClickEvent(parent);
-        String click = String.format("local.clickInList(%s, %s);", position,
-                local.getCurrentViewIndex(parent));
+
+        String click = String.format("local.clickInList(%s, %s);",
+                position - parent.getFirstVisiblePosition(), local.getCurrentViewIndex(parent));
+        //        String click = String.format("local.clickInList(%s, %s);", position - 1,
+        //                local.getCurrentViewIndex(parent));
         String sleep = "";
         if (mLastEventTime != 0) {
             sleep = String.format("local.sleep(%s);", System.currentTimeMillis() - mLastEventTime);
@@ -1268,30 +1306,41 @@ public class ViewRecorder {
     }
 
     /**
-     * Merge events from ACTION_DOWN to ACTION_UP.
+     * Merge touch events from ACTION_DOWN to ACTION_UP.
      */
     private void mergeMotionEvents(ArrayList<RecordMotionEvent> events) {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
-        //        int stepCount = events.size();
         int stepCount = events.size() / 2;
         stepCount = stepCount >= 0 ? stepCount : 0;
         DragEvent dragEvent = new DragEvent(up.view);
+        String drag = "";
 
-        String drag = String
-                .format("local.drag(local.toScreenX(%sf), local.toScreenX(%sf), local.toScreenY(%sf), local.toScreenY(%sf), %s);",
-                        local.toPercentX(down.x), local.toPercentX(up.x), local.toPercentY(down.y),
-                        local.toPercentY(up.y), stepCount);
-        String sleep = null;
+        if (down.view instanceof ScrollView) {
+            ScrollView scrollView = (ScrollView) down.view;
+            int viewIndex = local.getCurrentViewIndex(scrollView);
+            drag = String.format("local.scrollScrollViewTo(%s, %s, %s);", viewIndex,
+                    scrollView.getScrollX(), scrollView.getScrollY());
+            dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView,
+                    scrollView.getScrollX(), scrollView.getScrollY()));
+        } else if (down.view instanceof AbsListView) {
+            printLog("ignore drag event of [" + down.view + "]");
+            return;
+        } else {
+            String dragString = "local.drag(local.toScreenX(%sf), local.toScreenX(%sf), local.toScreenY(%sf), local.toScreenY(%sf), %s);";
+            drag = String.format(dragString, local.toPercentX(down.x), local.toPercentX(up.x),
+                    local.toPercentY(down.y), local.toPercentY(up.y), stepCount);
+            dragEvent.setLog(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s",
+                    down.view, down.x, down.y, up.x, up.y, stepCount));
+        }
+
+        String sleep = "";
         if (mLastEventTime != 0) {
             sleep = String.format("local.sleep(%s);", System.currentTimeMillis() - mLastEventTime);
             dragEvent.setCode(sleep + "\n" + drag);
         } else {
             dragEvent.setCode(drag);
         }
-
-        dragEvent.setLog(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s",
-                down.view, down.x, down.y, up.x, up.y, stepCount));
 
         mOutputEventQueue.offer(dragEvent);
     }
@@ -1373,10 +1422,6 @@ public class ViewRecorder {
     private String getViewID(View view) {
         String viewString = view.toString();
         return viewString.substring(viewString.indexOf("@"));
-    }
-
-    private String getViewClassString(View view) {
-        return getViewString(view) + ".class";
     }
 
     private String getViewString(View view) {
