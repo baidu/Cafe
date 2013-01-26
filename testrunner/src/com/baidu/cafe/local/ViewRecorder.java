@@ -431,9 +431,10 @@ public class ViewRecorder {
                 while (true) {
                     long begin = System.currentTimeMillis();
                     setDefaultFocusView();
+                    printLog("setDefaultFocusView:" + (System.currentTimeMillis() - begin));
+                    begin = System.currentTimeMillis();
                     ArrayList<View> newViews = getTargetViews();
-                    long end = System.currentTimeMillis();
-                    printLog("" + (end - begin));
+                    printLog("getTargetViews:" + (System.currentTimeMillis() - begin));
                     for (View view : newViews) {
                         try {
                             setHookListenerOnView(view);
