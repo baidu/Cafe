@@ -53,7 +53,6 @@ import android.widget.CheckedTextView;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TabWidget;
 import android.widget.TextView;
@@ -1815,4 +1814,14 @@ public class LocalLib extends SoloEx {
         return view.getHeight() * view.getWidth() == 0 ? true : false;
     }
 
+    public <T extends View> void waitForView(String className, final int index, final int timeout,
+            final boolean scroll) {
+        try {
+            Class<?> viewClass = Class.forName(className);
+            invoke(mWaiter, "waitForView", new Class[] { Class.class, int.class, int.class,
+                    boolean.class }, new Object[] { viewClass, index, timeout, scroll });
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }

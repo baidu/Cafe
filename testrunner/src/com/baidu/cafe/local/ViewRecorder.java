@@ -438,7 +438,7 @@ public class ViewRecorder {
                             e.printStackTrace();
                         }
                     }
-                    sleep(50);
+                    sleep(10);
                 }
             }
         }).start();
