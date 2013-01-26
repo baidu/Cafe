@@ -65,6 +65,7 @@ public class ViewRecorder {
     private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
     private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
                                                                                        + ".java";
+    private final static int                         WAIT_TIMEOUT              = 20000;
 
     /**
      * For judging whether a view is an old one.
@@ -122,7 +123,6 @@ public class ViewRecorder {
     private String                                   mCurrentEditTextString    = null;
     private int                                      mCurrentEditTextIndex     = 0;
     private int                                      mFirstVisibleItem         = 0;
-    private int                                      mLastVisibleItem          = 0;
     private int                                      mVisibleItemCount         = 0;
     private int                                      mTotalItemCount           = 0;
     private int                                      mLastFirstVisibleItem     = 0;
@@ -439,7 +439,7 @@ public class ViewRecorder {
                             e.printStackTrace();
                         }
                     }
-                    sleep(100);
+                    sleep(50);
                 }
             }
         }).start();
@@ -695,11 +695,10 @@ public class ViewRecorder {
 
     private void setOnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
             int totalItemCount) {
-        printLog(String.format(
-                "firstVisibleItem:%s lastVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
-                firstVisibleItem, view.getLastVisiblePosition(), visibleItemCount, totalItemCount));
+        //        printLog(String.format(
+        //                "firstVisibleItem:%s lastVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
+        //                firstVisibleItem, view.getLastVisiblePosition(), visibleItemCount, totalItemCount));
         mFirstVisibleItem = firstVisibleItem;
-        mLastVisibleItem = view.getLastVisiblePosition();
         mVisibleItemCount = visibleItemCount;
         mTotalItemCount = totalItemCount;
 
@@ -943,12 +942,12 @@ public class ViewRecorder {
         String text = local.getViewText(v);
         String comments = String.format("[%s]%s[%s] ", v, rString, text);
         String importLine = String.format("import %s;", getViewString(v));
-        //        String wait = String.format("assertTrue(local.waitForView(%s, %s, %s, false));//%s%s",
-        //                viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
+        String wait = String.format("assertTrue(local.waitForView(\"%s\", %s, %s, false));//%s%s",
+                viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
         String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, viewIndex,
                 "Click On ", comments);
 
-        clickEvent.setCode(importLine + /*"\n" + wait + */"\n" + click);
+        clickEvent.setCode(importLine + "\n" + wait + "\n" + click);
         // clickEvent.setLog();
 
         mOutputEventQueue.offer(clickEvent);
@@ -1317,12 +1316,8 @@ public class ViewRecorder {
         String drag = "";
 
         if (down.view instanceof ScrollView) {
-            ScrollView scrollView = (ScrollView) down.view;
-            int viewIndex = local.getCurrentViewIndex(scrollView);
-            drag = String.format("local.scrollScrollViewTo(%s, %s, %s);", viewIndex,
-                    scrollView.getScrollX(), scrollView.getScrollY());
-            dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView,
-                    scrollView.getScrollX(), scrollView.getScrollY()));
+            outputAfterScrollStop((ScrollView) down.view, dragEvent);
+            return;
         } else if (down.view instanceof AbsListView) {
             printLog("ignore drag event of [" + down.view + "]");
             return;
@@ -1334,15 +1329,49 @@ public class ViewRecorder {
                     down.view, down.x, down.y, up.x, up.y, stepCount));
         }
 
+        setDragEventCode(drag, dragEvent);
+    }
+
+    private void setDragEventCode(String code, DragEvent dragEvent) {
         String sleep = "";
         if (mLastEventTime != 0) {
             sleep = String.format("local.sleep(%s);", System.currentTimeMillis() - mLastEventTime);
-            dragEvent.setCode(sleep + "\n" + drag);
+            dragEvent.setCode(sleep + "\n" + code);
         } else {
-            dragEvent.setCode(drag);
+            dragEvent.setCode(code);
         }
 
         mOutputEventQueue.offer(dragEvent);
+    }
+
+    /**
+     * Start a thread to wait for scroll stoping, and return immediately.
+     * 
+     * @param scrollView
+     * @param dragEvent
+     */
+    private void outputAfterScrollStop(final ScrollView scrollView, final DragEvent dragEvent) {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (!local.isScrollStoped(scrollView))
+                    ;
+                int viewIndex = local.getCurrentViewIndex(scrollView);
+                String drag = String.format("local.scrollScrollViewTo(%s, %s, %s);", viewIndex,
+                        scrollView.getScrollX(), scrollView.getScrollY());
+                dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView,
+                        scrollView.getScrollX(), scrollView.getScrollY()));
+                if (mLastEventTime != 0) {
+                    String sleep = String.format("local.sleep(%s);", System.currentTimeMillis()
+                            - mLastEventTime);
+                    dragEvent.setCode(sleep + "\n" + drag);
+                } else {
+                    dragEvent.setCode(drag);
+                }
+                outputAnEvent(dragEvent);
+            }
+        }).start();
     }
 
     private void hookOnItemSelectedListener(AdapterView view) {

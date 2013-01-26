@@ -1797,4 +1797,22 @@ public class LocalLib extends SoloEx {
         }
         return ret;
     }
+
+    /**
+     * This method will cost 100ms to judge whether scrollview stoped.
+     * 
+     * @param scrollView
+     * @return
+     */
+    public boolean isScrollStoped(final ScrollView scrollView) {
+        int x = scrollView.getScrollX();
+        int y = scrollView.getScrollY();
+        sleep(100);
+        return scrollView.getScrollX() == x && scrollView.getScrollY() == y ? true : false;
+    }
+
+    public boolean isSize0(final View view) {
+        return view.getHeight() * view.getWidth() == 0 ? true : false;
+    }
+
 }
