@@ -429,8 +429,12 @@ public class ViewRecorder {
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
+                    long begin = System.currentTimeMillis();
                     setDefaultFocusView();
+                    printLog("setDefaultFocusView:" + (System.currentTimeMillis() - begin));
+                    begin = System.currentTimeMillis();
                     ArrayList<View> newViews = getTargetViews();
+                    printLog("getTargetViews:" + (System.currentTimeMillis() - begin));
                     for (View view : newViews) {
                         try {
                             setHookListenerOnView(view);
@@ -564,23 +568,18 @@ public class ViewRecorder {
     }
 
     private void setDefaultFocusView() {
-        long begin = System.currentTimeMillis();
-        if (local.getCurrentActivity().getCurrentFocus() != null || getCurrentFocusView() != null) {
-            printLog("getCurrentFocus:" + (System.currentTimeMillis() - begin));
-            return;
-        }
-        begin = System.currentTimeMillis();
+        // It's too slow..
+        //        if (local.getCurrentActivity().getCurrentFocus() != null || getCurrentFocusView() != null) {
+        //            return;
+        //        }
         View view = local.getRecentDecorView();
         boolean hasFocus = local.requestFocus(view);
         //        printLog(view + " hasFocus: " + hasFocus);
-        printLog("requestFocus:" + (System.currentTimeMillis() - begin));
-        begin = System.currentTimeMillis();
         String viewID = getViewID(view);
         if (!mAllViewPosition.containsKey(viewID)) {
             saveView(view);
             handleOnKeyListener(view);
         }
-        printLog("handleOnKeyListener:" + (System.currentTimeMillis() - begin));
     }
 
     private boolean hasUnhookedListener(View view) {
