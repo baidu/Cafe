@@ -429,12 +429,8 @@ public class ViewRecorder {
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
-                    long begin = System.currentTimeMillis();
                     setDefaultFocusView();
-                    printLog("setDefaultFocusView:" + (System.currentTimeMillis() - begin));
-                    begin = System.currentTimeMillis();
                     ArrayList<View> newViews = getTargetViews();
-                    printLog("getTargetViews:" + (System.currentTimeMillis() - begin));
                     for (View view : newViews) {
                         try {
                             setHookListenerOnView(view);
@@ -497,7 +493,7 @@ public class ViewRecorder {
     }
 
     private ArrayList<View> getTargetViews() {
-        ArrayList<View> views = local
+        final ArrayList<View> views = local
                 .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
         ArrayList<View> targetViews = new ArrayList<View>();
         boolean hasChange = false;
@@ -524,7 +520,14 @@ public class ViewRecorder {
         }
 
         if (hasChange) {
-            flushViewLayout(views);
+            // It's too slow to be at main thread.
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    flushViewLayout(views);
+                }
+            }).start();
         }
 
         return targetViews;
