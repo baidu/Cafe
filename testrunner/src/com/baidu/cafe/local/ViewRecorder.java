@@ -429,8 +429,11 @@ public class ViewRecorder {
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
+                    long begin = System.currentTimeMillis();
                     setDefaultFocusView();
                     ArrayList<View> newViews = getTargetViews();
+                    long end = System.currentTimeMillis();
+                    printLog("" + (end - begin));
                     for (View view : newViews) {
                         try {
                             setHookListenerOnView(view);
@@ -945,7 +948,7 @@ public class ViewRecorder {
         String comments = String.format("[%s]%s[%s] ", v, rString, text);
         String importLine = String.format("import %s;", getViewString(v));
         String wait = String.format("assertTrue(local.waitForView(\"%s\", %s, %s, false));//%s%s",
-                viewClass, viewIndex + 1, WAIT_TIMEOUT, "Wait for ", comments);
+                viewClass, viewIndex, WAIT_TIMEOUT, "Wait for ", comments);
         String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, viewIndex,
                 "Click On ", comments);
 
