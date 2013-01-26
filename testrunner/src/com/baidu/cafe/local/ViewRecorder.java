@@ -135,7 +135,6 @@ public class ViewRecorder {
     public ViewRecorder(LocalLib local) {
         this.local = local;
         init();
-        printLog("ViewRecorder is ready to work.");
     }
 
     class RecordMotionEvent {
@@ -446,6 +445,9 @@ public class ViewRecorder {
 
         handleRecordMotionEventQueue();
         handleOutputEventQueue();
+
+        local.sleep(5000);
+        printLog("ViewRecorder is ready to work.");
     }
 
     private void monitorCurrentActivity() {
