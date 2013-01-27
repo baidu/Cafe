@@ -1473,6 +1473,7 @@ public class LocalLib extends SoloEx {
         if (null == view) {
             return -1;
         }
+        Log.i("ViewRecorder", "class: " + view.getClass());
         ArrayList<? extends View> views = removeInvisibleViews(getCurrentViews(view.getClass()));
         for (int i = 0; i < views.size(); i++) {
             if (views.get(i).equals(view)) {
@@ -1618,8 +1619,8 @@ public class LocalLib extends SoloEx {
         while (System.currentTimeMillis() <= endTime && !waitForView(classToFilterBy, index, true))
             ;
         if (System.currentTimeMillis() >= endTime) {
-            Assert.assertTrue(classToFilterBy.getSimpleName() + " with index " + index
-                    + " is not available!", false);
+            Assert.assertTrue(classToFilterBy + " with index " + index + " is not available!",
+                    false);
         }
 
         ArrayList<T> views = removeInvisibleViews(getCurrentViews(classToFilterBy));
@@ -1628,8 +1629,8 @@ public class LocalLib extends SoloEx {
         try {
             view = views.get(index);
         } catch (IndexOutOfBoundsException exception) {
-            Assert.assertTrue(classToFilterBy.getSimpleName() + " with index " + index
-                    + " is not available!", false);
+            Assert.assertTrue(classToFilterBy + " with index " + index + " is not available!",
+                    false);
         }
         views = null;
         return view;
