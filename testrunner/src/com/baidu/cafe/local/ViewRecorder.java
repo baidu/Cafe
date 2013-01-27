@@ -438,7 +438,7 @@ public class ViewRecorder {
                             e.printStackTrace();
                         }
                     }
-                    sleep(10);
+                    sleep(50);
                 }
             }
         }).start();
@@ -446,7 +446,7 @@ public class ViewRecorder {
         handleRecordMotionEventQueue();
         handleOutputEventQueue();
 
-        local.sleep(5000);
+        local.sleep(4000);
         printLog("ViewRecorder is ready to work.");
     }
 
