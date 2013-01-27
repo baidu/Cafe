@@ -43,6 +43,7 @@ import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
@@ -943,6 +944,15 @@ public class ViewRecorder {
     }
 
     private void setOnClick(View v) {
+        View view = v;
+        printLog("view:" + v);
+        while (!(view.getParent() instanceof ViewGroup)) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            printLog("parent:" + parent);
+            view = parent;
+        }
+        printLog("not ViewGroup:" + view);
+
         // set click event output
         ClickEvent clickEvent = new ClickEvent(v);
         String viewClass = getViewString(v);

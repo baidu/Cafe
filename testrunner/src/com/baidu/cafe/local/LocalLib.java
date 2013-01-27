@@ -1537,9 +1537,14 @@ public class LocalLib extends SoloEx {
         return y / getDisplayY();
     }
 
-    public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> views) {
-        return (ArrayList<T>) invoke(mRobotiumUtils, "removeInvisibleViews",
-                new Class[] { ArrayList.class }, new Object[] { views });
+    public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> viewList) {
+        ArrayList<T> tmpViewList = new ArrayList<T>(viewList.size());
+        for (T view : viewList) {
+            if (view != null && view.isShown() && isInScreen(view)) {
+                tmpViewList.add(view);
+            }
+        }
+        return tmpViewList;
     }
 
     boolean hasFocus = false;
