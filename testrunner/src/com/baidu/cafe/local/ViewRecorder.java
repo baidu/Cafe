@@ -955,8 +955,8 @@ public class ViewRecorder {
         String importLine = String.format("import %s;", getViewString(v));
         //        String wait = String.format("assertTrue(local.waitForView(\"%s\", %s, %s, false));//%s%s",
         //                viewClass, viewIndex, WAIT_TIMEOUT, "Wait for ", comments);
-        String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, familyString,
-                "Click On ", comments);
+        String click = String.format("local.clickOn(\"%s\", \"%s\");//%s%s", viewClass,
+                familyString, "Click On ", comments);
 
         String sleep = "";
         if (mLastEventTime != 0) {
