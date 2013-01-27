@@ -23,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -1471,13 +1473,22 @@ public class LocalLib extends SoloEx {
         if (null == view) {
             return -1;
         }
-        ArrayList<? extends View> views = getCurrentViews(view.getClass(), true);
-        for (int i = 0; i < views.size(); i++) {
-            if (views.get(i).equals(view)) {
+        //        ArrayList<? extends View> views = getCurrentViews(view.getClass(), true);
+        View[] views = getUniqueViews(getCurrentViews(view.getClass(), true));
+        for (int i = 0; i < views.length; i++) {
+            if (views[i].equals(view)) {
                 return i;
             }
         }
         return -1;
+    }
+
+    private <T extends View> View[] getUniqueViews(ArrayList<T> views) {
+        Set<T> uniqueViews = new HashSet<T>();
+        for (int i = 0; i < views.size(); i++) {
+            uniqueViews.add(views.get(i));
+        }
+        return uniqueViews.toArray(new View[uniqueViews.size()]);
     }
 
     public String getAppNameByPID(int pid) {
