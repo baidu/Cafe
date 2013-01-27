@@ -1473,13 +1473,18 @@ public class LocalLib extends SoloEx {
         if (null == view) {
             return -1;
         }
-        //        ArrayList<? extends View> views = getCurrentViews(view.getClass(), true);
-        View[] views = getUniqueViews(getCurrentViews(view.getClass(), true));
-        for (int i = 0; i < views.length; i++) {
-            if (views[i].equals(view)) {
+        ArrayList<? extends View> views = getCurrentViews(view.getClass(), true);
+        for (int i = 0; i < views.size(); i++) {
+            if (views.get(i).equals(view)) {
                 return i;
             }
         }
+        //        View[] views = getUniqueViews(getCurrentViews(view.getClass(), true));
+        //        for (int i = 0; i < views.length; i++) {
+        //            if (views[i].equals(view)) {
+        //                return i;
+        //            }
+        //        }
         return -1;
     }
 
@@ -1599,12 +1604,57 @@ public class LocalLib extends SoloEx {
      */
     public <T extends View> void clickOn(String className, int index) {
         try {
-            Class<?> viewClass = Class.forName(className);
-            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
-                    viewClass, index });
+            Class<View> viewClass = (Class<View>) Class.forName(className);
+            //            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
+            //                    viewClass, index });
+            waitForAndGetViewWithoutUnique(index, viewClass);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public <T extends View> T waitForAndGetViewWithoutUnique(int index, Class<T> classToFilterBy) {
+        long endTime = System.currentTimeMillis() + 20000;
+        while (System.currentTimeMillis() <= endTime && !waitForView(classToFilterBy, index, true))
+            ;
+        ArrayList<T> views = removeInvisibleViews(getCurrentViews(classToFilterBy));
+
+        T view = null;
+        try {
+            view = views.get(index);
+        } catch (IndexOutOfBoundsException exception) {
+            Assert.assertTrue(classToFilterBy.getSimpleName() + " with index " + index
+                    + " is not available!", false);
+        }
+        views = null;
+        return view;
+    }
+
+    public <T extends View> boolean waitForView(final Class<T> viewClass, final int index,
+            boolean sleep) {
+        boolean foundMatchingView;
+
+        while (true) {
+            if (sleep) {
+                sleep(500);
+            }
+            foundMatchingView = searchFor(viewClass, index);
+            if (foundMatchingView) {
+                return true;
+            }
+        }
+    }
+
+    public <T extends View> boolean searchFor(Class<T> viewClass, final int index) {
+        ArrayList<T> allViews = removeInvisibleViews(getCurrentViews(viewClass));
+        return index < allViews.size() ? setArrayToNullAndReturn(true, allViews)
+                : setArrayToNullAndReturn(false, allViews);
+    }
+
+    private <T extends View> boolean setArrayToNullAndReturn(boolean booleanToReturn,
+            ArrayList<T> views) {
+        views = null;
+        return booleanToReturn;
     }
 
     /**
@@ -1827,13 +1877,15 @@ public class LocalLib extends SoloEx {
 
     public boolean waitForView(String className, final int index, final int timeout,
             final boolean scroll) {
+        boolean ret = false;
         try {
             Class<?> viewClass = Class.forName(className);
-            return (Boolean) invoke(mWaiter, "waitForView", new Class[] { Class.class, int.class,
+            ret = (Boolean) invoke(mWaiter, "waitForView", new Class[] { Class.class, int.class,
                     int.class, boolean.class }, new Object[] { viewClass, index, timeout, scroll });
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return false;
+        sleep(500);
+        return ret;
     }
 }
