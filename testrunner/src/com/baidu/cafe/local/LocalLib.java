@@ -1473,7 +1473,7 @@ public class LocalLib extends SoloEx {
         if (null == view) {
             return -1;
         }
-        ArrayList<? extends View> views = getCurrentViews(view.getClass(), true);
+        ArrayList<? extends View> views = removeInvisibleViews(getCurrentViews(view.getClass()));
         for (int i = 0; i < views.size(); i++) {
             if (views.get(i).equals(view)) {
                 return i;
