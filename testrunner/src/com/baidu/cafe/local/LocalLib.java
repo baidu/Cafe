@@ -1614,7 +1614,7 @@ public class LocalLib extends SoloEx {
     }
 
     public <T extends View> T waitForAndGetViewWithoutUnique(int index, Class<T> classToFilterBy) {
-        long endTime = System.currentTimeMillis() + 20000;
+        long endTime = System.currentTimeMillis() + 10000;
         while (System.currentTimeMillis() <= endTime && !waitForView(classToFilterBy, index, true))
             ;
         ArrayList<T> views = removeInvisibleViews(getCurrentViews(classToFilterBy));
@@ -1632,17 +1632,10 @@ public class LocalLib extends SoloEx {
 
     public <T extends View> boolean waitForView(final Class<T> viewClass, final int index,
             boolean sleep) {
-        boolean foundMatchingView;
-
-        while (true) {
-            if (sleep) {
-                sleep(500);
-            }
-            foundMatchingView = searchFor(viewClass, index);
-            if (foundMatchingView) {
-                return true;
-            }
+        if (sleep) {
+            sleep(500);
         }
+        return searchFor(viewClass, index) ? true : false;
     }
 
     public <T extends View> boolean searchFor(Class<T> viewClass, final int index) {
