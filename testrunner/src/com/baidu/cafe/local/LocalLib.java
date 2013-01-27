@@ -1607,7 +1607,7 @@ public class LocalLib extends SoloEx {
             Class<View> viewClass = (Class<View>) Class.forName(className);
             //            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
             //                    viewClass, index });
-            waitForAndGetViewWithoutUnique(index, viewClass);
+            clickOnView(waitForAndGetViewWithoutUnique(index, viewClass));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
