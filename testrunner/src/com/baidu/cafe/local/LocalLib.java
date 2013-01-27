@@ -1608,15 +1608,26 @@ public class LocalLib extends SoloEx {
      *            the index of the {@code View} to be clicked, within
      *            {@code View}s of the specified class
      */
-    public <T extends View> void clickOn(String className, int index) {
+    public <T extends View> void clickOn(String className, String familyString) {
         try {
             Class<View> viewClass = (Class<View>) Class.forName(className);
+            ArrayList<View> views = removeInvisibleViews(getCurrentViews(viewClass));
+            clickOnView(getViewByFamilyString(views, familyString));
             //            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
             //                    viewClass, index });
-            clickOnView(waitForAndGetViewWithoutUnique(index, viewClass));
-        } catch (ClassNotFoundException e) {
+            //            clickOnView(waitForAndGetViewWithoutUnique(index, viewClass));
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public View getViewByFamilyString(ArrayList<View> views, String familyString) {
+        for (View view : views) {
+            if (getFamilyString(view).equals(familyString)) {
+                return view;
+            }
+        }
+        return null;
     }
 
     public <T extends View> T waitForAndGetViewWithoutUnique(int index, Class<T> classToFilterBy) {
@@ -1891,5 +1902,25 @@ public class LocalLib extends SoloEx {
         }
         sleep(500);
         return ret;
+    }
+
+    public String getFamilyString(View v) {
+        View view = v;
+        String familyString = "";
+        while (view.getParent() instanceof ViewGroup) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            familyString += getChildIndex(parent, view);
+            view = parent;
+        }
+        return familyString;
+    }
+
+    private int getChildIndex(ViewGroup parent, View child) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            if (parent.getChildAt(i).equals(child)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

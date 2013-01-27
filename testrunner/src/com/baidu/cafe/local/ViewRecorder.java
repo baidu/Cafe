@@ -944,26 +944,18 @@ public class ViewRecorder {
     }
 
     private void setOnClick(View v) {
-        View view = v;
-        printLog("view:" + v);
-        while (!(view.getParent() instanceof ViewGroup)) {
-            ViewGroup parent = (ViewGroup) view.getParent();
-            printLog("parent:" + parent);
-            view = parent;
-        }
-        printLog("not ViewGroup:" + view);
-
         // set click event output
         ClickEvent clickEvent = new ClickEvent(v);
         String viewClass = getViewString(v);
-        int viewIndex = local.getCurrentViewIndex(v);
+        //        int viewIndex = local.getCurrentViewIndex(v);
+        String familyString = local.getFamilyString(v);
         String rString = getRString(v);
         String text = local.getViewText(v);
         String comments = String.format("[%s]%s[%s] ", v, rString, text);
         String importLine = String.format("import %s;", getViewString(v));
         //        String wait = String.format("assertTrue(local.waitForView(\"%s\", %s, %s, false));//%s%s",
         //                viewClass, viewIndex, WAIT_TIMEOUT, "Wait for ", comments);
-        String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, viewIndex,
+        String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, familyString,
                 "Click On ", comments);
 
         String sleep = "";
