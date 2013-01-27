@@ -104,6 +104,11 @@ public class ViewRecorder {
     private HashMap<Integer, String>                 mKeyCodeMap               = new HashMap<Integer, String>();
 
     /**
+     * For judging whether UI is static.
+     */
+    private ArrayList<View>                          mLastViews                = new ArrayList<View>();
+
+    /**
      * Saving old listener for invoking when needed
      */
     private HashMap<String, OnClickListener>         mOnClickListeners         = new HashMap<String, OnClickListener>();
@@ -494,7 +499,7 @@ public class ViewRecorder {
     }
 
     private ArrayList<View> getTargetViews() {
-        final ArrayList<View> views = local
+        ArrayList<View> views = local
                 .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
         ArrayList<View> targetViews = new ArrayList<View>();
         boolean hasChange = false;
@@ -521,17 +526,28 @@ public class ViewRecorder {
         }
 
         if (hasChange) {
-            // It's too slow to be at main thread.
-            new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    flushViewLayout(views);
-                }
-            }).start();
+            flushWhenStatic(views);
         }
+        mLastViews.clear();
+        mLastViews.addAll(views);
 
         return targetViews;
+    }
+
+    private void flushWhenStatic(final ArrayList<View> views) {
+        // It's a lightly way to judge whether two arrays equals.
+        if (mLastViews.size() != views.size()) {
+            return;
+        }
+
+        // It's too slow to be at main thread.
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                flushViewLayout(views);
+            }
+        }).start();
     }
 
     /**

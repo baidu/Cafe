@@ -1612,7 +1612,9 @@ public class LocalLib extends SoloEx {
         try {
             Class<View> viewClass = (Class<View>) Class.forName(className);
             ArrayList<View> views = removeInvisibleViews(getCurrentViews(viewClass));
+            // waitForView is including clickOnView
             clickOnView(getViewByFamilyString(views, familyString));
+
             //            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
             //                    viewClass, index });
             //            clickOnView(waitForAndGetViewWithoutUnique(index, viewClass));
