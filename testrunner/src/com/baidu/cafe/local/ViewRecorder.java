@@ -956,7 +956,14 @@ public class ViewRecorder {
         String click = String.format("local.clickOn(\"%s\", %s);//%s%s", viewClass, viewIndex,
                 "Click On ", comments);
 
-        clickEvent.setCode(importLine + /*"\n" + wait + */"\n" + click);
+        String sleep = "";
+        if (mLastEventTime != 0) {
+            sleep = String.format("local.sleep(%s);", System.currentTimeMillis() - mLastEventTime);
+            clickEvent.setCode(importLine + "\n" + sleep + "\n" + click);
+        } else {
+            clickEvent.setCode(importLine + /*"\n" + wait + */"\n" + click);
+        }
+
         // clickEvent.setLog();
 
         mOutputEventQueue.offer(clickEvent);

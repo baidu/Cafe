@@ -1617,6 +1617,11 @@ public class LocalLib extends SoloEx {
         long endTime = System.currentTimeMillis() + 10000;
         while (System.currentTimeMillis() <= endTime && !waitForView(classToFilterBy, index, true))
             ;
+        if (System.currentTimeMillis() >= endTime) {
+            Assert.assertTrue(classToFilterBy.getSimpleName() + " with index " + index
+                    + " is not available!", false);
+        }
+
         ArrayList<T> views = removeInvisibleViews(getCurrentViews(classToFilterBy));
 
         T view = null;
