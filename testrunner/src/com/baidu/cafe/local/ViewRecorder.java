@@ -473,8 +473,8 @@ public class ViewRecorder {
         String activity = activityClass.getName();
         String activitySimpleName = activityClass.getSimpleName();
         ActivityEvent activityEvent = new ActivityEvent(null);
-        activityEvent.setCode(String.format("assertTrue(local.waitForActivityWithSleep(\"%s\"));",
-                activitySimpleName));
+//        activityEvent.setCode(String.format("assertTrue(local.waitForActivityWithSleep(\"%s\"));",
+//                activitySimpleName));
         activityEvent.setLog(String.format("Wait for Activity(%s)", activity));
         outputAnEvent(activityEvent);
     }
