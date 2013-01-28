@@ -66,6 +66,7 @@ public class ViewRecorder {
     private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
                                                                                        + ".java";
     private final static int                         WAIT_TIMEOUT              = 20000;
+    private final static int                         MIN_SLEEP_TIME            = 1000;
 
     /**
      * For judging whether a view is an old one.
@@ -476,7 +477,6 @@ public class ViewRecorder {
 
     private void outputAnActivityEvent(Class<? extends Activity> activityClass) {
         String activity = activityClass.getName();
-        String activitySimpleName = activityClass.getSimpleName();
         ActivityEvent activityEvent = new ActivityEvent(null);
         //        activityEvent.setCode(String.format("assertTrue(local.waitForActivityWithSleep(\"%s\"));",
         //                activitySimpleName));
@@ -768,7 +768,6 @@ public class ViewRecorder {
                 }
             }
         });
-
     }
 
     private void handleExpandableListView(ExpandableListView expandableListView) {
@@ -968,7 +967,7 @@ public class ViewRecorder {
     private long getSleepTime() {
         long ret = System.currentTimeMillis() - mLastEventTime;
         mLastEventTime = System.currentTimeMillis();
-        return ret;
+        return ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
     }
 
     private void setOnClick(View v) {
