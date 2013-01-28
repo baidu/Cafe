@@ -1724,7 +1724,8 @@ public class LocalLib extends SoloEx {
 
             @Override
             public void run() {
-                View v = (View) expandableListView.getItemAtPosition(flatListPosition);
+                //                Object item = expandableListView.getItemAtPosition(flatListPosition);
+                View v = expandableListView.getChildAt(flatListPosition);
                 long id = expandableListView.getItemIdAtPosition(flatListPosition);
                 isClicked = expandableListView.performItemClick(v, flatListPosition, id);
             }

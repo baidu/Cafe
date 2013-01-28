@@ -17,6 +17,7 @@ import com.baidu.cafe.local.Log;
  * @todo
  */
 public class TestCafe extends CafeTestCase {
+    //private static final String LAUNCHER_ACTIVITY_FULL_CLASSNAME = "com.baidu.news.ui.IndexActivity";
     private static final String LAUNCHER_ACTIVITY_FULL_CLASSNAME = "com.baidu.news.MainActivity";
     private static Class<?>     launcherActivityClass;
     private static final String TARGET_PACKAGE                   = "com.baidu.news";
