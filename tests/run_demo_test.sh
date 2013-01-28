@@ -37,10 +37,43 @@ compile()
     cp $APK $_PWD/out
 }
 
+make_project()
+{
+	# NOTICE: $1 must ends with .apk    
+	path=${1%.*}
+	apk_name=${path##*/}
+	echo "apk_name: $apk_name"
+	target_apk=$1
+	dump=`aapt dump badging $target_apk`
+	target_package=`echo "$dump" | grep "package: name" | awk -F "'" '{print $2}'`
+	echo "target_package: $target_package"
+	test_package="$target_package"".test"
+	echo "test_package: $test_package"
+	launchable_class=`echo "$dump" | grep launchable | awk -F "'" '{print $2}' | head -1`
+	echo "launchable_class: $launchable_class"
+
+	# install
+	ADB="adb -s $serial"
+	$ADB uninstall $target_package
+	$ADB install $target_apk
+
+	# modify template project
+	project_dir="CafeRecorder"
+	rm -rf $project_dir
+	cp -r TestRecord $project_dir
+	cd $project_dir
+	sed -i 's/{test_package}/'"$test_package"'/g' AndroidManifest.xml
+	sed -i 's/{target_package}/'"$target_package"'/g' AndroidManifest.xml
+	sed -i 's/{test_apk}/'"Recorder"'/g' Android.mk
+	main_java_file="src/com/example/demo/test/TestCafe.java"
+	sed -i 's/{launcher_class}/'"$launchable_class"'/g' "$main_java_file"
+	sed -i 's/{target_package}/'"$target_package"'/g' "$main_java_file"
+}
+
 run()
 {
-    ADB="adb -s $serial"
-    start_monkey_server
+	ADB="adb -s $serial"
+	start_monkey_server
     $ADB shell service call window 1 i32 4939
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
@@ -51,6 +84,7 @@ run()
 }
 
 serial="$2"
+serial="HT068P801969"
 package_name="$3"
 test_package="$package_name.test"
 QUERY="$4"
@@ -58,7 +92,7 @@ echo "serial_number:$serial"
 echo "package_name:$package_name"
 echo "query:$QUERY"
 
-while getopts "card" option
+while getopts "cardm" option
 do
 	case $option in
 		r)  
@@ -84,6 +118,10 @@ do
 		d)
             test_case="test_dump"
             run
+			exit 0
+            ;;  
+		m)
+			make_project $2
 			exit 0
             ;;  
 esac

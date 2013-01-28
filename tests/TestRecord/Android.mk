@@ -10,7 +10,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := libCafe
 
 # Include all test java files.
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
-LOCAL_PACKAGE_NAME := TestRecord
+LOCAL_PACKAGE_NAME := {test_apk}
 
 include $(BUILD_PACKAGE)
 
