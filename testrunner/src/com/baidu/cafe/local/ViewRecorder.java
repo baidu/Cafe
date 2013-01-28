@@ -125,6 +125,7 @@ public class ViewRecorder {
     private File                                     mRecord                   = null;
     private String                                   mPackageName              = null;
     private String                                   mCurrentActivity          = null;
+    private String                                   mCurrentActivityPrefix    = null;
     private String                                   mPath                     = null;
     private String                                   mCurrentEditTextString    = null;
     private int                                      mCurrentEditTextIndex     = 0;
@@ -266,7 +267,7 @@ public class ViewRecorder {
     }
 
     private void printLayout(View view) {
-        String rId = local.getRIdNameByValue(mPackageName, view.getId());
+        String rId = local.getRIdNameByValue(mCurrentActivityPrefix, view.getId());
         String rString = "".equals(rId) ? "" : "R.id." + rId;
         String text = local.getViewText(view);
         int[] xy = new int[2];
@@ -462,13 +463,7 @@ public class ViewRecorder {
             @Override
             public void run() {
                 while (true) {
-                    Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
-                    String activity = activityClass.getName();
-                    if (!activity.equals(mCurrentActivity)) {
-                        outputAnActivityEvent(activityClass);
-                        mCurrentActivity = activity;
-                    }
-
+                    updateCurrentActivity();
                     sleep(1000);
                 }
             }
@@ -493,6 +488,7 @@ public class ViewRecorder {
         if (!activity.equals(mCurrentActivity)) {
             outputAnActivityEvent(activityClass);
             mCurrentActivity = activity;
+            mCurrentActivityPrefix = activity.substring(0, activity.lastIndexOf("."));
         }
         return activityClass;
     }
@@ -815,8 +811,7 @@ public class ViewRecorder {
         ClickEvent clickEvent = new ClickEvent(parent);
         String code = String.format("local.clickOnExpandableListView(%s, %s);", viewIndex,
                 flatListPosition);
-        String sleep = "";
-        sleep = String.format("local.sleep(%s);", getSleepTime());
+        String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + code);
         clickEvent.setLog(String.format("click on group[%s]", groupPosition));
 
@@ -889,8 +884,7 @@ public class ViewRecorder {
         ClickEvent clickEvent = new ClickEvent(parent);
         String code = String.format("local.clickOnExpandableListView(%s, %s);", viewIndex,
                 flatListPosition);
-        String sleep = "";
-        sleep = String.format("local.sleep(%s);", getSleepTime());
+        String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + code);
         clickEvent.setLog(String.format("click on group[%s] child[%s]", groupPosition,
                 childPosition));
@@ -985,15 +979,8 @@ public class ViewRecorder {
         String click = String.format("local.clickOn(\"%s\", \"%s\");//%s%s", viewClass,
                 familyString, "Click On ", comments);
 
-        String sleep = "";
-        //        if (mLastEventTime != 0) {
-
-        sleep = String.format("local.sleep(%s);", getSleepTime());
+        String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(importLine + "\n" + sleep + "\n" + click);
-        //        } 
-        //        else {
-        //            clickEvent.setCode(importLine + /*"\n" + wait + */"\n" + click);
-        //        }
 
         // clickEvent.setLog();
 
@@ -1008,7 +995,7 @@ public class ViewRecorder {
     }
 
     private String getRString(View view) {
-        String str = local.getRIdNameByValue(mPackageName, view.getId());
+        String str = local.getRIdNameByValue(mCurrentActivityPrefix, view.getId());
         if ("".equals(str)) {
             return "";
         } else {
@@ -1032,8 +1019,7 @@ public class ViewRecorder {
                 // flush EditText event
                 String code = String.format("local.enterText(%s, \"%s\", false);",
                         mCurrentEditTextIndex, mCurrentEditTextString);
-                String sleep = "";
-                sleep = String.format("local.sleep(%s);", getSleepTime());
+                String sleep = String.format("local.sleep(%s);", getSleepTime());
                 printCode(sleep + "\n" + code);
                 printLog("text:" + mCurrentEditTextString);
 
@@ -1182,8 +1168,7 @@ public class ViewRecorder {
                 local.getCurrentViewIndex(parent));
         //        String click = String.format("local.clickInList(%s, %s);", position - 1,
         //                local.getCurrentViewIndex(parent));
-        String sleep = "";
-        sleep = String.format("local.sleep(%s);", getSleepTime());
+        String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click ");
@@ -1386,8 +1371,7 @@ public class ViewRecorder {
     }
 
     private void setDragEventCode(String code, DragEvent dragEvent) {
-        String sleep = "";
-        sleep = String.format("local.sleep(%s);", getSleepTime());
+        String sleep = String.format("local.sleep(%s);", getSleepTime());
         dragEvent.setCode(sleep + "\n" + code);
 
         mOutputEventQueue.offer(dragEvent);
@@ -1478,8 +1462,7 @@ public class ViewRecorder {
             }
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
             String sendKey = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
-            String sleep = "";
-            sleep = String.format("local.sleep(%s);", getSleepTime());
+            String sleep = String.format("local.sleep(%s);", getSleepTime());
             hardKeyEvent.setCode(sleep + "\n" + sendKey);
             hardKeyEvent.setLog("view: " + view + " " + event);
 
