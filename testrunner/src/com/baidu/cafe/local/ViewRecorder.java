@@ -124,8 +124,8 @@ public class ViewRecorder {
     private LocalLib                                 local                     = null;
     private File                                     mRecord                   = null;
     private String                                   mPackageName              = null;
-    private String                                   mCurrentActivity          = null;
-    private String                                   mCurrentActivityPrefix    = null;
+    private String                                   mCurrentActivityString    = null;
+    private Activity                                 mCurrentActivity          = null;
     private String                                   mPath                     = null;
     private String                                   mCurrentEditTextString    = null;
     private int                                      mCurrentEditTextIndex     = 0;
@@ -267,7 +267,8 @@ public class ViewRecorder {
     }
 
     private void printLayout(View view) {
-        String rId = local.getRIdNameByValue(mCurrentActivityPrefix, view.getId());
+        //        String rId = local.getRIdNameByValue(mCurrentActivityPrefix, view.getId());
+        String rId = mCurrentActivity.getResources().getResourceName(view.getId());
         String rString = "".equals(rId) ? "" : "R.id." + rId;
         String text = local.getViewText(view);
         int[] xy = new int[2];
@@ -483,12 +484,13 @@ public class ViewRecorder {
      * @return new activity class
      */
     private Class<? extends Activity> updateCurrentActivity() {
-        Class<? extends Activity> activityClass = local.getCurrentActivity().getClass();
-        String activity = activityClass.getName();
-        if (!activity.equals(mCurrentActivity)) {
+        Activity activity = local.getCurrentActivity();
+        Class<? extends Activity> activityClass = activity.getClass();
+        String activityName = activityClass.getName();
+        if (!activityName.equals(mCurrentActivity)) {
             outputAnActivityEvent(activityClass);
+            mCurrentActivityString = activityName;
             mCurrentActivity = activity;
-            mCurrentActivityPrefix = activity.substring(0, activity.lastIndexOf("."));
         }
         return activityClass;
     }
@@ -995,7 +997,7 @@ public class ViewRecorder {
     }
 
     private String getRString(View view) {
-        String str = local.getRIdNameByValue(mCurrentActivityPrefix, view.getId());
+        String str = mCurrentActivity.getResources().getResourceName(view.getId());
         if ("".equals(str)) {
             return "";
         } else {
