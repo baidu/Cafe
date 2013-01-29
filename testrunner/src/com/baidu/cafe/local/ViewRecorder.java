@@ -267,14 +267,11 @@ public class ViewRecorder {
     }
 
     private void printLayout(View view) {
-        //        String rId = local.getRIdNameByValue(mCurrentActivityPrefix, view.getId());
-        String rId = mCurrentActivity.getResources().getResourceName(view.getId());
-        String rString = "".equals(rId) ? "" : "R.id." + rId;
-        String text = local.getViewText(view);
         int[] xy = new int[2];
         view.getLocationOnScreen(xy);
-        String msg = String.format("[%s][%s][%s][%s][%s,%s,%s,%s]", mCurrentActivity, rString,
-                view, text, xy[0], xy[1], view.getWidth(), view.getHeight());
+        String msg = String.format("[%s][%s][%s][%s][%s,%s,%s,%s]", mCurrentActivityString,
+                getRString(view), view, local.getViewText(view), xy[0], xy[1], view.getWidth(),
+                view.getHeight());
         print("ViewLayout", msg);
     }
 
@@ -456,6 +453,7 @@ public class ViewRecorder {
 
         local.sleep(3000);
         printLog("ViewRecorder is ready to work.");
+        mLastEventTime = System.currentTimeMillis();
     }
 
     private void monitorCurrentActivity() {
@@ -487,7 +485,7 @@ public class ViewRecorder {
         Activity activity = local.getCurrentActivity();
         Class<? extends Activity> activityClass = activity.getClass();
         String activityName = activityClass.getName();
-        if (!activityName.equals(mCurrentActivity)) {
+        if (!activityName.equals(mCurrentActivityString)) {
             outputAnActivityEvent(activityClass);
             mCurrentActivityString = activityName;
             mCurrentActivity = activity;
@@ -712,6 +710,9 @@ public class ViewRecorder {
 
         ScrollEvent scrollEvent = new ScrollEvent(view);
         int viewIndex = local.getCurrentViewIndex(view);
+        if (-1 == viewIndex) {
+            return;
+        }
         String code = String.format("local.scrollListToLine(%s, %s);", viewIndex,
                 mFirstVisibleItem + 1);
         scrollEvent.setCode(code);
@@ -972,9 +973,9 @@ public class ViewRecorder {
         String viewClass = getViewString(v);
         //        int viewIndex = local.getCurrentViewIndex(v);
         String familyString = local.getFamilyString(v);
-        String rString = getRString(v);
-        String text = local.getViewText(v);
-        String comments = String.format("[%s]%s[%s] ", v, rString, text);
+        String r = getRString(v);
+        String rString = r.equals("") ? "" : "[" + r + "]";
+        String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String importLine = String.format("import %s;", getViewString(v));
         //        String wait = String.format("assertTrue(local.waitForView(\"%s\", %s, %s, false));//%s%s",
         //                viewClass, viewIndex, WAIT_TIMEOUT, "Wait for ", comments);
@@ -997,12 +998,18 @@ public class ViewRecorder {
     }
 
     private String getRString(View view) {
-        String str = mCurrentActivity.getResources().getResourceName(view.getId());
-        if ("".equals(str)) {
+        int id = view.getId();
+        if (-1 == id) {
             return "";
-        } else {
-            return "[R.id." + str + "]";
         }
+
+        try {
+            String rString = mCurrentActivity.getResources().getResourceName(view.getId());
+            return "R.id." + rString.substring(rString.lastIndexOf("/") + 1, rString.length());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     private void hookEditText(final EditText editText) {
@@ -1041,7 +1048,7 @@ public class ViewRecorder {
                     return;
                 }
                 mCurrentEditTextIndex = viewIndex;
-                mCurrentEditTextString = s.toString();
+                mCurrentEditTextString = s.toString().replace("\\", "\\\\").replace("\"", "\\\"");
             }
 
             @Override
@@ -1173,7 +1180,7 @@ public class ViewRecorder {
         String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
-                + " click ");
+                + " click");
         mOutputEventQueue.offer(clickEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
@@ -1238,7 +1245,7 @@ public class ViewRecorder {
                     OutputEvent e = mOutputEventQueue.poll();
                     if (e != null) {
                         events.add(e);
-                        sleep(200);
+                        sleep(400);
 
                         // get all event
                         while ((e = mOutputEventQueue.poll()) != null) {
@@ -1267,7 +1274,7 @@ public class ViewRecorder {
 
             // NOTICE: Assume that one action just generates two outputevents.
             OutputEvent nextEvent = events.get(i + 1);
-            if (event.view.equals(nextEvent.view)) {
+            if (hasRelationship(event.view, nextEvent.view)) {
                 i += 2;
                 if (event.proity > nextEvent.proity) {
                     //printLog("event.proity > nextEvent.proity");
@@ -1285,6 +1292,13 @@ public class ViewRecorder {
                 outputAnEvent(event);
             }
         }
+    }
+
+    private boolean hasRelationship(View v1, View v2) {
+        String familyString1 = local.getFamilyString(v1);
+        String familyString2 = local.getFamilyString(v2);
+        return familyString1.contains(familyString2) || familyString2.contains(familyString1) ? true
+                : false;
     }
 
     private void outputAnEvent(OutputEvent event) {
@@ -1369,12 +1383,11 @@ public class ViewRecorder {
                     down.view, down.x, down.y, up.x, up.y, stepCount));
         }
 
-        setDragEventCode(drag, dragEvent);
-    }
-
-    private void setDragEventCode(String code, DragEvent dragEvent) {
         String sleep = String.format("local.sleep(%s);", getSleepTime());
-        dragEvent.setCode(sleep + "\n" + code);
+        dragEvent.setCode(sleep + "\n" + drag);
+
+        // wait for other type event
+        sleep(100);
 
         mOutputEventQueue.offer(dragEvent);
     }
@@ -1392,11 +1405,13 @@ public class ViewRecorder {
             public void run() {
                 while (!local.isScrollStoped(scrollView))
                     ;
+                int scrollX = scrollView.getScrollX();
+                int scrollY = scrollView.getScrollY();
                 int viewIndex = local.getCurrentViewIndex(scrollView);
                 String drag = String.format("local.scrollScrollViewTo(%s, %s, %s);", viewIndex,
-                        scrollView.getScrollX(), scrollView.getScrollY());
-                dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView,
-                        scrollView.getScrollX(), scrollView.getScrollY()));
+                        scrollX, scrollY);
+                dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView, scrollX,
+                        scrollY));
                 String sleep = String.format("local.sleep(%s);", getSleepTime());
                 dragEvent.setCode(sleep + "\n" + drag);
                 outputAnEvent(dragEvent);

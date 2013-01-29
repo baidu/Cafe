@@ -414,6 +414,13 @@ public class LocalLib extends SoloEx {
         return "";
     }
 
+    /**
+     * NOTICE: This method can not work at apk which is chaos.
+     * 
+     * @param packageName
+     * @param className
+     * @return
+     */
     private Class<?> getRClass(String packageName, String className) {
         try {
             Class<?>[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
@@ -1403,6 +1410,13 @@ public class LocalLib extends SoloEx {
         inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
     }
 
+    public void showInputMethod(EditText editText) {
+        InputMethodManager inputMethodManager = (InputMethodManager) mContext
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInputFromWindow(editText.getWindowToken(),
+                InputMethodManager.SHOW_FORCED, 0);
+    }
+
     public ActivityInfo[] getActivitiesFromPackage(String packageName) {
         ActivityInfo[] activities = null;
         try {
@@ -1706,9 +1720,11 @@ public class LocalLib extends SoloEx {
                 } else {
                     editText.setText(text);
                 }
-                editText.setCursorVisible(false);
+                //                editText.setCursorVisible(false);
             }
         });
+        sleep(500);
+        showInputMethod(editText);
     }
 
     boolean isClicked = false;
@@ -1883,10 +1899,12 @@ public class LocalLib extends SoloEx {
      * @return
      */
     public boolean isScrollStoped(final ScrollView scrollView) {
-        int x = scrollView.getScrollX();
-        int y = scrollView.getScrollY();
+        int x1 = scrollView.getScrollX();
+        int y1 = scrollView.getScrollY();
         sleep(100);
-        return scrollView.getScrollX() == x && scrollView.getScrollY() == y ? true : false;
+        int x2 = scrollView.getScrollX();
+        int y2 = scrollView.getScrollY();
+        return x1 == x2 && y1 == y2 ? true : false;
     }
 
     public boolean isSize0(final View view) {
