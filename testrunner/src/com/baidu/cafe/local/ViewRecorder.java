@@ -65,7 +65,7 @@ public class ViewRecorder {
     private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
     private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
                                                                                        + ".java";
-    private final static int                         WAIT_TIMEOUT              = 20000;
+    private final static int                         MAX_SLEEP_TIME              = 20000;
     private final static int                         MIN_SLEEP_TIME            = 1000;
 
     /**
@@ -964,7 +964,9 @@ public class ViewRecorder {
     private long getSleepTime() {
         long ret = System.currentTimeMillis() - mLastEventTime;
         mLastEventTime = System.currentTimeMillis();
-        return ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
+		ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
+		ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
+        return ret;
     }
 
     private void setOnClick(View v) {
@@ -1170,13 +1172,16 @@ public class ViewRecorder {
                 childIndex = i;
             }
         }
-        //        String click = String.format("local.clickInList(%s, %s);",
-        //                position - parent.getFirstVisiblePosition() + 1, local.getCurrentViewIndex(parent));
+                String click = String.format("local.clickInList(%s, %s);",
+                        position - parent.getFirstVisiblePosition(), local.getCurrentViewIndex(parent));
+		printLog("position:" + position);
+		printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
+		printLog("childIndex:" + childIndex);
+		/*
         String click = String.format("local.clickInList(%s, %s);",
-                childIndex - parent.getFirstVisiblePosition() + 1,
+                childIndex + 1,
                 local.getCurrentViewIndex(parent));
-        //        String click = String.format("local.clickInList(%s, %s);", position - 1,
-        //                local.getCurrentViewIndex(parent));
+				*/
         String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
@@ -1369,18 +1374,18 @@ public class ViewRecorder {
         DragEvent dragEvent = new DragEvent(up.view);
         String drag = "";
 
-        if (down.view instanceof ScrollView) {
-            outputAfterScrollStop((ScrollView) down.view, dragEvent);
+        if (up.view instanceof ScrollView) {
+            outputAfterScrollStop((ScrollView) up.view, dragEvent);
             return;
-        } else if (down.view instanceof AbsListView) {
-            printLog("ignore drag event of [" + down.view + "]");
+        } else if (up.view instanceof AbsListView) {
+            printLog("ignore drag event of [" + up.view + "]");
             return;
         } else {
             String dragString = "local.drag(local.toScreenX(%sf), local.toScreenX(%sf), local.toScreenY(%sf), local.toScreenY(%sf), %s);";
             drag = String.format(dragString, local.toPercentX(down.x), local.toPercentX(up.x),
                     local.toPercentY(down.y), local.toPercentY(up.y), stepCount);
             dragEvent.setLog(String.format("Drag [%s] from (%s,%s) to (%s, %s) by step count %s",
-                    down.view, down.x, down.y, up.x, up.y, stepCount));
+                    up.view, down.x, down.y, up.x, up.y, stepCount));
         }
 
         String sleep = String.format("local.sleep(%s);", getSleepTime());
