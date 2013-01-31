@@ -65,7 +65,7 @@ public class ViewRecorder {
     private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
     private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
                                                                                        + ".java";
-    private final static int                         MAX_SLEEP_TIME              = 20000;
+    private final static int                         MAX_SLEEP_TIME            = 20000;
     private final static int                         MIN_SLEEP_TIME            = 1000;
 
     /**
@@ -688,6 +688,7 @@ public class ViewRecorder {
         // save hashcode of hooked listener
         OnScrollListener onScrollListenerHooked = (OnScrollListener) getListener(absListView,
                 "mOnScrollListener");
+
         if (onScrollListenerHooked != null) {
             mAllListenerHashcodes.add(onScrollListenerHooked.hashCode());
         }
@@ -739,19 +740,21 @@ public class ViewRecorder {
 
         // save old listener
         mOnScrollListeners.put(getViewID(absListView), onScrollListener);
+        printLog("save " + onScrollListener.hashCode());
 
         // set hook listener
-        absListView.setOnScrollListener(new OnScrollListener() {
+        OnScrollListener onScrollListenernew = new OnScrollListener() {
 
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 setOnScrollStateChanged(view, scrollState);
                 OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
-                if (onScrollListener != null) {
-                    onScrollListener.onScrollStateChanged(view, scrollState);
-                } else {
-                    printLog("onScrollListener == null");
-                }
+                printLog("onScrollStateChanged get " + onScrollListener);
+                //                if (onScrollListener != null) {
+                //                    onScrollListener.onScrollStateChanged(view, scrollState);
+                //                } else {
+                //                    printLog("onScrollListener == null");
+                //                }
             }
 
             @Override
@@ -759,6 +762,10 @@ public class ViewRecorder {
                     int totalItemCount) {
                 setOnScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
                 OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
+                printLog("onScroll get " + onScrollListener.hashCode());
+                printLog("this : " + this);
+                printLog("this hashcode: " + this.hashCode());
+
                 if (onScrollListener != null) {
                     onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
                             totalItemCount);
@@ -766,7 +773,17 @@ public class ViewRecorder {
                     printLog("onScrollListener == null");
                 }
             }
-        });
+        };
+        printLog("onScrollListenernew:" + onScrollListenernew.hashCode());
+        absListView.setOnScrollListener(onScrollListenernew);
+        OnScrollListener onScrollListenerHooked = (OnScrollListener) getListener(absListView,
+                "mOnScrollListener");
+        printLog("onScrollListenerHooked:" + onScrollListenerHooked.hashCode());
+        //        while (true) {
+        //            if (onScrollListenerHooked.equals(onScrollListenernew)) {
+        //                break;
+        //            }
+        //        }
     }
 
     private void handleExpandableListView(ExpandableListView expandableListView) {
@@ -941,6 +958,7 @@ public class ViewRecorder {
 
     private void hookOnClickListener(View view, OnClickListener onClickListener) {
         printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
+        printLog("onClickListener:" + onClickListener.hashCode());
 
         // save old listener
         mOnClickListeners.put(getViewID(view), onClickListener);
@@ -959,13 +977,15 @@ public class ViewRecorder {
         if (onClickListenerHooked != null) {
             mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
         }
+
+        printLog("onClickListenerHooked:" + onClickListenerHooked.hashCode());
     }
 
     private long getSleepTime() {
         long ret = System.currentTimeMillis() - mLastEventTime;
         mLastEventTime = System.currentTimeMillis();
-		ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
-		ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
+        ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
+        ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
         return ret;
     }
 
@@ -1172,16 +1192,17 @@ public class ViewRecorder {
                 childIndex = i;
             }
         }
-                String click = String.format("local.clickInList(%s, %s);",
-                        position - parent.getFirstVisiblePosition(), local.getCurrentViewIndex(parent));
-		printLog("position:" + position);
-		printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
-		printLog("childIndex:" + childIndex);
-		/*
+        String familyString = local.getFamilyString(parent);
+        String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position
+                - parent.getFirstVisiblePosition(), familyString);
+        printLog("position:" + position);
+        printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
+        printLog("childIndex:" + childIndex);
+        /*
         String click = String.format("local.clickInList(%s, %s);",
                 childIndex + 1,
                 local.getCurrentViewIndex(parent));
-				*/
+        		*/
         String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position

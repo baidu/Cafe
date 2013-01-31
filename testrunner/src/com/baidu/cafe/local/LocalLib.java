@@ -1944,4 +1944,18 @@ public class LocalLib extends SoloEx {
         }
         return -1;
     }
+
+    public void clickInListWithFamilyString(int line, String familyString) {
+        line--;
+        if (line < 0)
+            line = 0;
+        AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(
+                removeInvisibleViews(getCurrentViews(View.class)), familyString);
+        if (null == adapterView) {
+            print("null == adapterView");
+            return;
+        }
+        View view = adapterView.getChildAt(line);
+        clickOnView(view);
+    }
 }
