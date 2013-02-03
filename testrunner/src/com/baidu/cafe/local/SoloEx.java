@@ -19,13 +19,11 @@ package com.baidu.cafe.local;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 import com.jayway.android.robotium.solo.Solo;
 
 import android.app.Activity;
 import android.app.Instrumentation;
-import android.view.View;
 
 /**
  * @author sunyuanzhen@baidu.com

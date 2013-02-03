@@ -1357,14 +1357,14 @@ public class LocalLib extends SoloEx {
     public View getRecentDecorView() {
         View[] views = getWindowDecorViews();
 
-        if (0 == views.length) {
+        if (null == views || 0 == views.length) {
             print("0 == views.length at takeActivitySnapshot");
             return null;
         }
 
         View recentDecorview = getRecentDecorView(views);
         if (null == recentDecorview) {
-            print("null == rview; use views[0]: " + views[0]);
+            //            print("null == rview; use views[0]: " + views[0]);
             recentDecorview = views[0];
         }
         return recentDecorview;

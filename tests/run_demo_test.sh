@@ -78,13 +78,14 @@ run()
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
     logcat_pid=$!
-    $ADB shell am instrument -e custom "$QUERY"  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
+    $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.TestCafe#test_sample  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
     kill -9 $logcat_pid
     $ADB pull /data/data/$package_name/files/$package_name.jpg .
 }
 
 serial="$2"
-serial="HT068P801969"
+#serial="HT068P801969"
+serial="0146BF540701201A"
 package_name="$3"
 test_package="$package_name.test"
 QUERY="$4"
@@ -129,8 +130,8 @@ done
 
 target="$1"
 compile
-serial="HT068P801969"
-#serial="0146BF540701201A"
+#serial="HT068P801969"
+serial="0146BF540701201A"
 ADB="adb -s $serial"
 $ADB install -r $_PWD/Cafe.apk
 $ADB install -r $APK

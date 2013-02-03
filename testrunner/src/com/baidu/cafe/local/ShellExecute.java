@@ -33,7 +33,7 @@ import java.util.concurrent.Future;
  * @version
  * @todo
  */
-class ShellExecute {
+public class ShellExecute {
 
     public class CommandResult {
         public int     ret     = 0;

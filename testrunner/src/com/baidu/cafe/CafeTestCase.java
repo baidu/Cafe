@@ -20,10 +20,13 @@ import com.baidu.cafe.remote.Armser;
 import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
 import com.baidu.cafe.local.Log;
 import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.local.ShellExecute;
+import com.baidu.cafe.local.ShellExecute.CallBack;
 
 import android.app.Activity;
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
+import android.view.KeyEvent;
 import android.view.Window;
 
 /**
@@ -49,6 +52,8 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private long                            mBeginTime;
     private int                             mPackageRcv;
     private int                             mPackageSnd;
+    private Activity                        mActivity                    = null;
+    private Class<?>                        mActivityClass               = null;
 
     /**
      * For Android version number > 2.1
@@ -67,6 +72,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
      */
     public CafeTestCase(String packageName, Class<T> activityClass) {
         super(packageName, activityClass);
+        mActivityClass = activityClass;
     }
 
     @Override
@@ -75,6 +81,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         Log.init(this, Log.DEFAULT);
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
+//        launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();
@@ -91,6 +98,44 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         mBeginTime = System.currentTimeMillis();
         mPackageRcv = LocalLib.getPackageRcv(mPackageName);
         mPackageSnd = LocalLib.getPackageSnd(mPackageName);
+    }
+
+    private void launchActivityIfNotAvailable() {
+        if (null == remote) {
+            Log.i("null == remote at launchActivityIfNotAvailable");
+            return;
+        }
+
+        while (true) {
+            Boolean ret = ShellExecute.doInTimeout(new CallBack<Boolean>() {
+
+                @Override
+                public Boolean runInTimeout() throws InterruptedException {
+                    mActivity = getActivity();
+                    return true;
+                }
+            }, 5000);
+
+            if (null == ret) {
+                // press home key
+                remote.pressKey(KeyEvent.KEYCODE_HOME);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                // launch activity
+                String activityName = mActivityClass.getName();
+                String cmd = String.format("am start -a android.intent.action.MAIN -n %s/%s",
+                        mActivityClass.getPackage().getName(), activityName);
+                Log.i("execute cmd " + cmd);
+                new ShellExecute().execute(cmd, "/", 3000);
+            } else {
+                Log.i("get activity success");
+                break;
+            }
+        }
     }
 
     private int getStatusBarHeight() {

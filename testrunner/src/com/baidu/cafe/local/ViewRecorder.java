@@ -735,12 +735,13 @@ public class ViewRecorder {
         }
     }
 
-    private void hookOnScrollListener(AbsListView absListView, OnScrollListener onScrollListener) {
+    private void hookOnScrollListener(AbsListView absListView,
+            final OnScrollListener onScrollListener) {
         printLog("hook onScrollListener [" + absListView + "]");
 
         // save old listener
-        mOnScrollListeners.put(getViewID(absListView), onScrollListener);
-        printLog("save " + onScrollListener.hashCode());
+        //        mOnScrollListeners.put(getViewID(absListView), onScrollListener);
+        mOnScrollListeners.put(String.valueOf(absListView.hashCode()), onScrollListener);
 
         // set hook listener
         OnScrollListener onScrollListenernew = new OnScrollListener() {
@@ -749,24 +750,32 @@ public class ViewRecorder {
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 setOnScrollStateChanged(view, scrollState);
                 OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
-                printLog("onScrollStateChanged get " + onScrollListener);
-                //                if (onScrollListener != null) {
-                //                    onScrollListener.onScrollStateChanged(view, scrollState);
-                //                } else {
-                //                    printLog("onScrollListener == null");
-                //                }
+                OnScrollListener onScrollListenerHooked = (OnScrollListener) getListener(view,
+                        "mOnScrollListener");
+                if (onScrollListener != null) {
+                    if (onScrollListener.equals(onScrollListenerHooked)) {
+                        printLog("onScrollListenerHooked == onScrollListener");
+                        return;
+                    }
+                    onScrollListener.onScrollStateChanged(view, scrollState);
+                } else {
+                    printLog("onScrollListener == null");
+                }
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                     int totalItemCount) {
                 setOnScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
-                OnScrollListener onScrollListener = mOnScrollListeners.get(getViewID(view));
-                printLog("onScroll get " + onScrollListener.hashCode());
-                printLog("this : " + this);
-                printLog("this hashcode: " + this.hashCode());
-
+                OnScrollListener onScrollListener = mOnScrollListeners.get(String.valueOf(view
+                        .hashCode()));
+                OnScrollListener onScrollListenerHooked = (OnScrollListener) getListener(view,
+                        "mOnScrollListener");
                 if (onScrollListener != null) {
+                    if (onScrollListener.equals(onScrollListenerHooked)) {
+                        printLog("onScrollListenerHooked == onScrollListener");
+                        return;
+                    }
                     onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
                             totalItemCount);
                 } else {
@@ -774,16 +783,7 @@ public class ViewRecorder {
                 }
             }
         };
-        printLog("onScrollListenernew:" + onScrollListenernew.hashCode());
         absListView.setOnScrollListener(onScrollListenernew);
-        OnScrollListener onScrollListenerHooked = (OnScrollListener) getListener(absListView,
-                "mOnScrollListener");
-        printLog("onScrollListenerHooked:" + onScrollListenerHooked.hashCode());
-        //        while (true) {
-        //            if (onScrollListenerHooked.equals(onScrollListenernew)) {
-        //                break;
-        //            }
-        //        }
     }
 
     private void handleExpandableListView(ExpandableListView expandableListView) {
@@ -958,7 +958,6 @@ public class ViewRecorder {
 
     private void hookOnClickListener(View view, OnClickListener onClickListener) {
         printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
-        printLog("onClickListener:" + onClickListener.hashCode());
 
         // save old listener
         mOnClickListeners.put(getViewID(view), onClickListener);
@@ -977,8 +976,6 @@ public class ViewRecorder {
         if (onClickListenerHooked != null) {
             mAllListenerHashcodes.add(onClickListenerHooked.hashCode());
         }
-
-        printLog("onClickListenerHooked:" + onClickListenerHooked.hashCode());
     }
 
     private long getSleepTime() {
@@ -1194,7 +1191,7 @@ public class ViewRecorder {
         }
         String familyString = local.getFamilyString(parent);
         String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position
-                - parent.getFirstVisiblePosition(), familyString);
+                - parent.getFirstVisiblePosition() + 1, familyString);
         printLog("position:" + position);
         printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
         printLog("childIndex:" + childIndex);

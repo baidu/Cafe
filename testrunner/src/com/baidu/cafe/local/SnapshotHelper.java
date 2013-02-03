@@ -123,6 +123,10 @@ class SnapshotHelper {
      *            Image Path
      */
     static public void takeViewSnapshot(final View view, final String savePath) {
+        if (null == view) {
+            print("null == view at takeViewSnapshot");
+            return;
+        }
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
         Bitmap bitmap = view.getDrawingCache();
