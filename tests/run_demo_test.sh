@@ -65,7 +65,7 @@ make_project()
 	sed -i 's/{test_package}/'"$test_package"'/g' AndroidManifest.xml
 	sed -i 's/{target_package}/'"$target_package"'/g' AndroidManifest.xml
 	sed -i 's/{test_apk}/'"Recorder"'/g' Android.mk
-	main_java_file="src/com/example/demo/test/TestCafe.java"
+	main_java_file="src/com/example/demo/test/CafeReplay.java"
 	sed -i 's/{launcher_class}/'"$launchable_class"'/g' "$main_java_file"
 	sed -i 's/{target_package}/'"$target_package"'/g' "$main_java_file"
 }
@@ -78,7 +78,7 @@ run()
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
     logcat_pid=$!
-    $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.TestCafe#test_sample  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
+    $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
     kill -9 $logcat_pid
     $ADB pull /data/data/$package_name/files/$package_name.jpg .
 }

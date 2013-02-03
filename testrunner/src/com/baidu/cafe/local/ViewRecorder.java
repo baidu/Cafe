@@ -1005,7 +1005,6 @@ public class ViewRecorder {
         clickEvent.setCode(importLine + "\n" + sleep + "\n" + click);
 
         // clickEvent.setLog();
-
         mOutputEventQueue.offer(clickEvent);
 
         OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
@@ -1311,7 +1310,7 @@ public class ViewRecorder {
                     outputAnEvent(nextEvent);
                 }
             } else {
-                i++;
+                i += 2;
                 outputAnEvent(event);
             }
         }

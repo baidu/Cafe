@@ -16,7 +16,7 @@ import com.baidu.cafe.local.Log;
  * @version
  * @todo
  */
-public class TestCafe extends CafeTestCase {
+public class CafeReplay extends CafeTestCase {
     private static final String LAUNCHER_ACTIVITY_FULL_CLASSNAME = "{launcher_class}";
     private static Class<?>     launcherActivityClass;
     private static final String TARGET_PACKAGE                   = "{target_package}";
@@ -28,7 +28,7 @@ public class TestCafe extends CafeTestCase {
         }
     }
 
-    public TestCafe() {
+    public CafeReplay() {
         super(TARGET_PACKAGE, launcherActivityClass);
     }
 
@@ -42,7 +42,7 @@ public class TestCafe extends CafeTestCase {
         super.tearDown();
     }
 
-    public void test_sample() {
+    public void testRecorded() {
         local.sleep(2000);
         local.beginRecordCode();
         local.sleep(2000000);
