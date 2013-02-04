@@ -1310,7 +1310,7 @@ public class ViewRecorder {
                     outputAnEvent(nextEvent);
                 }
             } else {
-                i += 2;
+                i = nextEvent.proity == event.proity ? i + 2 : i + 1;
                 outputAnEvent(event);
             }
         }
