@@ -169,8 +169,8 @@ public class ViewRecorder {
         final static int PRIORITY_ACTIVITY = 0;
         final static int PRIORITY_DRAG     = 1;
         final static int PRIORITY_KEY      = 2;
-        final static int PRIORITY_CLICK    = 3;
-        final static int PRIORITY_SCROLL   = 4;
+        final static int PRIORITY_SCROLL   = 3;
+        final static int PRIORITY_CLICK    = 4;
 
         /**
          * NOTICE: This field can not be null!
