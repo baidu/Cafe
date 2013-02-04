@@ -81,7 +81,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         Log.init(this, Log.DEFAULT);
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
-//        launchActivityIfNotAvailable();
+        launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();

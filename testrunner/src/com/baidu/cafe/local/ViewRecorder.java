@@ -714,8 +714,9 @@ public class ViewRecorder {
         if (-1 == viewIndex) {
             return;
         }
-        String code = String.format("local.scrollListToLine(%s, %s);", viewIndex,
-                mFirstVisibleItem + 1);
+        printLog("mFirstVisibleItem:" + mFirstVisibleItem);
+        String code = String
+                .format("local.scrollListToLine(%s, %s);", viewIndex, mFirstVisibleItem);
         scrollEvent.setCode(code);
 
         mOutputEventQueue.offer(scrollEvent);
@@ -723,9 +724,6 @@ public class ViewRecorder {
 
     private void setOnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
             int totalItemCount) {
-        //        printLog(String.format(
-        //                "firstVisibleItem:%s lastVisibleItem:%s visibleItemCount:%s totalItemCount:%s",
-        //                firstVisibleItem, view.getLastVisiblePosition(), visibleItemCount, totalItemCount));
         mFirstVisibleItem = firstVisibleItem;
         mVisibleItemCount = visibleItemCount;
         mTotalItemCount = totalItemCount;
@@ -1066,7 +1064,8 @@ public class ViewRecorder {
                     return;
                 }
                 mCurrentEditTextIndex = viewIndex;
-                mCurrentEditTextString = s.toString().replace("\\", "\\\\").replace("\"", "\\\"");
+                mCurrentEditTextString = s.toString().replace("\\", "\\\\").replace("\"", "\\\"")
+                        .replace("\r\n", "\\n").replace("\n", "\\n");
             }
 
             @Override
@@ -1194,11 +1193,6 @@ public class ViewRecorder {
         printLog("position:" + position);
         printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
         printLog("childIndex:" + childIndex);
-        /*
-        String click = String.format("local.clickInList(%s, %s);",
-                childIndex + 1,
-                local.getCurrentViewIndex(parent));
-        		*/
         String sleep = String.format("local.sleep(%s);", getSleepTime());
         clickEvent.setCode(sleep + "\n" + click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
