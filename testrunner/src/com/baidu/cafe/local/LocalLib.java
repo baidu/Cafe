@@ -217,13 +217,6 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * add listeners on all views for generating Cafe code automatically
-     */
-    public void beginRecordCode() {
-        new ViewRecorder(this).beginRecordCode();
-    }
-
-    /**
      * Get listener from view. e.g. (OnClickListener) getListener(view,
      * "mOnClickListener"); means get click listener. Listener is a private
      * property of a view, that's why this function is written.
