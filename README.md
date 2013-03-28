@@ -6,3 +6,4 @@ A powerful test framework for Android named Case Automated Framework for Everyon
 Home Page
 ====
 http://baiduqa.github.com/Cafe/
+leiming
