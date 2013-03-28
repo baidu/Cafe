@@ -27,6 +27,9 @@ import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import com.baidu.cafe.local.ShellExecute.CallBack;
+import com.baidu.cafe.local.ShellExecute.CommandResult;
+
 import android.os.Build;
 
 /**
@@ -156,12 +159,32 @@ class NetworkUtils {
         return traffic;
     }
 
-    public static int getPackageRcv(String packageName) {
-        return getPackageTraffic(packageName, MODE_RCV);
+    public static int getPackageRcv(final String packageName) {
+        Integer ret = (Integer) ShellExecute.doInTimeout(new CallBack<Integer>() {
+            @Override
+            public Integer runInTimeout() throws InterruptedException {
+                return getPackageTraffic(packageName, MODE_RCV);
+            }
+        }, 1000);
+        if (null == ret) {
+            print("getPackageRcv timeout over 1000 !!!");
+            return 0;
+        }
+        return ret;
     }
 
-    public static int getPackageSnd(String packageName) {
-        return getPackageTraffic(packageName, MODE_SND);
+    public static int getPackageSnd(final String packageName) {
+        Integer ret = (Integer) ShellExecute.doInTimeout(new CallBack<Integer>() {
+            @Override
+            public Integer runInTimeout() throws InterruptedException {
+                return getPackageTraffic(packageName, MODE_SND);
+            }
+        }, 1000);
+        if (null == ret) {
+            print("getPackageSnd timeout over 1000 !!!");
+            return 0;
+        }
+        return ret;
     }
 
     /**

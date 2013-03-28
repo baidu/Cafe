@@ -1,0 +1,43 @@
+# Keep everything for tests
+#-dontshrink -dontobfuscate
+
+-keep class * extends junit.framework.TestCase {
+  public void test*();
+}
+
+-keepclasseswithmembers class * {
+  public static void run();
+  public static junit.framework.Test suite();
+}
+
+# some AllTests don't include run().
+-keepclasseswithmembers class * {
+  public static junit.framework.Test suite();
+}
+
+-keep class * extends junit.framework.TestSuite
+-keep class * extends android.app.Instrumentation
+-keep class * extends android.test.TestSuiteProvider
+
+#-keep class * extends android.test.ActivityInstrumentationTestCase2
+-keep public class com.baidu.cafe.CafeTestCase{
+    public protected *;
+}
+-keep public class com.baidu.cafe.remote.*{
+    public protected *;
+}
+-keep class com.jayway.android.robotium.solo.*{
+    public protected private *;
+}
+-keep public class com.baidu.cafe.local.LocalLib{
+    public protected *;
+}
+-keep public class  android.view.WindowManagerImpl{
+    private android.view.View[] mViews;
+}
+-keep public class  android.view.View{
+    public java.lang.CharSequence getText();
+}
+-keep public class  android.app.Instrumentation{
+    public Instrumentation();
+}

@@ -21,13 +21,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
-import android.os.Build;
 import android.view.View;
 import android.webkit.WebView;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Picture;
+import android.graphics.drawable.BitmapDrawable;
 
 /**
  * @author yuboyang@baidu.com, luxiaoyu01@baidu.com
@@ -47,7 +49,8 @@ class SnapshotHelper {
         print("savePath:" + savePath);
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(savePath);
+            fos = LocalLib.mInstrumentation.getTargetContext().openFileOutput(savePath,
+                    Context.MODE_WORLD_READABLE);
             if (fos != null) {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
                 fos.close();
@@ -61,8 +64,8 @@ class SnapshotHelper {
                 } catch (Exception e2) {
                 }
             }
-            FileUtils.setPermissions(savePath, FileUtils.S_IRWXU | FileUtils.S_IRWXG
-                    | FileUtils.S_IRWXO, -1, -1);
+            //            FileUtils.setPermissions(savePath, FileUtils.S_IRWXU | FileUtils.S_IRWXG
+            //                    | FileUtils.S_IRWXO, -1, -1);
         }
     }
 
@@ -130,6 +133,11 @@ class SnapshotHelper {
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
         Bitmap bitmap = view.getDrawingCache();
+        if (LocalLib.mTheLastClick[0] != -1 && LocalLib.mTheLastClick[1] != -1) {
+            bitmap = pressPointer(bitmap, LocalLib.mTheLastClick[0], LocalLib.mTheLastClick[1]);
+            LocalLib.mTheLastClick[0] = -1;
+            LocalLib.mTheLastClick[1] = -1;
+        }
         outputToFile(savePath, bitmap);
     }
 
@@ -190,4 +198,32 @@ class SnapshotHelper {
                 Bitmap.Config.RGB_565);
         outputToFile(savePath, bitmap);
     }
+
+    /**
+     * press a pointer on a image
+     * 
+     * @param canvas
+     * @param small
+     * @param x
+     * @param y
+     * @param alpha
+     * @return
+     */
+    public static Bitmap pressPointer(Bitmap bitmap, int x, int y) {
+        try {
+            String pngPath = LocalLib.mInstrumentation.getTargetContext().getFilesDir().toString()
+                    + "/pointer.png";
+            InputStream in = new FileInputStream(pngPath);
+            Bitmap pointer = new BitmapDrawable(in).getBitmap();
+            Canvas canvas = new Canvas(bitmap);
+            int offsetX = 21;
+            int offsetY = 21;
+            canvas.drawBitmap(pointer, x - offsetX, y - offsetY, null);
+            return bitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

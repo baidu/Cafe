@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import com.baidu.cafe.local.ShellExecute.CommandResult;
+
 /**
  * Tools for managing files. It's ported from package android.os.
  * 
@@ -111,7 +113,10 @@ public class FileUtils {
         if (uid >= 0 || gid >= 0) {
             // chown
         }
-        return new ShellExecute().execute("chmod " + Integer.toOctalString(mode) + " " + file, "/").ret;
+        CommandResult cr = new ShellExecute().execute("chmod " + Integer.toOctalString(mode) + " "
+                + file, "/", 200);
+
+        return cr == null ? -1 : cr.ret;
     }
 
     public static native int getPermissions(String file, int[] outPermissions);

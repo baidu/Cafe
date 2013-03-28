@@ -16,6 +16,8 @@
 
 package com.baidu.cafe;
 
+import junit.framework.Assert;
+
 import com.baidu.cafe.remote.Armser;
 import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
 import com.baidu.cafe.local.Log;
@@ -43,6 +45,9 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
 
     public final static int                 SCREEN_ORIENTATION_PORTRAIT  = 0;
     public final static int                 SCREEN_ORIENTATION_LANDSCAPE = 1;
+    public final static int                 TIMEOUT_GET_ACTIVITY         = 1000 * 10;
+
+    public static Class<?>                  mActivityClass               = null;
 
     private final static String             TAG                          = "CafeTestCase";
     private static String                   mPackageName                 = null;
@@ -53,7 +58,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private int                             mPackageRcv;
     private int                             mPackageSnd;
     private Activity                        mActivity                    = null;
-    private Class<?>                        mActivityClass               = null;
+    private String                          mPngPath                     = "";
 
     /**
      * For Android version number > 2.1
@@ -62,6 +67,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
      */
     public CafeTestCase(Class<T> activityClass) {
         super(activityClass);
+        mActivityClass = activityClass;
     }
 
     /**
@@ -79,10 +85,13 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     protected void setUp() throws Exception {
         super.setUp();
         Log.init(this, Log.DEFAULT);
+        mPngPath = getInstrumentation().getTargetContext().getFilesDir().toString()
+                + "/pointer.png";
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
         launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
+        remote.copyPointerImage(mPngPath);
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();
         orignal = Thread.getDefaultUncaughtExceptionHandler();
@@ -105,8 +114,10 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             Log.i("null == remote at launchActivityIfNotAvailable");
             return;
         }
+        int count = 0;
 
-        while (true) {
+        while (count < 6) {
+            count++;
             Boolean ret = ShellExecute.doInTimeout(new CallBack<Boolean>() {
 
                 @Override
@@ -114,7 +125,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
                     mActivity = getActivity();
                     return true;
                 }
-            }, 5000);
+            }, TIMEOUT_GET_ACTIVITY);
 
             if (null == ret) {
                 // press home key
@@ -133,9 +144,11 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
                 new ShellExecute().execute(cmd, "/", 3000);
             } else {
                 Log.i("get activity success");
-                break;
+                return;
             }
         }
+
+        Assert.assertTrue("get activity failed!!!", false);
     }
 
     private int getStatusBarHeight() {
@@ -155,6 +168,8 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             remote.waitForAllDumpCompleted();
         }
 
+        LocalLib.executeOnDevice("rm -f " + mPngPath, "/", 200);
+
         try {
             local.finalize();
             local = null;
@@ -162,6 +177,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             e.printStackTrace();
         }
 
+        // It costs too much time.
         //remote.unbind(getInstrumentation().getContext());
 
         if (orignal != null) {

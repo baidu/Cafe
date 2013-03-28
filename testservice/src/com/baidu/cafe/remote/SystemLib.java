@@ -78,6 +78,9 @@ import android.view.WindowManager;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.SensorManager;
 import android.os.BatteryStats;
 import android.os.BatteryStats.Uid;
@@ -93,6 +96,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -997,11 +1002,11 @@ public class SystemLib {
         boolean force = true;
         IMountService mountService = getMountService();
         String extStoragePath = Environment.getExternalStorageDirectory().toString();
-        try {
-            mountService.unmountVolume(extStoragePath, force);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        //        try {
+        //            mountService.unmountVolume(extStoragePath, force);
+        //        } catch (RemoteException e) {
+        //            e.printStackTrace();
+        //        }
     }
 
     /**
@@ -1493,6 +1498,15 @@ public class SystemLib {
     }
 
     /**
+     * get top activity's package name
+     * 
+     * @return e.g. "com.baidu.baiduclock"
+     */
+    public String getTopPackage() {
+        return mActivityManager.getRunningTasks(1).get(0).topActivity.getPackageName();
+    }
+
+    /**
      * @param className
      *            ex. "com.baidu.baiduclock.BaiduClock"
      * @param timeout
@@ -1605,11 +1619,11 @@ public class SystemLib {
      * set screen unlock security none
      */
     public void setScreenUnlockSecurityNone() {
-        try {
-            new LockPatternUtils(mContext).clearLock();
-        } catch (Exception e) {
-            //            e.printStackTrace();
-        }
+        //        try {
+        //            new LockPatternUtils(mContext).clearLock();
+        //        } catch (Exception e) {
+        //            //            e.printStackTrace();
+        //        }
     }
 
     /**
@@ -2593,4 +2607,26 @@ public class SystemLib {
         return ret;
     }
 
+    /**
+     * 
+     * for cafe.jar:com.baidu.cafe.local.SnapshotHelper.pressPointer(Bitmap
+     * bitmap, int x, int y)
+     * 
+     * @param dist
+     */
+    public void copyPointerImage(String dist) {
+        try {
+            InputStream fis = mContext.getAssets().open("pointer.png");
+            FileOutputStream fos = new FileOutputStream(dist);
+            byte[] buff = new byte[1024];
+            int readed = -1;
+            while ((readed = fis.read(buff)) > 0)
+                fos.write(buff, 0, readed);
+            fis.close();
+            fos.close();
+            new ShellExecute().execute("chmod 777 " + dist, "/", 200);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

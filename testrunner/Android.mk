@@ -4,6 +4,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := cafe
 LOCAL_DEX_PREOPT := false
+#LOCAL_PROGUARD_ENABLED := full
+#LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 
 LOCAL_SRC_FILES := $(call all-subdir-java-files)
 LOCAL_SRC_FILES += \

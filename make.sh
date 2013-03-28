@@ -9,24 +9,24 @@ ANDROID_TOP=$SRC/../
 SLEEP_TIME=5
 HAS_DEVICE=""
 CPU_NUMBER=`cat /proc/cpuinfo | grep processor | wc -l`
+MODE_PROGUARD="false"
 
-function usage()
+usage()
 {
 	echo "usage: $0"
 	echo "       -t [testcase path]: compile, install and run testcase."
 	echo "		    For example, ./install.sh -t testcase/ResManagerTest/cafe_tests"
-	echo "       -n: Generate a normal cafe and arms which can be used on non-yi system."
 	echo "       -h: help"
 }
 
-function init()
+init()
 {
 	# init env
 	cd $ANDROID_TOP
 	. build/envsetup.sh
 }
 
-function run_testcase()
+run_testcase()
 {
 	init
 	echo "run $1"
@@ -50,61 +50,13 @@ function run_testcase()
 	adb shell am instrument $run_function -w $target/com.baidu.cafe.cafetestrunner.InstrumentationTestRunner
 }
 
-function generate_yi_arms()
-{
-	backup
-	modify_testservice
-
-	init
-	make_cafe
-	make_arms
-
-	revert
-}
-
-function backup()
-{
-	cd $SRC
-	rm -rf backup
-	mkdir -p backup
-
-	cp testservice/Android.mk backup
-	cp testservice/AndroidManifest.xml backup
-}
-
-function revert()
-{
-	cd $SRC
-	cp backup/Android.mk testservice
-	cp backup/AndroidManifest.xml testservice
-	rm -rf backup
-}
-
-function modify_testservice()
-{
-	# add LOCAL_CERTIFICATE
-	replace_line "testservice/Android.mk" "#LOCAL_CERTIFICATE := platform" "LOCAL_CERTIFICATE := platform"
-
-	# add sharedUserId
-	replace_line "testservice/AndroidManifest.xml" "package" "      package=\"com\.baidu\.cafe\.remote\" android:sharedUserId=\"android\.uid\.system\">"
-}
-
-function replace_line()
-{
-	file=$1
-	key=$2
-	value=$3
-
-	line_number=`sed -n "/^.*${key}.*$/=" $file`
-	sed -i -e"${line_number}s/.*/${value}/" $file
-}
-
-function make_cafe()
+make_cafe()
 {
 	# make cafe.jar
+    cafe_intermediates="$ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates"
 	cd $SRC/testrunner
 	mm clean-cafe
-	rm -rf $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates
+	rm -rf $cafe_intermediates
 	mm -j$CPU_NUMBER
 	if [ 0 -ne $? ];then
 		exit 1;
@@ -123,14 +75,20 @@ function make_cafe()
 	cd $SRC
 	rm -rf out
 	mkdir -p out
-	cd out
-	cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates/classes.jar .
-	mv classes.jar cafe.jar
-	#cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
+    cd out
+    if [ "$MODE_PROGUARD" == "true" ];then
+        cafe_jar="proguard.classes.jar"
+    else
+        cafe_jar="classes.jar"
+    fi
+    cp $cafe_intermediates/$cafe_jar .
+    mv $cafe_jar cafe.jar
+
+    #cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
 	#mv classes.jar android-web-driver.jar
 }
 
-function make_arms()
+make_arms()
 {
 	cd $SRC/testservice
 	rm -rf $ANDROID_TOP/out/target/common/obj/APPS/Cafe_intermediates
@@ -146,15 +104,47 @@ done
 	cp $SRC/util.sh $SRC/out
 }
 
-function compile()
+compile()
 {
     init
     make_cafe
     make_arms
 }
 
+modify_cafe_for_proguard()
+{
+    cd $SRC
+
+    # backup
+    rm -rf backup
+    mkdir -p backup
+    android_mk="testrunner/Android.mk"
+    viewrecorder_java="testrunner/src/com/baidu/cafe/local/ViewRecorder.java"
+    cafereplay_java="tests/TestRecord/src/com/example/demo/test/CafeReplay.java"
+    cp $android_mk backup
+    cp $viewrecorder_java backup
+    cp $cafereplay_java backup
+
+    # modify
+    sed -i 's/#LOCAL_PROGUARD_ENABLED := full/'"LOCAL_PROGUARD_ENABLED := full"'/g' $android_mk
+    sed -i 's/#LOCAL_PROGUARD_FLAG_FILES := proguard.flags/'"LOCAL_PROGUARD_FLAG_FILES := proguard.flags"'/g' $android_mk 
+    sed -i 's/protected void setUp() throws Exception/'"protected void setUp()"'/g' $viewrecorder_java
+    sed -i 's/protected void tearDown() throws Exception/'"protected void tearDown()"'/g' $viewrecorder_java
+    sed -i 's/protected void setUp() throws Exception/'"protected void setUp()"'/g' $cafereplay_java
+    sed -i 's/protected void tearDown() throws Exception/'"protected void tearDown()"'/g' $cafereplay_java
+}
+
+revert()
+{
+    cd $SRC
+    cp backup/Android.mk testrunner
+    cp backup/ViewRecorder.java testrunner/src/com/baidu/cafe/local/
+    cp backup/CafeReplay.java tests/TestRecord/src/com/example/demo/test/
+    rm -rf backup
+}
+
 HAS_DEVICE=`adb devices | grep -v ^$ | grep -v List`
-while getopts "hty" option
+while getopts "htp" option
 do
 	case $option in
 		h)
@@ -171,10 +161,12 @@ do
 			fi
 			exit 0
 			;;  
-		y)
-			generate_yi_arms
-			mv out/Cafe.apk out/Cafe_Yi.apk
-			exit 0
+		p)
+            MODE_PROGUARD="true"
+            modify_cafe_for_proguard
+            compile
+            revert
+            exit 0
 			;;  
 	esac
 done

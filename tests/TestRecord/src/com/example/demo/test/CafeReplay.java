@@ -8,7 +8,6 @@ import android.widget.Button;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.LocalLib;
-import com.baidu.cafe.local.Log;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -33,12 +32,12 @@ public class CafeReplay extends CafeTestCase {
     }
 
     @Override
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception{
         super.setUp();
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    protected void tearDown() throws Exception{
         super.tearDown();
     }
 

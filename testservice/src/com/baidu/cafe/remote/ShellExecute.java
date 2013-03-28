@@ -20,8 +20,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import android.util.Log;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -31,6 +35,15 @@ import android.util.Log;
  */
 public class ShellExecute {
 
+    public class CommandResult {
+        public int     ret     = 0;
+        public Strings console = new Strings(new ArrayList<String>());
+
+        public CommandResult() {
+        }
+
+    }
+
     /**
      * execute shell command on device
      * 
@@ -38,29 +51,23 @@ public class ShellExecute {
      *            e.g. "ls -l"
      * @param directory
      *            the directory where the command is executed. e.g. "/sdcard/"
-     * @return ret of the command
+     * @return std of the command
      */
-    public static String execute(String[] command, String directory) {
-        StringBuilder result = new StringBuilder("");
-        Log.d("ShellExecute", arrayToString(command));
-
+    public CommandResult execute(String command, String directory) {
+        CommandResult cr = new CommandResult();
         BufferedReader in = null;
         try {
-            ProcessBuilder builder = new ProcessBuilder(command);
-
-            if (directory != null) {
-                builder.directory(new File(directory));
-            }
-            builder.redirectErrorStream(true);
-            Process process = builder.start();
-            process.waitFor();
+            Process process = Runtime.getRuntime().exec(command, null, new File(directory));
+            cr.ret = process.waitFor();
 
             in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = null;
             while ((line = in.readLine()) != null) {
-                result.append(line);
+                cr.console.strings.add(line);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             if (in != null) {
@@ -72,15 +79,82 @@ public class ShellExecute {
             }
         }
 
-        return result.toString();
+        return cr;
     }
 
-    private static String arrayToString(String[] array) {
-        StringBuffer sb = new StringBuffer();
-        for (String s : array) {
-            sb.append(s + " ");
+    public interface CallBack<T> {
+        T runInTimeout() throws InterruptedException;
+    }
+
+    private final static long INTERVAL = 50;
+
+    /**
+     * perform a function in timeout; return function's return value if function
+     * is over in timeout, or else return null
+     * 
+     * @param <T>
+     * @param callBack
+     * @param timeout
+     * @return null means reach timeout;
+     */
+    public static <T> T doInTimeout(CallBack<T> callBack, long timeout) {
+        final CallBack<T> fCallBack = callBack;
+        ExecutorService exs = Executors.newCachedThreadPool();
+
+        Future<T> future = exs.submit(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                try {
+                    return fCallBack.runInTimeout();
+                } catch (InterruptedException e) {
+                    print("Timeout: Exiting by Exception");
+                }
+
+                return null;
+            }
+        });
+
+        long end = System.currentTimeMillis() + timeout;
+
+        while (true) {
+            if (null == future) {
+                return null;
+            }
+
+            if (System.currentTimeMillis() > end) {
+                future.cancel(true);
+                return null;
+            }
+
+            try {
+                if (future.isDone()) {
+                    return future.get();
+                }
+                Thread.sleep(INTERVAL);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
-        return sb.toString();
+    }
+
+    public CommandResult execute(final String command, final String directory, long timeout) {
+        CommandResult ret = (CommandResult) doInTimeout(new CallBack<CommandResult>() {
+            @Override
+            public CommandResult runInTimeout() throws InterruptedException {
+                return execute(command, directory);
+            }
+        }, timeout);
+        return ret;
+    }
+
+    private static void print(String message) {
+        if (Log.DEBUG) {
+            android.util.Log.i("ShellExecute", message);
+        }
     }
 
 }

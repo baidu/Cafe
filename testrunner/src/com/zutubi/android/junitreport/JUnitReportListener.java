@@ -165,7 +165,7 @@ public class JUnitReportListener implements TestListener {
                 mName = testCase.getName();
                 LocalLib.mTestCaseName = mName;
                 LocalLib.executeOnDevice("chmod 777 " + mTargetContext.getFilesDir().toString(),
-                        "/");
+                        "/", 200);
                 mPackageRcv = LocalLib.getPackageRcv(mTargetContext.getPackageName());
                 mPackageSnd = LocalLib.getPackageSnd(mTargetContext.getPackageName());
             }
@@ -270,7 +270,7 @@ public class JUnitReportListener implements TestListener {
 
     private void addProblem(String tag, Throwable error) {
         // added by luxiaoyu01@baidu.com
-        mLocalLib.screenShotNamedSuffix(mName, mTargetContext.getFilesDir().toString());
+        mLocalLib.screenShotNamedSuffix(mName);
         try {
             recordTestTime();
 

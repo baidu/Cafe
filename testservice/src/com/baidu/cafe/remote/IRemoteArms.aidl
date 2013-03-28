@@ -99,7 +99,6 @@ interface IRemoteArms {
     boolean setWifiStartScan();
     String getServerIP();
 	String runCmdOnServer(String command);
-    String runShellOnDevice(in String[] command, String directory);
 	boolean checkView(String searchKey, String searchValue, int searchMode, int targetNumber);
     void enterText(String text);
     void pressKey(int keyCode);
@@ -162,4 +161,6 @@ interface IRemoteArms {
     boolean isViewServerOpen();
     boolean isHome();
     boolean isNetworkEnable();
+    String getTopPackage();
+    void copyPointerImage(String dist);
 }

@@ -86,7 +86,7 @@ public class ShellExecute {
         T runInTimeout() throws InterruptedException;
     }
 
-    private final static long INTERVAL = 500;
+    private final static long INTERVAL = 50;
 
     /**
      * perform a function in timeout; return function's return value if function
@@ -153,7 +153,7 @@ public class ShellExecute {
 
     private static void print(String message) {
         if (Log.IS_DEBUG) {
-            Log.i("ViewRecorder", message);
+            Log.i("ShellExecute", message);
         }
     }
 

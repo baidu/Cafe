@@ -47,7 +47,7 @@ make_project()
 	dump=`aapt dump badging $target_apk`
 	target_package=`echo "$dump" | grep "package: name" | awk -F "'" '{print $2}'`
 	echo "target_package: $target_package"
-	test_package="$target_package"".test"
+	test_package="com.example.demo.test"
 	echo "test_package: $test_package"
 	launchable_class=`echo "$dump" | grep launchable | awk -F "'" '{print $2}' | head -1`
 	echo "launchable_class: $launchable_class"
@@ -55,7 +55,7 @@ make_project()
 	# install
 	ADB="adb -s $serial"
 	$ADB uninstall $target_package
-	$ADB install $target_apk
+	$ADB install $target_apk&
 
 	# modify template project
 	project_dir="CafeRecorder"
@@ -78,15 +78,16 @@ run()
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
     logcat_pid=$!
+    echo "$ADB shell am instrument -e custom \"$QUERY\" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner"
     $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
     kill -9 $logcat_pid
     $ADB pull /data/data/$package_name/files/$package_name.jpg .
 }
 
 serial="$2"
-serial="HT068P801969"
+serial=`adb devices | grep -v List | grep device | awk -F " " '{print $1}'`
 package_name="$3"
-test_package="$package_name.test"
+test_package="com.example.demo.test"
 QUERY="$4"
 echo "serial_number:$serial"
 echo "package_name:$package_name"
@@ -129,7 +130,7 @@ done
 
 target="$1"
 compile
-serial="HT068P801969"
+serial=`adb devices | grep -v List | grep device | awk -F " " '{print $1}'`
 ADB="adb -s $serial"
 $ADB install -r $_PWD/Cafe.apk
 $ADB install -r $APK

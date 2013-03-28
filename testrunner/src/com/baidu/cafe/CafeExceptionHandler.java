@@ -20,6 +20,7 @@ public class CafeExceptionHandler implements Thread.UncaughtExceptionHandler {
     @Override
     public void uncaughtException(Thread arg0, Throwable arg1) {
         Log.i(TAG, "this is in Cafe exceptionhandler");
+        arg1.printStackTrace();
         this.mycafe.callWhenExceptionHappen();
         this.morignal.uncaughtException(arg0, arg1);
     }

@@ -542,21 +542,6 @@ public class ArmsBinder extends IRemoteArms.Stub {
         return new Client(getServerIP()).runCmdOnServer(command);
     }
 
-    /**
-     * run command on device with app permission so do not run command such as
-     * rm, cp, mv and so on run commands as below is ok ls, pwd, service call
-     * XXXX
-     * 
-     * @param command
-     *            e.g. "ls -l"
-     * @param directory
-     *            the directory where the command is executed. e.g. "/sdcard/"
-     * @return ret of the command
-     */
-    public String runShellOnDevice(String[] command, String directory) {
-        return ShellExecute.execute(command, directory);
-    }
-
     public boolean checkView(String searchKey, String searchValue, int searchMode, int targetNumber) {
         return mUILib.checkView(searchKey, searchValue, searchMode, targetNumber);
     }
@@ -850,5 +835,13 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
     public boolean isNetworkEnable() {
         return mSystemLib.isNetworkEnable();
+    }
+
+    public String getTopPackage() {
+        return mSystemLib.getTopPackage();
+    }
+
+    public void copyPointerImage(String dist) {
+        mSystemLib.copyPointerImage(dist);
     }
 }

@@ -1275,28 +1275,6 @@ public class Armser {
         }
     }
 
-    /**
-     * run shell command with system permission as below is ok ls, pwd, service
-     * call XXXX
-     * 
-     * @param command
-     *            e.g. new String[]{"ls", "-l"}
-     * @param directory
-     *            e.g. "/sdcard"
-     * @return the result string of the command
-     */
-    public String runShellOnDevice(String[] command, String directory) {
-        String str = null;
-        try {
-            str = iArms.runShellOnDevice(command, directory);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } finally {
-            return str;
-        }
-
-    }
-
     private static final int TIMEOUT_DEFAULT_VALUE = 10000;
 
     /**
@@ -3049,7 +3027,7 @@ public class Armser {
             return ret;
         }
     }
-    
+
     /**
      * ping 8.8.8.8
      * 
@@ -3063,6 +3041,25 @@ public class Armser {
             e.printStackTrace();
         } finally {
             return ret;
+        }
+    }
+
+    public String getTopPackage() {
+        String ret = "";
+        try {
+            ret = iArms.getTopPackage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return ret;
+        }
+    }
+
+    public void copyPointerImage(String dist) {
+        try {
+            iArms.copyPointerImage(dist);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

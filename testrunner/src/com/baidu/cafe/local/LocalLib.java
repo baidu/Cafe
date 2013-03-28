@@ -23,8 +23,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -73,7 +71,7 @@ import dalvik.system.DexFile;
  * 
  * 2.find view by text
  * 
- * 3.get views generated dynamically
+ * 3.get views which is generated dynamically
  * 
  * 4.record hands operation and generate Cafe code
  * 
@@ -84,24 +82,27 @@ import dalvik.system.DexFile;
  */
 
 public class LocalLib extends SoloEx {
-    public final static int SEARCHMODE_COMPLETE_MATCHING = 1;
-    public final static int SEARCHMODE_DEFAULT           = 1;
-    public final static int SEARCHMODE_INCLUDE_MATCHING  = 2;
-    public final static int WAIT_INTERVAL                = 1000;
+    public final static int       SEARCHMODE_COMPLETE_MATCHING = 1;
+    public final static int       SEARCHMODE_DEFAULT           = 1;
+    public final static int       SEARCHMODE_INCLUDE_MATCHING  = 2;
+    public final static int       WAIT_INTERVAL                = 1000;
 
-    public static String    mTestCaseName                = null;
+    public static String          mTestCaseName                = null;
+    public static int[]           mTheLastClick                = new int[2];
+    public static Instrumentation mInstrumentation;
 
-    private boolean         mHasBegin                    = false;
-    private ArrayList<View> mViews                       = null;
-    private Instrumentation mInstrumentation;
-    private Activity        mActivity;
-    private Context         mContext                     = null;
+    private boolean               mHasBegin                    = false;
+    private ArrayList<View>       mViews                       = null;
+    private Activity              mActivity;
+    private Context               mContext                     = null;
 
     public LocalLib(Instrumentation instrumentation, Activity activity) {
         super(instrumentation, activity);
         mInstrumentation = instrumentation;
         mActivity = activity;
         mContext = instrumentation.getContext();
+        mTheLastClick[0] = -1;
+        mTheLastClick[1] = -1;
     }
 
     private static void print(String message) {
@@ -217,6 +218,13 @@ public class LocalLib extends SoloEx {
     }
 
     /**
+     * add listeners on all views for generating Cafe code automatically
+     */
+    public void beginRecordCode() {
+        new ViewRecorder(this).beginRecordCode();
+    }
+
+    /**
      * Get listener from view. e.g. (OnClickListener) getListener(view,
      * "mOnClickListener"); means get click listener. Listener is a private
      * property of a view, that's why this function is written.
@@ -257,6 +265,45 @@ public class LocalLib extends SoloEx {
     }
 
     /**
+     * This method is used to replace listener.setOnListener().
+     * listener.setOnListener() is probably overrided by application, so its
+     * behavior can not be expected.
+     * 
+     * @param view
+     * @param targetClass
+     * @param fieldName
+     * @param value
+     */
+    public void setListener(View view, Class<?> targetClass, String fieldName, Object value) {
+        int level = countLevelFromViewToFather(view, targetClass);
+        if (-1 == level) {
+            return;
+        }
+
+        try {
+            if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API Level: 14. Android 4.0
+                Object mListenerInfo = ReflectHelper
+                        .getObjectProperty(view, level, "mListenerInfo");
+                if (null == mListenerInfo) {
+                    return;
+                }
+                ReflectHelper.setObjectProperty(mListenerInfo, 0, fieldName, value);
+            } else {
+                ReflectHelper.setObjectProperty(view, level, fieldName, value);
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            //System.err.println("view:" + view);
+            //e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * find parent until parent is father or java.lang.Object(to the end)
      * 
      * @param view
@@ -265,7 +312,10 @@ public class LocalLib extends SoloEx {
      *            target father
      * @return positive means level from father; -1 means not found
      */
-    private int countLevelFromViewToFather(View view, Class<?> father) {
+    public int countLevelFromViewToFather(View view, Class<?> father) {
+        if (null == view) {
+            return -1;
+        }
         int level = 0;
         Class<?> originalClass = view.getClass();
         // find its parent
@@ -493,7 +543,7 @@ public class LocalLib extends SoloEx {
      * 
      * @return the result string of the command
      */
-    public CommandResult executeOnDevice(String command, String directory, long timeout) {
+    public static CommandResult executeOnDevice(String command, String directory, long timeout) {
         return new ShellExecute().execute(command, directory, timeout);
     }
 
@@ -1284,7 +1334,7 @@ public class LocalLib extends SoloEx {
 
     /**
      * Take an activity snapshot named 'timestamp', and you can get it by adb
-     * pull /data/data/'packagename'/cafe/xxxxx.jpg.
+     * pull /data/data/<packagename>/xxxxx.jpg .
      */
     public void screenShotNamedTimeStamp() {
         screenShot(getTimeStamp());
@@ -1294,8 +1344,8 @@ public class LocalLib extends SoloEx {
         screenShot(mTestCaseName + "_" + suffix);
     }
 
-    public void screenShotNamedSuffix(String suffix, String packagePath) {
-        screenShot(getTimeStamp() + "_" + suffix, packagePath);
+    public void screenShotNamedSuffix(String suffix) {
+        screenShot(getTimeStamp() + "_" + suffix);
     }
 
     private static String getTimeStamp() {
@@ -1304,21 +1354,20 @@ public class LocalLib extends SoloEx {
         return localTime.format("%Y-%m-%d_%H-%M-%S");
     }
 
-    private void screenShot(final String fileName, final String packagePath) {
+    public void screenShot(final String fileName) {
+        String packagePath = mInstrumentation.getTargetContext().getFilesDir().toString();
         File cafe = new File(packagePath);
         if (!cafe.exists()) {
             cafe.mkdir();
         }
-        executeOnDevice("chmod 777 " + packagePath, "/");
+
+        // chmod for adb pull /data/data/<package_name>/files .
+        executeOnDevice("chmod 777 " + packagePath, "/", 200);
         runOnMainSync(new Runnable() {
             public void run() {
-                takeActivitySnapshot(packagePath + "/" + fileName + ".jpg");
+                takeActivitySnapshot(fileName + ".jpg");
             }
         });
-    }
-
-    public void screenShot(String fileName) {
-        screenShot(fileName, mInstrumentation.getTargetContext().getFilesDir().toString());
     }
 
     public void takeWebViewSnapshot(final WebView webView, final String savePath) {
@@ -1341,23 +1390,19 @@ public class LocalLib extends SoloEx {
     public void takeActivitySnapshot(final String path) {
         final View view = getRecentDecorView();
         SnapshotHelper.takeViewSnapshot(view, path);
-        //        runOnMainSync(new Runnable() {
-        //            public void run() {
-        //            }
-        //        });
     }
 
     public View getRecentDecorView() {
         View[] views = getWindowDecorViews();
 
         if (null == views || 0 == views.length) {
-            print("0 == views.length at takeActivitySnapshot");
+            print("0 == views.length at getRecentDecorView");
             return null;
         }
 
         View recentDecorview = getRecentDecorView(views);
         if (null == recentDecorview) {
-            //            print("null == rview; use views[0]: " + views[0]);
+            // print("null == rview; use views[0]: " + views[0]);
             recentDecorview = views[0];
         }
         return recentDecorview;
@@ -1408,6 +1453,14 @@ public class LocalLib extends SoloEx {
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInputFromWindow(editText.getWindowToken(),
                 InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    public void isInputMethodShown() {
+        InputMethodManager inputMethodManager = (InputMethodManager) mContext
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        print("isAcceptingText:" + inputMethodManager.isAcceptingText());
+        print("isActive:" + inputMethodManager.isActive());
+        print("isFullscreenMode:" + inputMethodManager.isFullscreenMode());
     }
 
     public ActivityInfo[] getActivitiesFromPackage(String packageName) {
@@ -1470,40 +1523,6 @@ public class LocalLib extends SoloEx {
         return NetworkUtils.getPackageSnd(packageName);
     }
 
-    /**
-     * get view index by its class at current activity
-     * 
-     * @param view
-     * @return -1 means not found;otherwise is then index of view
-     */
-    public int getCurrentViewIndex(View view) {
-        if (null == view) {
-            return -1;
-        }
-        Log.i("ViewRecorder", "class: " + view.getClass());
-        ArrayList<? extends View> views = removeInvisibleViews(getCurrentViews(view.getClass()));
-        for (int i = 0; i < views.size(); i++) {
-            if (views.get(i).equals(view)) {
-                return i;
-            }
-        }
-        //        View[] views = getUniqueViews(getCurrentViews(view.getClass(), true));
-        //        for (int i = 0; i < views.length; i++) {
-        //            if (views[i].equals(view)) {
-        //                return i;
-        //            }
-        //        }
-        return -1;
-    }
-
-    private <T extends View> View[] getUniqueViews(ArrayList<T> views) {
-        Set<T> uniqueViews = new HashSet<T>();
-        for (int i = 0; i < views.size(); i++) {
-            uniqueViews.add(views.get(i));
-        }
-        return uniqueViews.toArray(new View[uniqueViews.size()]);
-    }
-
     public String getAppNameByPID(int pid) {
         ActivityManager manager = (ActivityManager) mInstrumentation.getTargetContext()
                 .getSystemService(Context.ACTIVITY_SERVICE);
@@ -1557,6 +1576,10 @@ public class LocalLib extends SoloEx {
     boolean hasFocus = false;
 
     public boolean requestFocus(final View view) {
+        if (null == view) {
+            return false;
+        }
+
         runOnMainSync(new Runnable() {
             public void run() {
                 view.setFocusable(true);
@@ -1604,103 +1627,165 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * Clicks on a {@code View} of a specific class, with a certain index.
+     * Clicks on a {@code View} of a specific class, with a certain
+     * familyString.
      * 
      * This method is protected by assert.
      * 
-     * @param viewClass
+     * @param className
      *            what kind of {@code View} to click, e.g. {@code Button.class}
      *            or {@code ImageView.class}
-     * @param index
-     *            the index of the {@code View} to be clicked, within
-     *            {@code View}s of the specified class
+     * @param familyString
+     *            the family relationship of the {@code View} to be clicked
      */
     public <T extends View> void clickOn(String className, String familyString) {
         try {
-            Class<View> viewClass = (Class<View>) Class.forName(className);
-            ArrayList<View> views = removeInvisibleViews(getCurrentViews(viewClass));
-            // waitForView is including clickOnView
-            clickOnView(getViewByFamilyString(views, familyString));
-
-            //            invoke(mClicker, "clickOn", new Class[] { Class.class, int.class }, new Object[] {
-            //                    viewClass, index });
-            //            clickOnView(waitForAndGetViewWithoutUnique(index, viewClass));
+            View view = waitForViewByFamilyString(familyString, className);
+            clickOnViewWithoutScroll(view);// waitForView is including clickOnView
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public View getViewByFamilyString(ArrayList<View> views, String familyString) {
+    public <T extends View> ArrayList<T> getViews(Class<T> classToFilterBy,
+            boolean onlySufficientlyVisible) {
+        ArrayList<T> targetViews = new ArrayList<T>();
+        ArrayList<View> views = (ArrayList<View>) invoke(mViewFetcher, "getViews", new Class[] {
+                View.class, boolean.class }, new Object[] { null, onlySufficientlyVisible });// viewFetcher.getViews(null, false);
         for (View view : views) {
-            if (getFamilyString(view).equals(familyString)) {
-                return view;
+            if (view != null && classToFilterBy.isAssignableFrom(view.getClass())) {
+                targetViews.add(classToFilterBy.cast(view));
             }
         }
+        return targetViews;
+    }
+
+    public void clickViaPerformClick(final View view) {
+        if (null == view) {
+            print("null == view at clickViaPerformClick");
+            return;
+        }
+        runOnMainSync(new Runnable() {
+            public void run() {
+                int[] xy = new int[2];
+                view.getLocationOnScreen(xy);
+                print("clickViaPerformClick:" + xy[0] + "," + xy[1]);
+                view.performClick();
+            }
+        });
+    }
+
+    private final int SMALLTIMEOUT = 10000;
+
+    public void clickOnViewWithoutScroll(View view) {
+        //        invoke(mWaiter, "waitForView", new Class[] { View.class, int.class, boolean.class },
+        //                new Object[] { view, SMALLTIMEOUT, false });// waiter.waitForView(view, SMALLTIMEOUT, false);
+        mTheLastClick = getViewCenter(view);
+        //        invoke(mClicker, "clickOnScreen", new Class[] { View.class }, new Object[] { view });// clicker.clickOnScreen(view);
+        clickViaPerformClick(view);
+    }
+
+    public static int[] getViewCenter(View view) {
+        if (null == view) {
+            return new int[] { -1, -1 };
+        }
+        int[] xy = new int[2];
+        view.getLocationOnScreen(xy);
+        float x = xy[0] + (view.getWidth() / 2.0f);
+        float y = xy[1] + (view.getHeight() / 2.0f);
+
+        return new int[] { (int) x, (int) y };
+    }
+
+    private final int TIMEOUT = 10000;
+
+    /**
+     * This method is protected by assert.
+     * 
+     * @param familyString
+     * @return
+     */
+    public View getViewByFamilyString(String familyString) {
+        long endTime = System.currentTimeMillis() + TIMEOUT;
+
+        // get views from current activity
+        while (System.currentTimeMillis() < endTime) {
+            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
+            for (View view : views) {
+                if (getFamilyString(view).equals(familyString)) {
+                    return view;
+                }
+            }
+            sleep(500);
+        }
+
+        endTime += TIMEOUT;
+        // get views from all opened activities
+        while (System.currentTimeMillis() < endTime) {
+            View[] decorViews = LocalLib.getWindowDecorViews();
+            for (View decorView : decorViews) {
+                ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
+                        decorView));
+                for (View view : invisibleViews) {
+                    if (getFamilyString(view).equals(familyString)) {
+                        return view;
+                    }
+                }
+            }
+            sleep(500);
+        }
+
+        Assert.assertTrue(
+                String.format("getViewByFamilyString == null! familyString[%s]", familyString),
+                false);
         return null;
     }
 
-    public <T extends View> T waitForAndGetViewWithoutUnique(int index, Class<T> classToFilterBy) {
-        long endTime = System.currentTimeMillis() + 10000;
-        while (System.currentTimeMillis() <= endTime && !waitForView(classToFilterBy, index, true))
-            ;
-        if (System.currentTimeMillis() >= endTime) {
-            Assert.assertTrue(classToFilterBy + " with index " + index + " is not available!",
-                    false);
-        }
-
-        ArrayList<T> views = removeInvisibleViews(getCurrentViews(classToFilterBy));
-
-        T view = null;
-        try {
-            view = views.get(index);
-        } catch (IndexOutOfBoundsException exception) {
-            Assert.assertTrue(classToFilterBy + " with index " + index + " is not available!",
-                    false);
-        }
-        views = null;
+    /**
+     * This method is protected by assert.
+     * 
+     * @param familyString
+     * @param className
+     * @return
+     */
+    public View waitForViewByFamilyString(String familyString, String className) {
+        View view = getViewByFamilyString(familyString);
+        String exceptViewClassName = view.getClass().getName();
+        String assertString = String.format("Except view [%s], Actual view [%s]", className,
+                exceptViewClassName);
+        Assert.assertTrue(assertString, exceptViewClassName.equals(className));
         return view;
     }
 
-    public <T extends View> boolean waitForView(final Class<T> viewClass, final int index,
-            boolean sleep) {
-        if (sleep) {
-            sleep(500);
-        }
-        return searchFor(viewClass, index) ? true : false;
-    }
-
-    public <T extends View> boolean searchFor(Class<T> viewClass, final int index) {
-        ArrayList<T> allViews = removeInvisibleViews(getCurrentViews(viewClass));
-        return index < allViews.size() ? setArrayToNullAndReturn(true, allViews)
-                : setArrayToNullAndReturn(false, allViews);
-    }
-
-    private <T extends View> boolean setArrayToNullAndReturn(boolean booleanToReturn,
-            ArrayList<T> views) {
-        views = null;
-        return booleanToReturn;
+    /**
+     * This method is protected by assert.
+     * 
+     * @param familyString
+     * @param text
+     */
+    public void waitForTextByFamilyString(String familyString, String text) {
+        View view = getViewByFamilyString(familyString);
+        String actual = getViewText(view);
+        Assert.assertTrue(String.format("Except text [%s], Actual text [%s]", text, actual),
+                actual.equals(text));
     }
 
     /**
      * Sets an {@code EditText} text
      * 
-     * @param index
-     *            the index of the {@code EditText}
+     * @param familyString
+     *            the familyString of the {@code EditText}
      * @param text
      *            the text that should be set
      */
+    public void enterText(String familyString, final String text, final boolean keepPreviousText) {
+        final EditText editText = (EditText) getViewByFamilyString(familyString);
 
-    public void enterText(int index, final String text, final boolean keepPreviousText) {
-        //        ArrayList<EditText> editTexts = getCurrentViews(EditText.class, true);
-        //
-        //        if (editTexts.size() < index + 1) {
-        //            print(String.format("editTexts.size()[%s] < index[%s] + 1", editTexts.size(), index));
-        //            return;
-        //        }
-        final EditText editText = (EditText) getView(EditText.class, index);
-
+        if (null == editText) {
+            Assert.assertTrue("null == editText [" + familyString + "]", false);
+        }
         if (!editText.isEnabled()) {
-            Assert.assertTrue("Edit text is not enabled!", false);
+            Assert.assertTrue("Edit text is not enabled [" + familyString + "]", false);
         }
 
         final String previousText = editText.getText().toString();
@@ -1713,19 +1798,19 @@ public class LocalLib extends SoloEx {
                 } else {
                     editText.setText(text);
                 }
-                //                editText.setCursorVisible(false);
+                editText.setCursorVisible(false);
             }
         });
         sleep(500);
-        showInputMethod(editText);
+        //        showInputMethod(editText);
     }
 
     boolean isClicked = false;
 
-    public boolean clickOnExpandableListView(int index, final int flatListPosition) {
-        final ExpandableListView expandableListView = (ExpandableListView) getView(
-                ExpandableListView.class, index);
+    public boolean clickOnExpandableListView(final String familyString, final int flatListPosition) {
+        final ExpandableListView expandableListView = (ExpandableListView) getViewByFamilyString(familyString);
         if (null == expandableListView) {
+            print("null == adapterView");
             return false;
         }
 
@@ -1733,8 +1818,8 @@ public class LocalLib extends SoloEx {
 
             @Override
             public void run() {
-                //                Object item = expandableListView.getItemAtPosition(flatListPosition);
                 View v = expandableListView.getChildAt(flatListPosition);
+                mTheLastClick = getViewCenter(v);
                 long id = expandableListView.getItemIdAtPosition(flatListPosition);
                 isClicked = expandableListView.performItemClick(v, flatListPosition, id);
             }
@@ -1811,14 +1896,20 @@ public class LocalLib extends SoloEx {
         return views;
     }
 
-    public void scrollListToLine(final int index, final int line) {
-        AbsListView view = (AbsListView) getView(AbsListView.class, index);
+    public void scrollListToLineWithFamilyString(final int line, final String familyString) {
+        AbsListView absListView = (AbsListView) getViewByFamilyString(familyString);
+        if (null == absListView) {
+            print("null == absListView");
+            return;
+        }
+
         invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
-                new Object[] { view, line });
+                new Object[] { absListView, line });
     }
 
-    public void scrollScrollViewTo(final int index, final int x, final int y) {
-        final ScrollView scrollView = (ScrollView) getView(ScrollView.class, index);
+    public void scrollScrollViewToWithFamilyString(final String familyString, final int x,
+            final int y) {
+        final ScrollView scrollView = (ScrollView) getViewByFamilyString(familyString);
         runOnMainSync(new Runnable() {
             public void run() {
                 scrollView.scrollBy(x, y);
@@ -1877,14 +1968,6 @@ public class LocalLib extends SoloEx {
         return index;
     }
 
-    public boolean waitForActivityWithSleep(String name) {
-        boolean ret = waitForActivity(name);
-        if (ret) {
-            sleep(1000);// wait for activity loading completed
-        }
-        return ret;
-    }
-
     /**
      * This method will cost 100ms to judge whether scrollview stoped.
      * 
@@ -1918,37 +2001,118 @@ public class LocalLib extends SoloEx {
         return ret;
     }
 
+    final static String CLASSNAME_DECORVIEW = "com.android.internal.policy.impl.PhoneWindow$DecorView";
+
     public String getFamilyString(View v) {
         View view = v;
         String familyString = "";
         while (view.getParent() instanceof ViewGroup) {
             ViewGroup parent = (ViewGroup) view.getParent();
-            familyString += getChildIndex(parent, view);
+            if (null == parent) {
+                print("null == parent at getFamilyString");
+                return familyString;
+            }
+            if (Build.VERSION.SDK_INT >= 14
+                    && parent.getClass().getName().equals(CLASSNAME_DECORVIEW)) {
+            } else {
+                familyString += getChildIndex(parent, view);
+            }
             view = parent;
         }
+
         return familyString;
     }
 
     private int getChildIndex(ViewGroup parent, View child) {
+        int countInvisible = 0;
         for (int i = 0; i < parent.getChildCount(); i++) {
             if (parent.getChildAt(i).equals(child)) {
-                return i;
+                return i - countInvisible;
+            }
+            if (parent.getChildAt(i).getVisibility() != View.VISIBLE) {
+                countInvisible++;
             }
         }
         return -1;
     }
 
-    public void clickInListWithFamilyString(int line, String familyString) {
-        line--;
-        if (line < 0)
-            line = 0;
-        AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(
-                removeInvisibleViews(getCurrentViews(View.class)), familyString);
-        if (null == adapterView) {
-            print("null == adapterView");
-            return;
+    public void clickInListWithFamilyString(int position, String familyString) {
+        try {
+            AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(familyString);
+            if (null == adapterView) {
+                print("null == adapterView");
+                return;
+            }
+            int index = position - adapterView.getFirstVisiblePosition();
+            View view = adapterView.getChildAt(index);
+            mTheLastClick = getViewCenter(view);
+            clickOnView(view);
+            // clickOnViewWithoutScroll(view);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        View view = adapterView.getChildAt(line);
-        clickOnView(view);
+    }
+
+    /**
+     * Simulate touching a specific location and dragging to a new location.
+     * 
+     * This method was copied from {@code TouchUtils.java} in the Android Open
+     * Source Project, and modified here.
+     * 
+     * @param fromX
+     *            X coordinate of the initial touch, in screen coordinates
+     * @param toX
+     *            Xcoordinate of the drag destination, in screen coordinates
+     * @param fromY
+     *            X coordinate of the initial touch, in screen coordinates
+     * @param toY
+     *            Y coordinate of the drag destination, in screen coordinates
+     * @param stepCount
+     *            stepCount How many move steps to include in the drag
+     * 
+     */
+    public void dragPercent(float fromXPersent, float toXPersent, float fromYPersent,
+            float toYPersent, int stepCount) {
+        float fromX = toScreenX(fromXPersent);
+        float toX = toScreenX(toXPersent);
+        float fromY = toScreenY(fromYPersent);
+        float toY = toScreenY(toYPersent);
+        // float displayX = getDisplayX();
+        // float displayY = getDisplayY();
+        // int actualStepCount = (int) (step / (displayX * displayY));
+
+        long begin = System.currentTimeMillis();
+        drag(fromX, toX, fromY, toY, stepCount);
+        print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
+    }
+
+    public static double getDistance(float x1, float y1, float x2, float y2) {
+        return Math.sqrt(Math.abs(x1 - x2) * Math.abs(x1 - x2) + Math.abs(y1 - y2)
+                * Math.abs(y1 - y2));
+    }
+
+    /**
+     * get view index by its class at current activity
+     * 
+     * @param view
+     * @return -1 means not found;otherwise is then index of view
+     */
+    public int getCurrentViewIndex(View view) {
+        if (null == view) {
+            return -1;
+        }
+        ArrayList<? extends View> views = removeInvisibleViews(getCurrentViews(view.getClass()));
+        for (int i = 0; i < views.size(); i++) {
+            if (views.get(i).equals(view)) {
+                return i;
+            }
+        }
+        // View[] views = getUniqueViews(getCurrentViews(view.getClass(), true));
+        // for (int i = 0; i < views.length; i++) {
+        // if (views[i].equals(view)) {
+        // return i;
+        // }
+        // }
+        return -1;
     }
 }
