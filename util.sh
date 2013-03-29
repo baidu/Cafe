@@ -109,7 +109,7 @@ wait_for_boot_completed() # $serial_number, $target
 	target=$2
 	timeout=300
 
-	run_with_timeout "$ADB wait-for-devices" 60
+	run_with_timeout "$ADB wait-for-devices" 300
 	if [ $? -eq 100 ];then
 		return 2
 	fi
@@ -118,7 +118,7 @@ wait_for_boot_completed() # $serial_number, $target
 		check_point="$ADB shell getprop dev.bootcomplete|grep 1"
 	elif [ "$target" == "system" ];then
 		$ADB logcat -c
-		check_point="$ADB logcat -d PowerManagerService:D *:S | grep bootCompleted"
+		check_point="$ADB logcat -d AlertService:D *:S | grep BOOT_COMPLETED"
 	fi
 
 	end=$((`date +%s` + $timeout))
@@ -127,6 +127,7 @@ wait_for_boot_completed() # $serial_number, $target
 		eval $check_point
 		if [ $? -eq 0 ]; then 
 			# boot success
+            sleep 5
 			log "[$1] [$target] boot completed !"
 			return 0
 		fi  
@@ -650,5 +651,51 @@ kill_android_process_by_name() # $serial_number, $name
 	$ADB push kill_package.sh /data/local/tmp > /dev/null 2>&1
     rm kill_package.sh
 	run_with_timeout "$ADB shell su -c \"/data/local/tmp/kill_package.sh\"" 5
+}
+
+#
+# Result is in $ret_display_width & $ret_display_height
+#
+get_display_width_height() # $serial_number
+{
+    ADB="adb -s $1"
+    ret_display_width=""
+    ret_display_height=""
+
+    result_display=`$ADB shell dumpsys window | grep DisplayWidth`
+    if [ -z "$result_display" ];then
+        result_init=`$ADB shell dumpsys window | grep "Display.*init=" |\
+            awk '{print $2}' | awk -F "=" '{print $2}'`
+        ret_display_width=`echo $result_init | awk -F "x" '{print $1}'`
+        ret_display_height=`echo $result_init | awk -F "x" '{print $2}'`
+    else
+        ret_display_width=`echo $result_display | awk '{print $1}' | awk -F "=" '{print $2}'`
+        ret_display_height=`echo $result_display | awk '{print $2}' | awk -F "=" '{print $2}'`
+    fi
+}
+
+#
+# Result is in $ret_device_name
+#
+get_device_name() # $serial_number
+{
+    ret_device_name=`adb -s $1 shell getprop ro.product.model`
+}
+
+#
+# transfer special char to json normal format
+#
+string_to_json_format() # $ret_json
+{
+    ret_json=$1
+    ret_json=${ret_json//\\/\\\\} # \ 
+    #ret_json=${ret_json//\//\\\/} # / 
+    ret_json=${ret_json//\'/\\\'} # \' (not strictly needed ?)
+    ret_json=${ret_json//\"/\\\"} # \" 
+    ret_json=${ret_json//   /\\t} # \t (tab)
+    ret_json=${ret_json///\\\n} # \n (newline)
+    ret_json=${ret_json//^M/\\\r} # \r (carriage return)
+    #ret_json=${ret_json//^L/\\\f} # \f (form feed)
+    #ret_json=${ret_json//^H/\\\b} # \b (backspace)
 }
 
