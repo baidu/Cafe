@@ -28,7 +28,6 @@ import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.baidu.cafe.local.ShellExecute.CallBack;
-import com.baidu.cafe.local.ShellExecute.CommandResult;
 
 import android.os.Build;
 

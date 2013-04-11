@@ -26,17 +26,16 @@ import android.app.Activity;
 import android.app.Instrumentation;
 
 /**
- * @author sunyuanzhen@baidu.com
+ * In order to use the Non-Public-Class of robotium project, we have to define
+ * the following member variables as Object. Currently, although some classes is
+ * not being used, we still define them in case we may need them in the future.
+ * 
+ * @author sunyuanzhen@baidu.com, luxiaoyu01@baidu.com
  * @date 2012-2-14
  * @version
  * @todo
  */
 class SoloEx extends Solo {
-
-    // In order to use the Non-Public-Class of robotium project, we have to
-    // define the following member variables as Object
-    // Currently, although some classes is not being used, we still define them
-    // in case we may need them in the future
     protected Object              mAsserter;
     protected static Object       mViewFetcher;
     protected Object              mChecker;
@@ -47,13 +46,16 @@ class SoloEx extends Solo {
     protected Object              mDialogUtils;
     protected Object              mTextEnterer;
     protected Object              mScroller;
-    protected Object              mRobotiumUtils;
     protected Object              mSleeper;
     protected Object              mWaiter;
     protected Object              mSetter;
+    protected Object              mWebUtils;
+    protected Object              mSender;
 
     private final Instrumentation mInstrumentation;
     private final Activity        mActivity;
+
+    private final static String   SOLO_PACKAGE_NAME            = "com.jayway.android.robotium.solo";
 
     public final static int       SEARCHMODE_COMPLETE_MATCHING = 1;
     public final static int       SEARCHMODE_DEFAULT           = 1;
@@ -76,44 +78,49 @@ class SoloEx extends Solo {
         // In order to use the Non-Public-Class of robotium project, we have to
         // reflect the following classes
         try {
-            Class Sleeper = Class.forName("com.jayway.android.robotium.solo.Sleeper");
-            Class Asserter = Class.forName("com.jayway.android.robotium.solo.Asserter");
-            Class ViewFetcher = Class.forName("com.jayway.android.robotium.solo.ViewFetcher");
-            Class Checker = Class.forName("com.jayway.android.robotium.solo.Checker");
-            Class Clicker = Class.forName("com.jayway.android.robotium.solo.Clicker");
-            Class Presser = Class.forName("com.jayway.android.robotium.solo.Presser");
-            Class Searcher = Class.forName("com.jayway.android.robotium.solo.Searcher");
-            Class ActivityUtils = Class.forName("com.jayway.android.robotium.solo.ActivityUtils");
-            Class DialogUtils = Class.forName("com.jayway.android.robotium.solo.DialogUtils");
-            Class TextEnterer = Class.forName("com.jayway.android.robotium.solo.TextEnterer");
-            Class Scroller = Class.forName("com.jayway.android.robotium.solo.Scroller");
-            Class RobotiumUtils = Class.forName("com.jayway.android.robotium.solo.RobotiumUtils");
-            Class Waiter = Class.forName("com.jayway.android.robotium.solo.Waiter");
-            Class Setter = Class.forName("com.jayway.android.robotium.solo.Setter");
+            Class<?> Sleeper = Class.forName(SOLO_PACKAGE_NAME + ".Sleeper");
+            Class<?> Asserter = Class.forName(SOLO_PACKAGE_NAME + ".Asserter");
+            Class<?> ViewFetcher = Class.forName(SOLO_PACKAGE_NAME + ".ViewFetcher");
+            Class<?> Checker = Class.forName(SOLO_PACKAGE_NAME + ".Checker");
+            Class<?> Clicker = Class.forName(SOLO_PACKAGE_NAME + ".Clicker");
+            Class<?> Presser = Class.forName(SOLO_PACKAGE_NAME + ".Presser");
+            Class<?> Searcher = Class.forName(SOLO_PACKAGE_NAME + ".Searcher");
+            Class<?> ActivityUtils = Class.forName(SOLO_PACKAGE_NAME + ".ActivityUtils");
+            Class<?> DialogUtils = Class.forName(SOLO_PACKAGE_NAME + ".DialogUtils");
+            Class<?> TextEnterer = Class.forName(SOLO_PACKAGE_NAME + ".TextEnterer");
+            Class<?> Scroller = Class.forName(SOLO_PACKAGE_NAME + ".Scroller");
+            Class<?> Waiter = Class.forName(SOLO_PACKAGE_NAME + ".Waiter");
+            Class<?> Setter = Class.forName(SOLO_PACKAGE_NAME + ".Setter");
+            Class<?> WebUtils = Class.forName(SOLO_PACKAGE_NAME + ".WebUtils");
+            Class<?> Sender = Class.forName(SOLO_PACKAGE_NAME + ".Sender");
 
-            Constructor sleeperConstructor = Sleeper.getDeclaredConstructor();
-            Constructor activitiyUtilsConstructor = ActivityUtils.getDeclaredConstructor(
+            Constructor<?> sleeperConstructor = Sleeper.getDeclaredConstructor();
+            Constructor<?> activitiyUtilsConstructor = ActivityUtils.getDeclaredConstructor(
                     Instrumentation.class, Activity.class, Sleeper);
-            Constructor setterConstructor = Setter.getDeclaredConstructor(ActivityUtils);
-            Constructor viewFetcherConstructor = ViewFetcher.getDeclaredConstructor(ActivityUtils);
-            Constructor scrollerConstructor = Scroller.getDeclaredConstructor(
+            Constructor<?> setterConstructor = Setter.getDeclaredConstructor(ActivityUtils);
+            Constructor<?> viewFetcherConstructor = ViewFetcher
+                    .getDeclaredConstructor(ActivityUtils);
+            Constructor<?> scrollerConstructor = Scroller.getDeclaredConstructor(
                     Instrumentation.class, ActivityUtils, ViewFetcher, Sleeper);
-            Constructor searcherConstructor = Searcher.getDeclaredConstructor(ViewFetcher,
-                    Scroller, Sleeper);
-            Constructor waiterConstructor = Waiter.getDeclaredConstructor(ActivityUtils,
+            Constructor<?> searcherConstructor = Searcher.getDeclaredConstructor(ViewFetcher,
+                    WebUtils, Scroller, Sleeper);
+            Constructor<?> waiterConstructor = Waiter.getDeclaredConstructor(ActivityUtils,
                     ViewFetcher, Searcher, Scroller, Sleeper);
-            Constructor asserterConstructor = Asserter
-                    .getDeclaredConstructor(ActivityUtils, Waiter);
-            Constructor dialogUtilsConstructor = DialogUtils.getDeclaredConstructor(ViewFetcher,
+            Constructor<?> asserterConstructor = Asserter.getDeclaredConstructor(ActivityUtils,
+                    Waiter);
+            Constructor<?> dialogUtilsConstructor = DialogUtils.getDeclaredConstructor(ViewFetcher,
                     Sleeper);
-            Constructor checkerConstructor = Checker.getDeclaredConstructor(ViewFetcher, Waiter);
-            Constructor robotiumUtilsConstructor = RobotiumUtils.getDeclaredConstructor(
-                    Instrumentation.class, Sleeper);
-            Constructor textEnterer = TextEnterer.getDeclaredConstructor(Instrumentation.class);
-            Constructor clickerConstructor = Clicker.getDeclaredConstructor(ViewFetcher, Scroller,
-                    RobotiumUtils, Instrumentation.class, Sleeper, Waiter);
-            Constructor presserConstructor = Presser.getDeclaredConstructor(Clicker,
+            Constructor<?> checkerConstructor = Checker.getDeclaredConstructor(ViewFetcher, Waiter);
+            Constructor<?> textEnterer = TextEnterer.getDeclaredConstructor(Instrumentation.class,
+                    ActivityUtils, Clicker);
+            Constructor<?> clickerConstructor = Clicker.getDeclaredConstructor(ActivityUtils,
+                    ViewFetcher, Sender, Instrumentation.class, Sleeper, Waiter, WebUtils);
+            Constructor<?> presserConstructor = Presser.getDeclaredConstructor(Clicker,
                     Instrumentation.class, Sleeper, Waiter);
+            Constructor<?> webUtilsConstructor = WebUtils.getDeclaredConstructor(
+                    Instrumentation.class, ActivityUtils, ViewFetcher, Sleeper);
+            Constructor<?> senderConstructor = Sender.getDeclaredConstructor(Instrumentation.class,
+                    Sleeper);
 
             sleeperConstructor.setAccessible(true);
             activitiyUtilsConstructor.setAccessible(true);
@@ -125,28 +132,32 @@ class SoloEx extends Solo {
             searcherConstructor.setAccessible(true);
             waiterConstructor.setAccessible(true);
             checkerConstructor.setAccessible(true);
-            robotiumUtilsConstructor.setAccessible(true);
             clickerConstructor.setAccessible(true);
             presserConstructor.setAccessible(true);
             textEnterer.setAccessible(true);
+            webUtilsConstructor.setAccessible(true);
+            senderConstructor.setAccessible(true);
 
             mSleeper = sleeperConstructor.newInstance(new Object[] {});
             mActivitiyUtils = activitiyUtilsConstructor.newInstance(mInstrumentation, mActivity,
                     mSleeper);
+            mSender = senderConstructor.newInstance(mInstrumentation, mSleeper);
             mSetter = setterConstructor.newInstance(mActivitiyUtils);
             mViewFetcher = viewFetcherConstructor.newInstance(mActivitiyUtils);
+            mWebUtils = webUtilsConstructor.newInstance(mInstrumentation, mActivitiyUtils,
+                    mViewFetcher, mSleeper);
             mScroller = scrollerConstructor.newInstance(mInstrumentation, mActivitiyUtils,
                     mViewFetcher, mSleeper);
-            mSearcher = searcherConstructor.newInstance(mViewFetcher, mScroller, mSleeper);
+            mSearcher = searcherConstructor.newInstance(mViewFetcher, mWebUtils, mScroller,
+                    mSleeper);
             mWaiter = waiterConstructor.newInstance(mActivitiyUtils, mViewFetcher, mSearcher,
                     mScroller, mSleeper);
             mAsserter = asserterConstructor.newInstance(mActivitiyUtils, mWaiter);
             mDialogUtils = dialogUtilsConstructor.newInstance(mViewFetcher, mSleeper);
             mChecker = checkerConstructor.newInstance(mViewFetcher, mWaiter);
-            mRobotiumUtils = robotiumUtilsConstructor.newInstance(mInstrumentation, mSleeper);
-            mTextEnterer = textEnterer.newInstance(mInstrumentation);
-            mClicker = clickerConstructor.newInstance(mViewFetcher, mScroller, mRobotiumUtils,
-                    mInstrumentation, mSleeper, mWaiter);
+            mTextEnterer = textEnterer.newInstance(mInstrumentation, mActivitiyUtils, mClicker);
+            mClicker = clickerConstructor.newInstance(mActivitiyUtils, mViewFetcher, mSender,
+                    mInstrumentation, mSleeper, mWaiter, mWebUtils);
             mPresser = presserConstructor
                     .newInstance(mClicker, mInstrumentation, mSleeper, mWaiter);
         } catch (ClassNotFoundException e) {
@@ -230,7 +241,7 @@ class SoloEx extends Solo {
      * @param parameters
      *            objects array of parameters
      */
-    protected static Object invoke(Object owner, String name, Class[] parameterTypes,
+    protected static Object invoke(Object owner, String name, Class<?>[] parameterTypes,
             Object[] parameters) {
         try {
             return ReflectHelper.invoke(owner, 0, name, parameterTypes, parameters);

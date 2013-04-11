@@ -819,6 +819,10 @@ public class ViewRecorder {
 
     private void setOnScrollStateChanged(AbsListView view, int scrollState) {
         AbsListViewState absListViewState = mAbsListViewStates.get(getViewID(view));
+        if (null == absListViewState) {
+            printLog("null == absListViewState !!!");
+            return;
+        }
         mCurrentScrollState = scrollState;
         if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
             outputAScroll(view);
@@ -831,6 +835,10 @@ public class ViewRecorder {
     private void setOnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
             int totalItemCount) {
         AbsListViewState absListViewState = mAbsListViewStates.get(getViewID(view));
+        if (null == absListViewState) {
+            printLog("null == absListViewState !!!");
+            return;
+        }
         absListViewState.firstVisibleItem = firstVisibleItem;
         absListViewState.visibleItemCount = visibleItemCount;
         absListViewState.totalItemCount = totalItemCount;
@@ -842,7 +850,8 @@ public class ViewRecorder {
 
     private void outputAScroll(AbsListView view) {
         AbsListViewState absListViewState = mAbsListViewStates.get(getViewID(view));
-        if (absListViewState.totalItemCount == 0 || absListViewState.visibleItemCount == 0
+        if (null == absListViewState || absListViewState.totalItemCount == 0
+                || absListViewState.visibleItemCount == 0
                 || absListViewState.lastFirstVisibleItem == absListViewState.firstVisibleItem) {
             return;
         }
