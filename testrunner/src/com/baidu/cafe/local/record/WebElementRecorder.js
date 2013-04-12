@@ -18,22 +18,22 @@ function getXPath(element) {
 	    var sfx = ix > 0 ? "["+(ix+1)+"]" : "";
 	    s = n.tagName.toLowerCase() + sfx + (s == "" ? "" : ("/" + s)); 
 	    n = p; 
-	}    
-	return "/" + s; 
+	}
+	return "/" + s;
 }
 function onClickCallback() {
 	var event = arguments[0];
 	prompt(event.type + ";,local.clickOnWebElement(By.xpath(\"" + getXPath(event.target) + "\"));");
 	finished();
-};
+}
 function onChangeCallback() {
 	var event = arguments[0];
 	prompt(event.type + ";,local.enterTextInWebElement(By.xpath(\"" + getXPath(event.target) + "\"), \"" + event.target.value + "\");");
 	finished();
-};
+}
 function finished() {
 	prompt('WebElementRecorder-finished');
-};
+}
 
 document.removeEventListener('click', onClickCallback);
 document.removeEventListener('change', onChangeCallback);
