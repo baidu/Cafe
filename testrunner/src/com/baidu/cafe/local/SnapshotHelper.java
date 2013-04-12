@@ -139,6 +139,7 @@ class SnapshotHelper {
             LocalLib.mTheLastClick[1] = -1;
         }
         outputToFile(savePath, bitmap);
+        view.destroyDrawingCache();
     }
 
     /**

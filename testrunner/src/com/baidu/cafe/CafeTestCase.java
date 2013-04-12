@@ -48,6 +48,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     public final static int                 TIMEOUT_GET_ACTIVITY         = 1000 * 10;
 
     public static Class<?>                  mActivityClass               = null;
+    public static String                    mTargetFilesDir              = "";
 
     private final static String             TAG                          = "CafeTestCase";
     private static String                   mPackageName                 = null;
@@ -58,7 +59,6 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private int                             mPackageRcv;
     private int                             mPackageSnd;
     private Activity                        mActivity                    = null;
-    private String                          mPngPath                     = "";
 
     /**
      * For Android version number > 2.1
@@ -85,13 +85,12 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     protected void setUp() throws Exception {
         super.setUp();
         Log.init(this, Log.DEFAULT);
-        mPngPath = getInstrumentation().getTargetContext().getFilesDir().toString()
-                + "/pointer.png";
+        mTargetFilesDir = getInstrumentation().getTargetContext().getFilesDir().toString();
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
         launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
-        remote.copyPointerImage(mPngPath);
+        remote.copyAssets(mTargetFilesDir);
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();
         orignal = Thread.getDefaultUncaughtExceptionHandler();
@@ -167,8 +166,6 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             mTearDownHelper = null;
             remote.waitForAllDumpCompleted();
         }
-
-        LocalLib.executeOnDevice("rm -f " + mPngPath, "/", 200);
 
         try {
             local.finalize();

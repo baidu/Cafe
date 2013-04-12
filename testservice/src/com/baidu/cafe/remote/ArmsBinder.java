@@ -841,7 +841,7 @@ public class ArmsBinder extends IRemoteArms.Stub {
         return mSystemLib.getTopPackage();
     }
 
-    public void copyPointerImage(String dist) {
-        mSystemLib.copyPointerImage(dist);
+    public void copyAssets(String dist) {
+        mSystemLib.copyAssets(dist);
     }
 }

@@ -84,6 +84,16 @@ make_cafe()
     cp $cafe_intermediates/$cafe_jar .
     mv $cafe_jar cafe.jar
 
+    # add WebElementRecorder.js to cafe.jar
+    mkdir -p test
+    cp cafe.jar test
+    cd test
+    unzip cafe.jar
+    rm cafe.jar
+    cp $SRC/testrunner/src/com/baidu/cafe/local/record/WebElementRecorder.js com/baidu/cafe/local/record
+    jar cvf cafe.jar com/*
+    cp cafe.jar ../
+
     #cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
 	#mv classes.jar android-web-driver.jar
 }

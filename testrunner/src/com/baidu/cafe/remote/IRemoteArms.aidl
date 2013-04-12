@@ -162,5 +162,5 @@ interface IRemoteArms {
     boolean isHome();
     boolean isNetworkEnable();
     String getTopPackage();
-    void copyPointerImage(String dist);
+    void copyAssets(String dist);
 }

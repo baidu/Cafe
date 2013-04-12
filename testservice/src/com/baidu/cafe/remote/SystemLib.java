@@ -2614,9 +2614,15 @@ public class SystemLib {
      * 
      * @param dist
      */
-    public void copyPointerImage(String dist) {
+    public void copyAssets(String dist) {
+        copyFile(dist, "pointer.png");
+        copyFile(dist, "WebElementRecorder.js");
+    }
+
+    private void copyFile(String dir, String target) {
         try {
-            InputStream fis = mContext.getAssets().open("pointer.png");
+            String dist = dir + "/" + target;
+            InputStream fis = mContext.getAssets().open(target);
             FileOutputStream fos = new FileOutputStream(dist);
             byte[] buff = new byte[1024];
             int readed = -1;

@@ -3055,9 +3055,9 @@ public class Armser {
         }
     }
 
-    public void copyPointerImage(String dist) {
+    public void copyAssets(String dist) {
         try {
-            iArms.copyPointerImage(dist);
+            iArms.copyAssets(dist);
         } catch (Exception e) {
             e.printStackTrace();
         }

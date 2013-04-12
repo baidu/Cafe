@@ -48,18 +48,16 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.Checkable;
 import android.widget.CheckedTextView;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ScrollView;
 import android.widget.TabWidget;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.ShellExecute.CommandResult;
+import com.baidu.cafe.local.record.ViewRecorder;
 
 import dalvik.system.DexFile;
 
@@ -358,6 +356,7 @@ public class LocalLib extends SoloEx {
      *            the text of the view
      * @return a ArrayList<View> contains views found
      */
+    @Deprecated
     public ArrayList<View> findViewsByText(String text) {
         ArrayList<View> allViews = getViews();
         ArrayList<View> views = new ArrayList<View>();
@@ -734,82 +733,6 @@ public class LocalLib extends SoloEx {
         }
     }
 
-    private ArrayList<Checkable> getAllCheckableViews() {
-        ArrayList<View> allViews = getViews();
-        ArrayList<Checkable> checkable = new ArrayList<Checkable>();
-
-        for (View v : allViews) {
-            if (v instanceof Checkable) {
-                checkable.add((Checkable) v);
-            }
-        }
-
-        return checkable;
-    }
-
-    /**
-     * set a CheckableView to the special status
-     * 
-     * @param index
-     *            the index of CheckableView, from 0
-     * @param checked
-     *            the status of CheckableView
-     * @return true means operation succeed; false means index does not exist
-     */
-    public boolean setCheckableViewState(int index, boolean checked) {
-        ArrayList<Checkable> checkBoxs = getAllCheckableViews();
-
-        if (index <= checkBoxs.size()) {
-            final Checkable checkBox = checkBoxs.get(index);
-            final boolean fChecked = checked;
-            runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    checkBox.setChecked(fChecked);
-                }
-            });
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * get status of special CheckableView
-     * 
-     * @param index
-     *            the index of CheckableView, from 0
-     * @return the status of CheckableView
-     */
-    public boolean getCheckableViewState(int index) {
-        ArrayList<Checkable> checkBoxs = getAllCheckableViews();
-
-        if (index > checkBoxs.size()) {
-            print("index:" + index + "> switchers.size():" + checkBoxs.size());
-            return false;
-        }
-
-        return checkBoxs.get(index).isChecked();
-    }
-
-    /**
-     * setRequestedOrientation
-     * 
-     * @param orientation
-     *            :
-     *            local.setRequestedOrientation(CafeTestCase.SCREEN_ORIENTATION_PORTRAIT
-     *            );
-     *            local.setRequestedOrientation(CafeTestCase.SCREEN_ORIENTATION_LANDSCAPE
-     *            );
-     */
-    public void setRequestedOrientation(int orientation) {
-        if (orientation == CafeTestCase.SCREEN_ORIENTATION_LANDSCAPE) {
-            this.mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else if (orientation == CafeTestCase.SCREEN_ORIENTATION_PORTRAIT) {
-            this.mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-    }
-
     /**
      * zoom screen
      * 
@@ -970,40 +893,6 @@ public class LocalLib extends SoloEx {
         } catch (IndexOutOfBoundsException e) {
             Assert.assertTrue("Index is not valid", false);
         }
-    }
-
-    /**
-     * Returns a DatePicker located in the current activity
-     * 
-     * @return the DatePicker contained in the current activity
-     */
-    public DatePicker getCurrentDatePicker() {
-        ArrayList<View> viewList = getViews();
-        DatePicker datePicker = null;
-        for (View view : viewList) {
-            if (view instanceof android.widget.DatePicker) {
-                datePicker = (DatePicker) view;
-                break;
-            }
-        }
-        return datePicker;
-    }
-
-    /**
-     * Returns a TimePicker located in the current activity
-     * 
-     * @return the TimePicker contained in the current activity
-     */
-    public TimePicker getCurrentTimePicker() {
-        ArrayList<View> viewList = getViews();
-        TimePicker timePicker = null;
-        for (View view : viewList) {
-            if (view instanceof android.widget.TimePicker) {
-                timePicker = (TimePicker) view;
-                break;
-            }
-        }
-        return timePicker;
     }
 
     /**
@@ -1355,7 +1244,7 @@ public class LocalLib extends SoloEx {
     }
 
     public void screenShot(final String fileName) {
-        String packagePath = mInstrumentation.getTargetContext().getFilesDir().toString();
+        String packagePath = CafeTestCase.mTargetFilesDir;
         File cafe = new File(packagePath);
         if (!cafe.exists()) {
             cafe.mkdir();
@@ -1388,8 +1277,22 @@ public class LocalLib extends SoloEx {
      * Take an activity snapshot.
      */
     public void takeActivitySnapshot(final String path) {
-        final View view = getRecentDecorView();
-        SnapshotHelper.takeViewSnapshot(view, path);
+        View decorView = getRecentDecorView();
+        try {
+            invokeObjectMethod(this, 2, "wrapAllGLViews", new Class[] { View.class },
+                    new Object[] { decorView });// solo.wrapAllGLViews(decorView);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        SnapshotHelper.takeViewSnapshot(decorView, path);
     }
 
     public View getRecentDecorView() {
@@ -1600,25 +1503,6 @@ public class LocalLib extends SoloEx {
 
     public boolean isMenu(View view) {
         return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
-    }
-
-    /**
-     * Returns an {@code ArrayList} of {@code View}s of the specified
-     * {@code Class} located in the current {@code Activity}.
-     * 
-     * @param classToFilterBy
-     *            return all instances of this class, e.g. {@code Button.class}
-     *            or {@code GridView.class}
-     * @return an {@code ArrayList} of {@code View}s of the specified
-     *         {@code Class} located in the current {@code Activity}
-     */
-    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, View parent) {
-        return (ArrayList<T>) invoke(mViewFetcher, "getCurrentViews", new Class[] { Class.class,
-                View.class }, new Object[] { classToFilterBy, parent });
-    }
-
-    public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy) {
-        return getCurrentViews(classToFilterBy, null);
     }
 
     public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, boolean visible) {

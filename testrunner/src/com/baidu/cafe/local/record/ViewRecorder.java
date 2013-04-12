@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.baidu.cafe.local;
+package com.baidu.cafe.local.record;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import com.baidu.cafe.CafeTestCase;
+import com.baidu.cafe.local.DESEncryption;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
 
@@ -43,6 +44,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
@@ -69,7 +71,7 @@ public class ViewRecorder {
     private final static int                         MAX_SLEEP_TIME               = 20000;
     private final static int                         MIN_SLEEP_TIME               = 1000;
     private final static int                         MIN_STEP_COUNT               = 4;
-    private final static boolean                     DEBUG                        = false;
+    public final static boolean                      DEBUG                        = false;
 
     /**
      * For judging whether a view is an old one.
@@ -205,51 +207,53 @@ public class ViewRecorder {
         public int lastFirstVisibleItem = 0;
     }
 
-    class OutputEvent {
-        final static int PRIORITY_DRAG   = 1;
-        final static int PRIORITY_KEY    = 2;
-        final static int PRIORITY_SCROLL = 3;
-        final static int PRIORITY_CLICK  = 4;
-
-        /**
-         * NOTICE: This field can not be null!
-         */
-        public View      view            = null;
-        public int       priority        = 0;
-        protected String code            = "";
-        protected String log             = "";
-
-        public String getCode() {
-            return code;
-        }
-
-        public String getLog() {
-            return log;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public void setLog(String log) {
-            this.log = log;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("[%s] %s", view, priority);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (null == o) {
-                return false;
-            }
-            OutputEvent target = (OutputEvent) o;
-            return this.view.equals(target.view) && this.priority == target.priority ? true : false;
-        }
-
-    }
+    //    public class OutputEvent {
+    //        final static int PRIORITY_DRAG      = 1;
+    //        final static int PRIORITY_KEY       = 2;
+    //        final static int PRIORITY_SCROLL    = 3;
+    //        final static int PRIORITY_CLICK     = 4;
+    //
+    //        final static int PRIORITY_WEB_CLICK = 10;
+    //
+    //        /**
+    //         * NOTICE: This field can not be null!
+    //         */
+    //        public View      view               = null;
+    //        public int       priority           = 0;
+    //        protected String code               = "";
+    //        protected String log                = "";
+    //
+    //        public String getCode() {
+    //            return code;
+    //        }
+    //
+    //        public String getLog() {
+    //            return log;
+    //        }
+    //
+    //        public void setCode(String code) {
+    //            this.code = code;
+    //        }
+    //
+    //        public void setLog(String log) {
+    //            this.log = log;
+    //        }
+    //
+    //        @Override
+    //        public String toString() {
+    //            return String.format("[%s] %s", view, priority);
+    //        }
+    //
+    //        @Override
+    //        public boolean equals(Object o) {
+    //            if (null == o) {
+    //                return false;
+    //            }
+    //            OutputEvent target = (OutputEvent) o;
+    //            return this.view.equals(target.view) && this.priority == target.priority ? true : false;
+    //        }
+    //
+    //    }
 
     class ClickEvent extends OutputEvent {
         public ClickEvent(View view) {
@@ -352,8 +356,9 @@ public class ViewRecorder {
     private void printLayout(View view) {
         int[] xy = new int[2];
         view.getLocationOnScreen(xy);
-        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", local.getFamilyString(view),
-                view, local.getViewText(view), xy[0], xy[1], view.getWidth(), view.getHeight());
+        // local.getRIdNameByValue(packageName, value)
+        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", "", view,
+                local.getViewText(view), xy[0], xy[1], view.getWidth(), view.getHeight());
         print("ViewLayout", msg);
     }
 
@@ -741,6 +746,10 @@ public class ViewRecorder {
         return local.getListener(view, getClassByListenerName(listenerName), listenerName);
     }
 
+    public LocalLib getLocalLib() {
+        return local;
+    }
+
     private void setListener(View view, String listenerName, Object value) {
         local.setListener(view, getClassByListenerName(listenerName), listenerName, value);
     }
@@ -750,6 +759,9 @@ public class ViewRecorder {
      * as possible.
      */
     private void setHookListenerOnView(View view) {
+        if (view instanceof WebView) {
+            new WebElementRecorder(this).handleWebView((WebView) view);
+        }
         // handle list
         if (view instanceof AdapterView) {
             if (view instanceof ExpandableListView) {
@@ -1503,7 +1515,7 @@ public class ViewRecorder {
         //        }
     }
 
-    private boolean offerOutputEventQueue(OutputEvent e) {
+    public boolean offerOutputEventQueue(OutputEvent e) {
         synchronized (mSyncOutputEventQueue) {
             mTheCurrentEventOutputime = System.currentTimeMillis();
             return mOutputEventQueue.offer(e);
