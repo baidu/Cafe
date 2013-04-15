@@ -24,6 +24,7 @@ import com.baidu.cafe.local.Log;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.ShellExecute;
 import com.baidu.cafe.local.ShellExecute.CallBack;
+import com.baidu.cafe.local.ShellExecute.CommandResult;
 
 import android.app.Activity;
 import android.graphics.Rect;
@@ -90,6 +91,9 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         remote.bind(getInstrumentation().getContext());
         launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
+        CommandResult cr = LocalLib.executeOnDevice("chmod 777 " + mTargetFilesDir, "/", 200);
+        Log.i("CafeTestCase", "chmod 777 " + mTargetFilesDir + " "
+                + (cr.ret == 0 ? "success" : "failed"));
         remote.copyAssets(mTargetFilesDir);
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();

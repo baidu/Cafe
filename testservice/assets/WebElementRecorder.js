@@ -1,15 +1,14 @@
-var WebElementRecorder = function() {};
-WebElementRecorder.prototype.findInArray = function (ar, el) {
+function findInArray(ar, el) {
 	var len = ar.length;
 	for (var i = 0; i < len; i++) {
 		if (ar[i] == el) return i;
 	}
 	return -1;
-};
-WebElementRecorder.prototype.getElementsByTagName = function(tagName, doc){
+}
+function getElementsByTagName(tagName, doc){
     return doc.getElementsByTagName(tagName.toLowerCase());
-};
-WebElementRecorder.prototype.getXPath = function(element) {
+}
+function getXPath(element) {
 	var n = element;
 	var s = "";
 	while (true){
@@ -19,22 +18,25 @@ WebElementRecorder.prototype.getXPath = function(element) {
 	    var sfx = ix > 0 ? "["+(ix+1)+"]" : "";
 	    s = n.tagName.toLowerCase() + sfx + (s == "" ? "" : ("/" + s)); 
 	    n = p; 
-	}    
-	return "/" + s; 
-};
-WebElementRecorder.prototype.onClickCallback = function() {
+	}
+	return "/" + s;
+}
+function onClickCallback() {
 	var event = arguments[0];
-	prompt(event.type + ";,local.clickOnWebElement(By.xpath(\"" + record.getXPath(event.target) + "\"));");
-};
-WebElementRecorder.prototype.onChangeCallback = function() {
+	prompt(event.type + ";,local.clickOnWebElement(By.xpath(\"" + getXPath(event.target) + "\"));");
+	finished();
+}
+function onChangeCallback() {
 	var event = arguments[0];
-	prompt(event.type + ";,local.enterTextInWebElement(By.xpath(\"" + record.getXPath(event.target) + "\"), \"" + event.target.value + "\");");
-};
-WebElementRecorder.prototype.finished = function() {
+	prompt(event.type + ";,local.enterTextInWebElement(By.xpath(\"" + getXPath(event.target) + "\"), \"" + event.target.value + "\");");
+	finished();
+}
+function finished() {
 	prompt('WebElementRecorder-finished');
 }
-document.removeEventListener('click', WebElementRecorder.prototype.onClickCallback);
-document.removeEventListener('change', WebElementRecorder.prototype.onChangeCallback);
 
-document.addEventListener('click', WebElementRecorder.prototype.onClickCallback, false);
-document.addEventListener('change', WebElementRecorder.prototype.onChangeCallback, false);
+document.removeEventListener('click', onClickCallback);
+document.removeEventListener('change', onChangeCallback);
+
+document.addEventListener('click', onClickCallback, false);
+document.addEventListener('change', onChangeCallback, false);

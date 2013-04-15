@@ -207,54 +207,6 @@ public class ViewRecorder {
         public int lastFirstVisibleItem = 0;
     }
 
-    //    public class OutputEvent {
-    //        final static int PRIORITY_DRAG      = 1;
-    //        final static int PRIORITY_KEY       = 2;
-    //        final static int PRIORITY_SCROLL    = 3;
-    //        final static int PRIORITY_CLICK     = 4;
-    //
-    //        final static int PRIORITY_WEB_CLICK = 10;
-    //
-    //        /**
-    //         * NOTICE: This field can not be null!
-    //         */
-    //        public View      view               = null;
-    //        public int       priority           = 0;
-    //        protected String code               = "";
-    //        protected String log                = "";
-    //
-    //        public String getCode() {
-    //            return code;
-    //        }
-    //
-    //        public String getLog() {
-    //            return log;
-    //        }
-    //
-    //        public void setCode(String code) {
-    //            this.code = code;
-    //        }
-    //
-    //        public void setLog(String log) {
-    //            this.log = log;
-    //        }
-    //
-    //        @Override
-    //        public String toString() {
-    //            return String.format("[%s] %s", view, priority);
-    //        }
-    //
-    //        @Override
-    //        public boolean equals(Object o) {
-    //            if (null == o) {
-    //                return false;
-    //            }
-    //            OutputEvent target = (OutputEvent) o;
-    //            return this.view.equals(target.view) && this.priority == target.priority ? true : false;
-    //        }
-    //
-    //    }
-
     class ClickEvent extends OutputEvent {
         public ClickEvent(View view) {
             this.view = view;
@@ -478,9 +430,10 @@ public class ViewRecorder {
     }
 
     final String template = "package com.example.demo.test;\n" + "\n"
+                                  + "import android.view.KeyEvent;\n"
                                   + "import com.baidu.cafe.CafeTestCase;\n"
-                                  + "import android.view.KeyEvent;\n" + "// next import\n" + "\n"
-                                  + "public class "
+                                  + "import com.jayway.android.robotium.solo.By;\n"
+                                  + "// next import\n" + "\n" + "public class "
                                   + REPLAY_CLASS_NAME
                                   + " extends CafeTestCase {\n"
                                   + "    private static Class<?>     launcherActivityClass;\n"

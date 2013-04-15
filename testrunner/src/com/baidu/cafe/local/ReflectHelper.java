@@ -68,6 +68,19 @@ public class ReflectHelper {
         return result;
     }
 
+    public static void listObject(Object owner, int classLevel) {
+        // get class
+        Class<?> ownerclass = getOwnerclass(owner, classLevel);
+        System.err.println(ownerclass + " field:");
+        for (Field field : ownerclass.getDeclaredFields()) {
+            System.err.println(field.getName());
+        }
+        System.err.println(ownerclass + " method:");
+        for (Method method : ownerclass.getDeclaredMethods()) {
+            System.err.println(method.getName());
+        }
+    }
+
     /**
      * invoke function of object
      * 

@@ -1287,6 +1287,7 @@ public class LocalLib extends SoloEx {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
+            ReflectHelper.listObject(this, 2);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

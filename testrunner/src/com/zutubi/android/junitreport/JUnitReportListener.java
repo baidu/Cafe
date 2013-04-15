@@ -32,6 +32,7 @@ import junit.framework.TestListener;
 import org.xmlpull.v1.XmlSerializer;
 
 import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.local.ShellExecute.CommandResult;
 
 import android.app.Instrumentation;
 import android.content.Context;
@@ -164,8 +165,6 @@ public class JUnitReportListener implements TestListener {
                 // added by luxiaoyu01@baidu.com
                 mName = testCase.getName();
                 LocalLib.mTestCaseName = mName;
-                LocalLib.executeOnDevice("chmod 777 " + mTargetContext.getFilesDir().toString(),
-                        "/", 200);
                 mPackageRcv = LocalLib.getPackageRcv(mTargetContext.getPackageName());
                 mPackageSnd = LocalLib.getPackageSnd(mTargetContext.getPackageName());
             }

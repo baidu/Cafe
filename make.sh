@@ -129,7 +129,7 @@ modify_cafe_for_proguard()
     rm -rf backup
     mkdir -p backup
     android_mk="testrunner/Android.mk"
-    viewrecorder_java="testrunner/src/com/baidu/cafe/local/ViewRecorder.java"
+    viewrecorder_java="testrunner/src/com/baidu/cafe/local/record/ViewRecorder.java"
     cafereplay_java="tests/TestRecord/src/com/example/demo/test/CafeReplay.java"
     cp $android_mk backup
     cp $viewrecorder_java backup
@@ -148,7 +148,7 @@ revert()
 {
     cd $SRC
     cp backup/Android.mk testrunner
-    cp backup/ViewRecorder.java testrunner/src/com/baidu/cafe/local/
+    cp backup/ViewRecorder.java testrunner/src/com/baidu/cafe/local/record/
     cp backup/CafeReplay.java tests/TestRecord/src/com/example/demo/test/
     rm -rf backup
 }
