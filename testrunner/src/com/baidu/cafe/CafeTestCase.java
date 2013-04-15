@@ -93,7 +93,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         remote.setStatusBarHeight(getStatusBarHeight());
         CommandResult cr = LocalLib.executeOnDevice("chmod 777 " + mTargetFilesDir, "/", 200);
         Log.i("CafeTestCase", "chmod 777 " + mTargetFilesDir + " "
-                + (cr.ret == 0 ? "success" : "failed"));
+                + (cr.ret == 0 ? "success" : "failed!\n" + cr.console.toString()));
         remote.copyAssets(mTargetFilesDir);
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();

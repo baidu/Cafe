@@ -153,8 +153,10 @@ public class WebElementRecorder {
     }
 
     class WebElementEventCreator {
-        private boolean      isFinished   = false;
-        private ViewRecorder viewRecorder = null;
+        private boolean             isFinished   = false;
+        private ViewRecorder        viewRecorder = null;
+
+        public final static boolean DEBUG        = true;
 
         public WebElementEventCreator(ViewRecorder viewRecorder) {
             this.viewRecorder = viewRecorder;
@@ -169,6 +171,11 @@ public class WebElementRecorder {
             String type = data[0];
             String code = data[1];
             WebElementEvent event = null;
+
+            if (DEBUG) {
+                code = "local.dumpPage(null);\n" + code;
+            }
+
             if ("click".equals(type)) {
                 event = new WebElementClickEvent(webView);
                 event.setCode(code);

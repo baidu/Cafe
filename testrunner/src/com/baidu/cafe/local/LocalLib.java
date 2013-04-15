@@ -57,6 +57,7 @@ import android.widget.TextView;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.ShellExecute.CommandResult;
+import com.baidu.cafe.local.record.CafeWebViewClient;
 import com.baidu.cafe.local.record.ViewRecorder;
 
 import dalvik.system.DexFile;
@@ -1278,6 +1279,7 @@ public class LocalLib extends SoloEx {
      */
     public void takeActivitySnapshot(final String path) {
         View decorView = getRecentDecorView();
+        /*
         try {
             invokeObjectMethod(this, 2, "wrapAllGLViews", new Class[] { View.class },
                     new Object[] { decorView });// solo.wrapAllGLViews(decorView);
@@ -1293,6 +1295,7 @@ public class LocalLib extends SoloEx {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+        */
         SnapshotHelper.takeViewSnapshot(decorView, path);
     }
 
@@ -1999,5 +2002,24 @@ public class LocalLib extends SoloEx {
         // }
         // }
         return -1;
+    }
+
+    public void dumpPage(WebView webView) {
+        if (null == webView) {
+            webView = getCurrentViews(WebView.class).get(0);
+        }
+        final WebView tmpWebView = webView;
+        print("############# dumpPage begin #################");
+
+        runOnMainSync(new Runnable() {
+
+            @Override
+            public void run() {
+                tmpWebView.getSettings().setJavaScriptEnabled(true);
+                tmpWebView.setWebViewClient(new CafeWebViewClient());
+            }
+        });
+        sleep(5000);
+        print("############# dumpPage end #################");
     }
 }

@@ -57,6 +57,15 @@ public class Strings {
         return new Strings(ret);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(1024);
+        for (String line : strings) {
+            sb.append(line).append('\n');
+        }
+        return sb.toString();
+    }
+
     /**
      * e.g. transfer "767E" to "\u767E"
      * 
