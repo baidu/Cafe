@@ -9,17 +9,22 @@ function getElementsByTagName(tagName, doc){
     return doc.getElementsByTagName(tagName.toLowerCase());
 }
 function getXPath(element) {
-	var n = element;
-	var s = "";
-	while (true){
-	    var p = n.parentNode;
-	    if (p == n || p == null) break;
-	    var ix = this.findInArray(this.getElementsByTagName(n.tagName, p), n);
-	    var sfx = ix > 0 ? "["+(ix+1)+"]" : "";
-	    s = n.tagName.toLowerCase() + sfx + (s == "" ? "" : ("/" + s)); 
-	    n = p; 
-	}
-	return "/" + s;
+    var xpath = ''; 
+    for ( ; element && element.nodeType == 1; element = element.parentNode ) { 
+        var children = element.parentNode.childNodes;
+        var id = ''; 
+        var idx = 1;
+        for(var i = 0; i < children.length; i += 1) {
+            if (children[i] === element) {
+                break;
+            } else if (children[i].tagName == element.tagName) {
+                idx += 1;
+            }
+        }
+        idx > 1 ? (id = '[' + idx + ']') : (id = '');
+        xpath = '/' + element.tagName.toLowerCase() + id + xpath;
+    }   
+    return xpath;
 }
 function onClickCallback() {
 	var event = arguments[0];
