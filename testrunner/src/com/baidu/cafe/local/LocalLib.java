@@ -2004,22 +2004,33 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
-    public void dumpPage(WebView webView) {
-        if (null == webView) {
-            webView = getCurrentViews(WebView.class).get(0);
-        }
-        final WebView tmpWebView = webView;
+    public void dumpPage() {
+        ArrayList<WebElement> elements = getCurrentWebElements();
         print("############# dumpPage begin #################");
-
-        runOnMainSync(new Runnable() {
-
-            @Override
-            public void run() {
-                tmpWebView.getSettings().setJavaScriptEnabled(true);
-                tmpWebView.setWebViewClient(new CafeWebViewClient());
-            }
-        });
+        for (WebElement element : elements) {
+            print("(" + element.getLocationX() + "," + element.getLocationY()
+                + ") , {tagName : " + element.getTagName()
+                + "} , {id : " + element.getId() + "} , {className : "
+                + element.getClassName() + "} , {name : " + element.getName()
+                + "} , {text : " + element.getText() + "}");
+        }
         sleep(5000);
         print("############# dumpPage end #################");
+//        if (null == webView) {
+//            webView = getCurrentViews(WebView.class).get(0);
+//        }
+//        final WebView tmpWebView = webView;
+//        print("############# dumpPage begin #################");
+//
+//        runOnMainSync(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                tmpWebView.getSettings().setJavaScriptEnabled(true);
+//                tmpWebView.setWebViewClient(new CafeWebViewClient());
+//            }
+//        });
+//        sleep(5000);
+//        print("############# dumpPage end #################");
     }
 }

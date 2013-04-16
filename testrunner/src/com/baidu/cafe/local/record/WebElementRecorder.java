@@ -173,7 +173,7 @@ public class WebElementRecorder {
             WebElementEvent event = null;
 
             if (DEBUG) {
-                code = "local.dumpPage(null);\n" + code;
+                code = "local.dumpPage();\n" + code;
             }
 
             if ("click".equals(type)) {
