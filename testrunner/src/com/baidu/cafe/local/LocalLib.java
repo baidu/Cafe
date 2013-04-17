@@ -2004,33 +2004,92 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
+    public void clickOnWebElementByFamilyString(String familyString) {
+        final long endTime = SystemClock.uptimeMillis() + TIMEOUT;
+        WebElement webElementToClick = null;
+        boolean scroll = true;
+        while (true) {
+            final boolean timedOut = SystemClock.uptimeMillis() > endTime;
+
+            if (timedOut) {
+                invoke(this.mSearcher, "logMatchesFound",
+                        new Class[] { String.class },
+                        new Object[] { familyString });
+                webElementToClick = null;
+                break;
+            }
+            invoke(this.mSleeper, "sleep");
+            String js = "function familyString(s) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(i)];}if(e != null){var id=e.id;var text=e.textContent;var name=e.getAttribute('name');var className=e.className;var tagName=e.tagName;var rect=e.getBoundingClientRect();prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';,'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}";
+            boolean javaScriptWasExecuted = (boolean) invoke(
+                    this.mWebUtils,
+                    "executeJavaScriptFunction",
+                    new Class[] { String.class },
+                    new Object[] { js + "familyString('" + familyString + "');" });
+            ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) invoke(
+                    this.mWebUtils, "getSufficientlyShownWebElements",
+                    new Class[] { boolean.class },
+                    new Object[] { javaScriptWasExecuted });
+
+            ArrayList<WebElement> webElements = new ArrayList<WebElement>();
+            invoke(this.mSearcher, "addViewsToList", new Class[] {
+                ArrayList.class, List.class }, new Object[] { webElements,
+                    viewsFromScreen });
+
+            webElementToClick = (WebElement) invoke(this.mSearcher,
+                    "getViewFromList",
+                    new Class[] { ArrayList.class, int.class }, new Object[] {
+                        webElements, 1 });
+            if (webElementToClick != null)
+                break;
+
+            if (scroll)
+                invoke(mScroller, "scroll",
+                        new Class[] { int.class },
+                        new Object[] { getField(mScroller, "DOWN") }); // mScroller.scroll(mScroller.DOWN)
+        }
+
+        if (webElementToClick == null) {
+            Assert.assertTrue("Web element with familyString: '" + familyString
+                    + "' is not found", false);
+        }
+        clickOnScreen(webElementToClick.getLocationX(),
+                webElementToClick.getLocationY());
+
+    }
+
+    public void enterTextInWebElementByFamilyString(String familyString,
+            String text) {
+
+    }
+
     public void dumpPage() {
         ArrayList<WebElement> elements = getCurrentWebElements();
         print("############# dumpPage begin #################");
         for (WebElement element : elements) {
             print("(" + element.getLocationX() + "," + element.getLocationY()
-                + ") , {tagName : " + element.getTagName()
-                + "} , {id : " + element.getId() + "} , {className : "
-                + element.getClassName() + "} , {name : " + element.getName()
-                + "} , {text : " + element.getText() + "}");
+                    + ") , {tagName : " + element.getTagName() + "} , {id : "
+                    + element.getId() + "} , {className : "
+                    + element.getClassName() + "} , {name : "
+                    + element.getName() + "} , {text : " + element.getText()
+                    + "}");
         }
         sleep(5000);
         print("############# dumpPage end #################");
-//        if (null == webView) {
-//            webView = getCurrentViews(WebView.class).get(0);
-//        }
-//        final WebView tmpWebView = webView;
-//        print("############# dumpPage begin #################");
-//
-//        runOnMainSync(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                tmpWebView.getSettings().setJavaScriptEnabled(true);
-//                tmpWebView.setWebViewClient(new CafeWebViewClient());
-//            }
-//        });
-//        sleep(5000);
-//        print("############# dumpPage end #################");
+        // if (null == webView) {
+        // webView = getCurrentViews(WebView.class).get(0);
+        // }
+        // final WebView tmpWebView = webView;
+        // print("############# dumpPage begin #################");
+        //
+        // runOnMainSync(new Runnable() {
+        //
+        // @Override
+        // public void run() {
+        // tmpWebView.getSettings().setJavaScriptEnabled(true);
+        // tmpWebView.setWebViewClient(new CafeWebViewClient());
+        // }
+        // });
+        // sleep(5000);
+        // print("############# dumpPage end #################");
     }
 }
