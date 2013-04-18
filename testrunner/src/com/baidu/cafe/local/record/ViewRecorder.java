@@ -1820,8 +1820,16 @@ public class ViewRecorder {
             printLog("null == view at getViewID!!!");
             return "";
         }
+
         String viewString = view.toString();
-        return viewString.substring(viewString.indexOf("@"));
+        if (viewString.indexOf('@') != -1) {
+            return viewString.substring(viewString.indexOf("@"));
+        } else {
+            // after android 4.2
+            int leftBracket = viewString.indexOf('{');
+            int firstSpace = viewString.indexOf(' ');
+            return viewString.substring(leftBracket + 1, firstSpace);
+        }
     }
 
     private String getViewString(View view) {

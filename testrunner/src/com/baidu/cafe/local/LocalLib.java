@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -59,6 +60,7 @@ import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.ShellExecute.CommandResult;
 import com.baidu.cafe.local.record.CafeWebViewClient;
 import com.baidu.cafe.local.record.ViewRecorder;
+import com.jayway.android.robotium.solo.WebElement;
 
 import dalvik.system.DexFile;
 
@@ -2012,53 +2014,63 @@ public class LocalLib extends SoloEx {
             final boolean timedOut = SystemClock.uptimeMillis() > endTime;
 
             if (timedOut) {
-                invoke(this.mSearcher, "logMatchesFound",
-                        new Class[] { String.class },
+                // searcher.logMatchesFound(familyString);
+                invoke(mSearcher, "logMatchesFound", new Class[] { String.class },
                         new Object[] { familyString });
                 webElementToClick = null;
                 break;
             }
             invoke(this.mSleeper, "sleep");
-            String js = "function familyString(s) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(i)];}if(e != null){var id=e.id;var text=e.textContent;var name=e.getAttribute('name');var className=e.className;var tagName=e.tagName;var rect=e.getBoundingClientRect();prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';,'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}";
-            boolean javaScriptWasExecuted = (boolean) invoke(
-                    this.mWebUtils,
-                    "executeJavaScriptFunction",
-                    new Class[] { String.class },
-                    new Object[] { js + "familyString('" + familyString + "');" });
-            ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) invoke(
-                    this.mWebUtils, "getSufficientlyShownWebElements",
-                    new Class[] { boolean.class },
+            String js = "function familyString(s) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){var id=e.id;var text=e.textContent;var name=e.getAttribute('name');var className=e.className;var tagName=e.tagName;var rect=e.getBoundingClientRect();prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';,'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
+                    + "familyString('" + familyString + "');";
+            // executeJavaScriptFunction(js);
+            boolean javaScriptWasExecuted = (Boolean) invoke(mWebUtils,
+                    "executeJavaScriptFunction", new Class[] { String.class }, new Object[] { js });
+            // getSufficientlyShownWebElements(javaScriptWasExecuted);
+            ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) invoke(mWebUtils,
+                    "getSufficientlyShownWebElements", new Class[] { boolean.class },
                     new Object[] { javaScriptWasExecuted });
 
-            ArrayList<WebElement> webElements = new ArrayList<WebElement>();
-            invoke(this.mSearcher, "addViewsToList", new Class[] {
-                ArrayList.class, List.class }, new Object[] { webElements,
-                    viewsFromScreen });
+            try {
+                List<WebElement> webElements = (List<WebElement>) ReflectHelper.getObjectProperty(
+                        mSearcher, 0, "webElements");
+                // searcher.addViewsToList(webElements, viewsFromScreen);
+                invoke(mSearcher, "addViewsToList", new Class[] { List.class, List.class },
+                        new Object[] { webElements, viewsFromScreen });
 
-            webElementToClick = (WebElement) invoke(this.mSearcher,
-                    "getViewFromList",
-                    new Class[] { ArrayList.class, int.class }, new Object[] {
-                        webElements, 1 });
-            if (webElementToClick != null)
-                break;
+                // searcher.getViewFromList(webElements, 1);
+                webElementToClick = (WebElement) invoke(mSearcher, "getViewFromList", new Class[] {
+                        List.class, int.class }, new Object[] { webElements, 1 });
 
-            if (scroll)
-                invoke(mScroller, "scroll",
-                        new Class[] { int.class },
-                        new Object[] { getField(mScroller, "DOWN") }); // mScroller.scroll(mScroller.DOWN)
+                if (webElementToClick != null) {
+                    break;
+                }
+
+                if (scroll) {
+                    // mScroller.scroll(mScroller.DOWN)
+                    invoke(mScroller, "scroll", new Class[] { int.class },
+                            new Object[] { getField(mScroller, "DOWN") });
+                }
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
 
         if (webElementToClick == null) {
-            Assert.assertTrue("Web element with familyString: '" + familyString
-                    + "' is not found", false);
+            Assert.assertTrue("Web element with familyString: '" + familyString + "' is not found",
+                    false);
         }
-        clickOnScreen(webElementToClick.getLocationX(),
-                webElementToClick.getLocationY());
+        clickOnScreen(webElementToClick.getLocationX(), webElementToClick.getLocationY());
 
     }
 
-    public void enterTextInWebElementByFamilyString(String familyString,
-            String text) {
+    public void enterTextInWebElementByFamilyString(String familyString, String text) {
 
     }
 
@@ -2066,12 +2078,10 @@ public class LocalLib extends SoloEx {
         ArrayList<WebElement> elements = getCurrentWebElements();
         print("############# dumpPage begin #################");
         for (WebElement element : elements) {
-            print("(" + element.getLocationX() + "," + element.getLocationY()
-                    + ") , {tagName : " + element.getTagName() + "} , {id : "
-                    + element.getId() + "} , {className : "
-                    + element.getClassName() + "} , {name : "
-                    + element.getName() + "} , {text : " + element.getText()
-                    + "}");
+            print("(" + element.getLocationX() + "," + element.getLocationY() + ") , {tagName : "
+                    + element.getTagName() + "} , {id : " + element.getId() + "} , {className : "
+                    + element.getClassName() + "} , {name : " + element.getName() + "} , {text : "
+                    + element.getText() + "}");
         }
         sleep(5000);
         print("############# dumpPage end #################");
