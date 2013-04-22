@@ -625,7 +625,7 @@ public class ViewPropertyProvider {
                     break;
                 }
                 lines.add(line);
-                Log.print(line);
+                //                Log.print(line);
             }
         } catch (IOException e) {
             e.printStackTrace();

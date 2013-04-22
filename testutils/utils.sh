@@ -699,3 +699,25 @@ string_to_json_format() # $ret_json
     #ret_json=${ret_json//^H/\\\b} # \b (backspace)
 }
 
+get_result_from_cafe() # $serial_number $function $parameter
+{
+    ADB="adb -s $1"
+    function="$2"
+    parameter="$3"
+
+    $ADB shell service call window 1 i32 4939
+    $ADB logcat -c
+    $ADB shell am startservice -a com.baidu.cafe.remote.action.name.COMMAND \
+        -e function "$function" -e parameter "$parameter"
+    completed=`$ADB logcat -d Arms:I *:S | grep "invoke completed"`
+    
+    end=$((`date +%s` + $timeout))
+	while [ $(date +%s) -le $end ]
+	do
+        #if []
+		sleep 1
+	done
+
+
+}
+

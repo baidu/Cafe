@@ -16,6 +16,8 @@
 
 package com.baidu.cafe.remote;
 
+import java.util.List;
+
 import android.app.Instrumentation;
 import android.content.Context;
 
@@ -856,7 +858,10 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
             @Override
             public void run() {
-                mViewPropertyProvider.dumpAllLines();
+                List<String> lines = mViewPropertyProvider.dumpAllLines();
+                for (String line : lines) {
+                    Log.print(line);
+                }
                 isDumpAllLinesCompleted = true;
             }
 
