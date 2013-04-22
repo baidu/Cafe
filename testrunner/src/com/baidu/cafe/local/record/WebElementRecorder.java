@@ -192,6 +192,7 @@ public class WebElementRecorder {
             WebElementEvent event = null;
 
             if (DEBUG) {
+            	System.out.println("createWebElementEvent, information : " + information);
                 code = "local.dumpPage();\n" + code;
             }
 
