@@ -432,7 +432,6 @@ public class ViewRecorder {
     final String template = "package com.example.demo.test;\n" + "\n"
                                   + "import android.view.KeyEvent;\n"
                                   + "import com.baidu.cafe.CafeTestCase;\n"
-                                  + "import com.jayway.android.robotium.solo.By;\n"
                                   + "// next import\n" + "\n" + "public class "
                                   + REPLAY_CLASS_NAME
                                   + " extends CafeTestCase {\n"
