@@ -70,6 +70,7 @@ public class WebElementRecorder {
 
     private void hookWebView(final WebView webView) {
     	// test branch
+    	// test branch
         webElementEventCreator.prepareForStart();
         webElementRecordClient.setWebElementRecordClient(webView);
         final String javaScript = getJavaScriptAsString();
