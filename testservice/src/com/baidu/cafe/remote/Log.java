@@ -28,7 +28,11 @@ public class Log {
     public static void print(String msg) {
         // get the classname of invoker 
         String className = Thread.currentThread().getStackTrace()[3].getClassName();
-        String shortName = className.substring(className.lastIndexOf(".") + 1);
+        String shortName = className.substring(className.lastIndexOf('.') + 1);
+        // remove $
+        if (shortName.contains("$")) {
+            shortName = shortName.substring(0, shortName.lastIndexOf('$'));
+        }
         android.util.Log.i(shortName, msg);
     }
 }

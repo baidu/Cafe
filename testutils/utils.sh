@@ -699,25 +699,44 @@ string_to_json_format() # $ret_json
     #ret_json=${ret_json//^H/\\\b} # \b (backspace)
 }
 
-get_result_from_cafe() # $serial_number $function $parameter
+#
+# invoke api from Cafe.apk
+#
+invoke_cafe_api() # $serial_number $function $parameter $timeout
 {
     ADB="adb -s $1"
     function="$2"
     parameter="$3"
+    timeout="$4"
+
+    if [ ! -z "$parameter" ];then
+       parameter="-e parameter \"$parameter\""
+    fi
+
+    if [ -z "$4" ];then
+        timeout=60
+        log "timeout is set to 60s defaultly."
+    fi
 
     $ADB shell service call window 1 i32 4939
     $ADB logcat -c
     $ADB shell am startservice -a com.baidu.cafe.remote.action.name.COMMAND \
-        -e function "$function" -e parameter "$parameter"
-    completed=`$ADB logcat -d Arms:I *:S | grep "invoke completed"`
+        -e function "$function" $parameter
     
+    # wait for invoking complete
     end=$((`date +%s` + $timeout))
 	while [ $(date +%s) -le $end ]
 	do
-        #if []
+        completed=`$ADB logcat -d Arms:I *:S | grep "invoke completed"`
+        if [ ! -z "$completed" ];then
+            # get result
+            $ADB logcat -d ArmsBinder:I *:S | \
+                awk -F ":" '{for(i=2;i<NF;i++) printf "%s",$i;print $NF}'
+            $ADB logcat -d Arms:I *:S | awk -F ":" '{print $2}'
+            return
+        fi
 		sleep 1
 	done
-
-
+    echo "invoke_cafe_api timeout [$timeout]!"
 }
 

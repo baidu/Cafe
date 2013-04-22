@@ -76,9 +76,11 @@ public class Arms extends Service {
         try {
             String function = intent.getStringExtra("function");
             String parameter = intent.getStringExtra("parameter");
+            long begin = System.currentTimeMillis();
             Object result = ReflectHelper.invoke(new ArmsBinder(this), function, parameter);
             Log.print(null == result ? "" : result.toString());
-            Log.print("invoke completed [" + function + "]");
+            Log.print(String.format("invoke completed [%s] timecost [%ss]", function,
+                    (System.currentTimeMillis() - begin) / 1000f));
         } catch (Exception e) {
             e.printStackTrace();
         }
