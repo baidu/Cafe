@@ -69,6 +69,7 @@ public class WebElementRecorder {
     }
 
     private void hookWebView(final WebView webView) {
+    	// test branch
         webElementEventCreator.prepareForStart();
         webElementRecordClient.setWebElementRecordClient(webView);
         final String javaScript = getJavaScriptAsString();
@@ -192,6 +193,7 @@ public class WebElementRecorder {
             WebElementEvent event = null;
 
             if (DEBUG) {
+            	System.out.println("createWebElementEvent, information : " + information);
                 code = "local.dumpPage();\n" + code;
             }
 
