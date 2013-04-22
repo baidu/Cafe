@@ -844,4 +844,42 @@ public class ArmsBinder extends IRemoteArms.Stub {
     public void copyAssets(String dist) {
         mSystemLib.copyAssets(dist);
     }
+
+    boolean isDumpAllLinesCompleted = false;
+
+    /**
+     * timeout 60s
+     */
+    public void dumpAllLines() {
+        isDumpAllLinesCompleted = false;
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                mViewPropertyProvider.dumpAllLines();
+                isDumpAllLinesCompleted = true;
+            }
+
+        }).start();
+
+        long end = System.currentTimeMillis() + 60 * 1000;
+        while (System.currentTimeMillis() < end) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (isDumpAllLinesCompleted) {
+                break;
+            }
+        }
+    }
+
+    private final static int SEARCHMODE_COMPLETE_MATCHING = 1;
+    private final static int TIMEOUT_DEFAULT_VALUE        = 10000;
+
+    public boolean clickViewByText(String text) {
+        return clickView("mText", text, SEARCHMODE_COMPLETE_MATCHING, 0,
+                TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, null, 0);
+    }
 }

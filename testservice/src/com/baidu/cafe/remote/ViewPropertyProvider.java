@@ -206,7 +206,7 @@ public class ViewPropertyProvider {
      */
     public ArrayList<String[]> getViewsProperties(String searchKey, String searchValue,
             int searchMode, int targetNumber, String[] getKeys, boolean getNew, boolean onlyVisible) {
-        if (null == searchKey || searchKey.isEmpty() || null == searchValue || null == getKeys
+        if (null == searchKey || searchKey.equals("") || null == searchValue || null == getKeys
                 || targetNumber < 1) {
             Log.print("getViewProperties()'s arguments is not correct!");
             return null;
@@ -602,6 +602,39 @@ public class ViewPropertyProvider {
     }
 
     /**
+     * @return
+     */
+    public ArrayList<String> dumpAllLines() {
+        ArrayList<String> lines = new ArrayList<String>();
+        Log.print("Dump -1 begin..");
+        Long begin = System.currentTimeMillis();
+        try {
+            mSocket = new Socket();
+            mSocket.connect(new InetSocketAddress("127.0.0.1", VIEWSERVER_PORT));
+            mOut = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream()));
+            mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), "utf-8"));
+
+            // send command
+            mOut.write("DUMP -1");
+            mOut.newLine();
+            mOut.flush();
+
+            while (true) {
+                String line = null;
+                if ((line = mIn.readLine()) == null || "DONE.".equalsIgnoreCase(line)) {
+                    break;
+                }
+                lines.add(line);
+                Log.print(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.print("Dump time cost: " + (System.currentTimeMillis() - begin) + "ms");
+        return lines;
+    }
+
+    /**
      * dump lines from view server by the given dumping command
      * 
      * @param command
@@ -870,7 +903,7 @@ public class ViewPropertyProvider {
      */
     private boolean hasValue(String key) {
         String value = mSystemLib.getSystemProperties(key);
-        return (null == value || value.isEmpty() || Integer.valueOf(value) == 0) ? false : true;
+        return (null == value || value.equals("") || Integer.valueOf(value) == 0) ? false : true;
     }
 
     /**

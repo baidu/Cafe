@@ -101,7 +101,7 @@ public class ReflectHelper {
     public static Object invoke(Object object, String function, String parameter)
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        System.out.println(function + "(" + parameter + ")");
+        System.out.println(function + "(" + (null == parameter ? "" : parameter) + ")");
         Class<?>[] types = null;
         Object[] values = null;
 

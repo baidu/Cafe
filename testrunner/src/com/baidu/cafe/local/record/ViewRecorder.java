@@ -1113,6 +1113,11 @@ public class ViewRecorder {
     }
 
     private void setOnClick(View v) {
+        if (local.isSize0(v)) {
+            printLog(v + " is size 0.");
+            return;
+        }
+
         // set click event output
         ClickEvent clickEvent = new ClickEvent(v);
         String viewClass = getViewString(v);

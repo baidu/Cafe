@@ -91,9 +91,13 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         remote.bind(getInstrumentation().getContext());
         launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
-        CommandResult cr = LocalLib.executeOnDevice("chmod 777 " + mTargetFilesDir, "/", 200);
-        Log.i("CafeTestCase", "chmod 777 " + mTargetFilesDir + " "
-                + (cr.ret == 0 ? "success" : "failed!\n" + cr.console.toString()));
+        String command = "chmod 777 " + mTargetFilesDir;
+        CommandResult cr = LocalLib.executeOnDevice(command, "/", 1000);
+        if (null == cr){
+            Log.i(command+" failed!");
+        }else{
+            Log.i(command + " " + (cr.ret == 0 ? "success" : "failed!\n" + cr.console.toString()));
+        }
         remote.copyAssets(mTargetFilesDir);
         local = new LocalLib(getInstrumentation(), getActivity());
         mPackageName = local.getCurrentActivity().getPackageName();

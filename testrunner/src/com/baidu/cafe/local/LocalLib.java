@@ -1595,8 +1595,8 @@ public class LocalLib extends SoloEx {
 			sleep(500);
 		}
 
-		endTime += TIMEOUT;
 		// get views from all opened activities
+		endTime += TIMEOUT;
 		while (System.currentTimeMillis() < endTime) {
 			View[] decorViews = LocalLib.getWindowDecorViews();
 			for (View decorView : decorViews) {
@@ -1610,16 +1610,26 @@ public class LocalLib extends SoloEx {
 			sleep(500);
 		}
 
-		Assert.assertTrue(String.format("getViewByFamilyString == null! familyString[%s]", familyString), false);
-		return null;
-	}
+        // for debug when get view failed
+        View[] decorViews = LocalLib.getWindowDecorViews();
+        for (View decorView : decorViews) {
+            ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
+                        decorView));
+            for (View view : invisibleViews) {
+                print(String.format("[%s][%s][%s]", getFamilyString(view), view, getViewText(view)));
+            }
+        }
 
-	/**
-	 * This method is protected by assert.
-	 * 
-	 * @param familyString
-	 * @param className
-	 * @return
+        Assert.assertTrue(String.format("getViewByFamilyString == null! familyString[%s]", familyString), false);
+        return null;
+    }
+
+    /**
+     * This method is protected by assert.
+     * 
+     * @param familyString
+     * @param className
+     * @return
 	 */
 	public View waitForViewByFamilyString(String familyString, String className) {
 		View view = getViewByFamilyString(familyString);
@@ -2076,7 +2086,11 @@ public class LocalLib extends SoloEx {
 
 	public void dumpPage() {
 		ArrayList<WebElement> elements = getCurrentWebElements();
-		print("############# dumpPage begin #################");
+        if (elements.size() == 0) {
+            print("elements.size() == 0 at dumpPage");
+            return;
+        }
+        print("############# dumpPage begin #################");
 		for (WebElement element : elements) {
 			print("(" + element.getLocationX() + "," + element.getLocationY() + ") , {tagName : "
 					+ element.getTagName() + "} , {id : " + element.getId() + "} , {className : "
