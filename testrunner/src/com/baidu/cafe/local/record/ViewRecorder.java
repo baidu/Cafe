@@ -431,8 +431,8 @@ public class ViewRecorder {
 
     final String template = "package com.example.demo.test;\n" + "\n"
                                   + "import android.view.KeyEvent;\n"
-                                  + "import com.baidu.cafe.CafeTestCase;\n"
-                                  + "// next import\n" + "\n" + "public class "
+                                  + "import com.baidu.cafe.CafeTestCase;\n" + "// next import\n"
+                                  + "\n" + "public class "
                                   + REPLAY_CLASS_NAME
                                   + " extends CafeTestCase {\n"
                                   + "    private static Class<?>     launcherActivityClass;\n"
@@ -1693,7 +1693,7 @@ public class ViewRecorder {
         if (up.view instanceof ScrollView) {
             outputAfterScrollStop((ScrollView) up.view, dragEvent);
             return;
-        } else if (up.view instanceof AbsListView) {
+        } else if (up.view instanceof AbsListView || up.view instanceof WebView) {
             printLog("ignore drag event of [" + up.view + "]");
             return;
         } else {
