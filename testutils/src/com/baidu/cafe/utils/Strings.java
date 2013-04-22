@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.baidu.cafe.remote;
+package com.baidu.cafe.utils;
 
 import java.util.ArrayList;
 
@@ -55,6 +55,15 @@ public class Strings {
             ret.add(rows[rowNumber - 1]);
         }
         return new Strings(ret);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(1024);
+        for (String line : strings) {
+            sb.append(line).append('\n');
+        }
+        return sb.toString();
     }
 
     /**

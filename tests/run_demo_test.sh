@@ -1,5 +1,5 @@
 #!/bin/bash 
-source ../util.sh
+source ../testutils/utils.sh
 
 _PWD=`pwd`
 ANDROID_TOP=$_PWD/../..

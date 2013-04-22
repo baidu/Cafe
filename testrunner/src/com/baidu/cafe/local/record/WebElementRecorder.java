@@ -44,11 +44,31 @@ public class WebElementRecorder {
      * @param webView
      * @return
      */
-    public boolean handleWebView(final WebView webView) {
+    public void handleWebView(final WebView webView) {
         if (webView == null) {
-            return false;
+            return;
         }
+        print("start monitor WebView: " + webView);
         this.webView = webView;
+
+        // monitor WebView
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (true) {
+                    hookWebView(webView);
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void hookWebView(final WebView webView) {
         webElementEventCreator.prepareForStart();
         webElementRecordClient.setWebElementRecordClient(webView);
         final String javaScript = getJavaScriptAsString();
@@ -60,7 +80,6 @@ public class WebElementRecorder {
                 }
             }
         });
-        return true;
     }
 
     private String getJavaScriptAsString() {

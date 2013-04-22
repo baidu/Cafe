@@ -1,12 +1,12 @@
 package com.baidu.cafe.remote;
 
-import com.baidu.cafe.remote.SystemLib.TimeLocker;
-
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.baidu.cafe.remote.SystemLib.TimeLocker;
 
 public class LockActivity extends Activity {
     public static String  unlockPassword       = null;

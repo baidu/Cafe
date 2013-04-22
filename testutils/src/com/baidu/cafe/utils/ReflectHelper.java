@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.baidu.cafe.remote;
+package com.baidu.cafe.utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -101,7 +101,7 @@ public class ReflectHelper {
     public static Object invoke(Object object, String function, String parameter)
             throws SecurityException, IllegalArgumentException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        System.out.println(function + "(" + null == parameter ? "" : parameter + ")");
+        System.out.println(function + "(" + (null == parameter ? "" : parameter) + ")");
         Class<?>[] types = null;
         Object[] values = null;
 

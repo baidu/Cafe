@@ -20,6 +20,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.baidu.cafe.utils.ReflectHelper;
+
 /**
  * This class provides autotest assistance by AIDL+Service, including the
  * following features: 1. file system 2. power 3. connectivity 4. telephony

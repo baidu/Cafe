@@ -29,11 +29,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import com.baidu.cafe.CafeTestCase;
-import com.baidu.cafe.local.DESEncryption;
-import com.baidu.cafe.local.LocalLib;
-import com.baidu.cafe.local.Log;
-
 import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -57,6 +52,11 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ScrollView;
 import android.widget.Spinner;
+
+import com.baidu.cafe.CafeTestCase;
+import com.baidu.cafe.local.DESEncryption;
+import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.local.Log;
 
 /**
  * @author luxiaoyu01@baidu.com

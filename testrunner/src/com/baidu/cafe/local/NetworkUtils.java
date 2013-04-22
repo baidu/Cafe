@@ -27,9 +27,11 @@ import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import com.baidu.cafe.local.ShellExecute.CallBack;
-
 import android.os.Build;
+
+import com.baidu.cafe.utils.ShellExecute;
+import com.baidu.cafe.utils.ShellExecute.CallBack;
+import com.baidu.cafe.utils.Strings;
 
 /**
  * @author luxiaoyu01@baidu.com

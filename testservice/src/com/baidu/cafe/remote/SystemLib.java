@@ -90,6 +90,7 @@ import com.android.internal.os.BatteryStatsImpl;
 import com.android.internal.os.storage.ExternalStorageFormatter;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.widget.LockPatternUtils;
+import com.baidu.cafe.utils.ShellExecute;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -2097,50 +2098,50 @@ public class SystemLib {
     @Deprecated
     public int insertAPN(String name, String apn_addr, String proxy, String port) {
         int id = -1;
-//        ContentResolver resolver = mContext.getContentResolver();
-//        ContentValues values = new ContentValues();
-//        values.put("name", name);
-//        values.put("apn", apn_addr);
-//        values.put(Telephony.Carriers.PROXY, proxy);
-//        values.put(Telephony.Carriers.PORT, port);
-//
-//        /*
-//         * The following three field values are for testing in Android emulator only
-//         * The APN setting page UI will ONLY display APNs whose 'numeric' filed is
-//         * TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC.
-//         * On Android emulator, this value is 310260, where 310 is mcc, and 260 mnc.
-//         * With these field values, the newly added apn will appear in system UI.
-//         */
-//        values.put("mcc", "310");
-//        values.put("mnc", "260");
-//        values.put("numeric", "310260");
-//
-//        Cursor c = null;
-//        try {
-//            resolver.delete(APN_TABLE_URI, "_id=?", null);
-//            Uri newRow = resolver.insert(APN_TABLE_URI, values);
-//            if (newRow != null) {
-//                c = resolver.query(newRow, null, null, null, null);
-//                Log.print("Newly added APN:");
-//                //                printAllData(c); //Print the entire result set
-//
-//                // Obtain the apn id
-//                int idindex = c.getColumnIndex("_id");
-//                c.moveToFirst();
-//                id = c.getShort(idindex);
-//                Log.print("New ID: " + id + ": Inserting new APN succeeded!");
-//                if (setDefaultAPN(id)) {
-//                    Log.print("Set apn to default success!");
-//                } else {
-//                    Log.print("Set apn to default fail!");
-//                }
-//            }
-//        } catch (SQLException e) {
-//            Log.print(e.getMessage());
-//        }
-//
-//        if (c != null)
-//            c.close();
+        //        ContentResolver resolver = mContext.getContentResolver();
+        //        ContentValues values = new ContentValues();
+        //        values.put("name", name);
+        //        values.put("apn", apn_addr);
+        //        values.put(Telephony.Carriers.PROXY, proxy);
+        //        values.put(Telephony.Carriers.PORT, port);
+        //
+        //        /*
+        //         * The following three field values are for testing in Android emulator only
+        //         * The APN setting page UI will ONLY display APNs whose 'numeric' filed is
+        //         * TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC.
+        //         * On Android emulator, this value is 310260, where 310 is mcc, and 260 mnc.
+        //         * With these field values, the newly added apn will appear in system UI.
+        //         */
+        //        values.put("mcc", "310");
+        //        values.put("mnc", "260");
+        //        values.put("numeric", "310260");
+        //
+        //        Cursor c = null;
+        //        try {
+        //            resolver.delete(APN_TABLE_URI, "_id=?", null);
+        //            Uri newRow = resolver.insert(APN_TABLE_URI, values);
+        //            if (newRow != null) {
+        //                c = resolver.query(newRow, null, null, null, null);
+        //                Log.print("Newly added APN:");
+        //                //                printAllData(c); //Print the entire result set
+        //
+        //                // Obtain the apn id
+        //                int idindex = c.getColumnIndex("_id");
+        //                c.moveToFirst();
+        //                id = c.getShort(idindex);
+        //                Log.print("New ID: " + id + ": Inserting new APN succeeded!");
+        //                if (setDefaultAPN(id)) {
+        //                    Log.print("Set apn to default success!");
+        //                } else {
+        //                    Log.print("Set apn to default fail!");
+        //                }
+        //            }
+        //        } catch (SQLException e) {
+        //            Log.print(e.getMessage());
+        //        }
+        //
+        //        if (c != null)
+        //            c.close();
         return id;
     }
 

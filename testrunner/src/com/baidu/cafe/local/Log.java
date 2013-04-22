@@ -19,9 +19,9 @@ package com.baidu.cafe.local;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import com.baidu.cafe.remote.Armser;
-
 import android.test.ActivityInstrumentationTestCase2;
+
+import com.baidu.cafe.remote.Armser;
 
 /**
  * @author luxiaoyu01@baidu.com

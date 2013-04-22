@@ -31,13 +31,12 @@ import junit.framework.TestListener;
 
 import org.xmlpull.v1.XmlSerializer;
 
-import com.baidu.cafe.local.LocalLib;
-import com.baidu.cafe.local.ShellExecute.CommandResult;
-
 import android.app.Instrumentation;
 import android.content.Context;
 import android.util.Log;
 import android.util.Xml;
+
+import com.baidu.cafe.local.LocalLib;
 
 /**
  * Custom test listener that outputs test results to XML files. The files use a

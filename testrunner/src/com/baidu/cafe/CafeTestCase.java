@@ -17,20 +17,19 @@
 package com.baidu.cafe;
 
 import junit.framework.Assert;
-
-import com.baidu.cafe.remote.Armser;
-import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
-import com.baidu.cafe.local.Log;
-import com.baidu.cafe.local.LocalLib;
-import com.baidu.cafe.local.ShellExecute;
-import com.baidu.cafe.local.ShellExecute.CallBack;
-import com.baidu.cafe.local.ShellExecute.CommandResult;
-
 import android.app.Activity;
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.KeyEvent;
 import android.view.Window;
+
+import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
+import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.local.Log;
+import com.baidu.cafe.remote.Armser;
+import com.baidu.cafe.utils.ShellExecute;
+import com.baidu.cafe.utils.ShellExecute.CallBack;
+import com.baidu.cafe.utils.ShellExecute.CommandResult;
 
 /**
  * @author luxiaoyu01@baidu.com

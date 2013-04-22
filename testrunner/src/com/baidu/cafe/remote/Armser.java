@@ -16,7 +16,8 @@
 
 package com.baidu.cafe.remote;
 
-import android.app.ActivityManager;
+import java.util.ArrayList;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -29,14 +30,9 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.WindowManager;
 
 import com.baidu.cafe.local.LocalLib;
-
-import java.lang.InterruptedException;
-import java.lang.Thread;
-import java.util.ArrayList;
 
 public class Armser {
 

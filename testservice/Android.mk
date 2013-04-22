@@ -6,6 +6,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_DEX_PREOPT := false
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
+LOCAL_SRC_FILES += $(call all-java-files-under, ../testutils/src/)
 LOCAL_SRC_FILES += \
         /src/com/baidu/cafe/remote/IRemoteArms.aidl 
 

@@ -17,13 +17,14 @@
 package com.baidu.cafe.local;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Field;
-
-import com.jayway.android.robotium.solo.Solo;
+import java.lang.reflect.InvocationTargetException;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+
+import com.baidu.cafe.utils.ReflectHelper;
+import com.jayway.android.robotium.solo.Solo;
 
 /**
  * In order to use the Non-Public-Class of robotium project, we have to define

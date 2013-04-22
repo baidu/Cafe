@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.baidu.cafe.remote;
+package com.baidu.cafe.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -107,7 +107,7 @@ public class ShellExecute {
                 try {
                     return fCallBack.runInTimeout();
                 } catch (InterruptedException e) {
-                    print("Timeout: Exiting by Exception");
+                    System.out.println("Timeout: Exiting by Exception");
                 }
 
                 return null;
@@ -149,12 +149,6 @@ public class ShellExecute {
             }
         }, timeout);
         return ret;
-    }
-
-    private static void print(String message) {
-        if (Log.DEBUG) {
-            android.util.Log.i("ShellExecute", message);
-        }
     }
 
 }
