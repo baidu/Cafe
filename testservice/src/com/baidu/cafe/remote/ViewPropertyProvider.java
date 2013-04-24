@@ -25,6 +25,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import com.baidu.cafe.utils.ShellExecute;
+import com.baidu.cafe.utils.ShellExecute.SyncRunnable;
+
 /**
  * @author luxiaoyu01@baidu.com
  * @date 2011-7-6
@@ -606,7 +609,6 @@ public class ViewPropertyProvider {
      */
     public ArrayList<String> dumpAllLines() {
         ArrayList<String> lines = new ArrayList<String>();
-        Log.print("Dump -1 begin..");
         Long begin = System.currentTimeMillis();
         try {
             mSocket = new Socket();
@@ -881,8 +883,9 @@ public class ViewPropertyProvider {
      *            true if u just wanna dump visible views
      * @return all of dumped views
      */
-    private ArrayList<String> dumpTargetViews(String command, String searchKey, String searchValue,
-            int searchMode, int targetNumber, boolean getNew, boolean onlyVisible) {
+    private ArrayList<String> dumpTargetViews(final String command, final String searchKey,
+            final String searchValue, final int searchMode, final int targetNumber,
+            final boolean getNew, final boolean onlyVisible) {
         mTargetIndexes = new ArrayList<Integer>();
 
         // getViewLines from dumped lines

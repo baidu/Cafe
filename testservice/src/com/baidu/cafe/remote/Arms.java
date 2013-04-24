@@ -68,22 +68,31 @@ public class Arms extends Service {
         //        invokeArmsBinder(intent);
     }
 
-    private void invokeArmsBinder(Intent intent) {
+    private void invokeArmsBinder(final Intent intent) {
         if (null == intent) {
             Log.print("null == intent at invokeArmsBinder");
             return;
         }
-        try {
-            String function = intent.getStringExtra("function");
-            String parameter = intent.getStringExtra("parameter");
-            long begin = System.currentTimeMillis();
-            Object result = ReflectHelper.invoke(new ArmsBinder(this), function, parameter);
-            Log.print(null == result ? "" : result.toString());
-            Log.print(String.format("invoke completed [%s] timecost [%ss]", function,
-                    (System.currentTimeMillis() - begin) / 1000f));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        // It must be invoked in thread.
+        final ArmsBinder armsBinder = new ArmsBinder(this);
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    String function = intent.getStringExtra("function");
+                    String parameter = intent.getStringExtra("parameter");
+                    long begin = System.currentTimeMillis();
+                    Object result = ReflectHelper.invoke(armsBinder, function, parameter);
+                    Log.print(null == result ? "" : result.toString());
+                    Log.print(String.format("invoke completed [%s] timecost [%ss]", function,
+                            (System.currentTimeMillis() - begin) / 1000f));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
 }

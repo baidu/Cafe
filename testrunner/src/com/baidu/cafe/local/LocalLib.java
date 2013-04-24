@@ -1265,7 +1265,7 @@ public class LocalLib extends SoloEx {
         }
 
         // chmod for adb pull /data/data/<package_name>/files .
-        executeOnDevice("chmod 777 " + packagePath, "/", 200);
+        // executeOnDevice("chmod 777 " + packagePath, "/", 200);
         runOnMainSync(new Runnable() {
             public void run() {
                 takeActivitySnapshot(fileName + ".jpg");
@@ -1480,7 +1480,7 @@ public class LocalLib extends SoloEx {
     public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> viewList) {
         ArrayList<T> tmpViewList = new ArrayList<T>(viewList.size());
         for (T view : viewList) {
-            if (view != null && view.isShown() && isInScreen(view)) {
+            if (view != null && /*view.isShown() && isInScreen(view) &&*/ !isSize0(view)) {
                 tmpViewList.add(view);
             }
         }
@@ -1564,8 +1564,7 @@ public class LocalLib extends SoloEx {
         }
         runOnMainSync(new Runnable() {
             public void run() {
-                int[] xy = new int[2];
-                view.getLocationOnScreen(xy);
+                int[] xy = getViewCenter(view);
                 print("clickViaPerformClick:" + xy[0] + "," + xy[1]);
                 view.performClick();
             }
@@ -1635,20 +1634,31 @@ public class LocalLib extends SoloEx {
             sleep(500);
         }
 
-        // for debug when get view failed
+        printViews(familyString);
+        Assert.assertTrue(
+                String.format("getViewByFamilyString == null! familyString[%s]", familyString),
+                false);
+        return null;
+    }
+
+    /**
+     * for debug when get view failed
+     */
+    private void printViews(String targetFamilyString) {
         View[] decorViews = LocalLib.getWindowDecorViews();
         for (View decorView : decorViews) {
             ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
                     decorView));
             for (View view : invisibleViews) {
-                print(String.format("[%s][%s][%s]", getFamilyString(view), view, getViewText(view)));
+                String familyString = getFamilyString(view);
+                String star = "";
+                if (familyString.equals(targetFamilyString)) {
+                    star = "*";
+                }
+                print(String.format("%s[%s][%s][%s]", star, getFamilyString(view), view,
+                        getViewText(view)));
             }
         }
-
-        Assert.assertTrue(
-                String.format("getViewByFamilyString == null! familyString[%s]", familyString),
-                false);
-        return null;
     }
 
     /**
@@ -1663,7 +1673,10 @@ public class LocalLib extends SoloEx {
         String exceptViewClassName = view.getClass().getName();
         String assertString = String.format("Except view [%s], Actual view [%s]", className,
                 exceptViewClassName);
-        Assert.assertTrue(assertString, exceptViewClassName.equals(className));
+        if (!exceptViewClassName.equals(className)) {
+            printViews(familyString);
+            Assert.assertTrue(assertString, false);
+        }
         return view;
     }
 
@@ -1946,15 +1959,14 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
-    public void clickInListWithFamilyString(int position, String familyString) {
+    /**
+     * use clickOnView() different from clickon which use performClick()
+     * 
+     * @param itemFamilyString
+     */
+    public void clickInListWithFamilyString(String itemFamilyString) {
         try {
-            AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(familyString);
-            if (null == adapterView) {
-                print("null == adapterView");
-                return;
-            }
-            int index = position - adapterView.getFirstVisiblePosition();
-            View view = adapterView.getChildAt(index);
+            View view = getViewByFamilyString(itemFamilyString);
             mTheLastClick = getViewCenter(view);
             clickOnView(view);
             // clickOnViewWithoutScroll(view);

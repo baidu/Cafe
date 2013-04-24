@@ -849,34 +849,11 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
     boolean isDumpAllLinesCompleted = false;
 
-    /**
-     * timeout 60s
-     */
     public void dumpAllLines() {
         isDumpAllLinesCompleted = false;
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                List<String> lines = mViewPropertyProvider.dumpAllLines();
-                for (String line : lines) {
-                    Log.print(line);
-                }
-                isDumpAllLinesCompleted = true;
-            }
-
-        }).start();
-
-        long end = System.currentTimeMillis() + 60 * 1000;
-        while (System.currentTimeMillis() < end) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (isDumpAllLinesCompleted) {
-                break;
-            }
+        List<String> lines = mViewPropertyProvider.dumpAllLines();
+        for (String line : lines) {
+            Log.print(line);
         }
     }
 

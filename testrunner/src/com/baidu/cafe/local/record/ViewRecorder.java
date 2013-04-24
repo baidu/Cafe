@@ -71,6 +71,7 @@ public class ViewRecorder {
     private final static int                         MAX_SLEEP_TIME               = 20000;
     private final static int                         MIN_SLEEP_TIME               = 1000;
     private final static int                         MIN_STEP_COUNT               = 4;
+    private final static boolean                     DEBUG_WEBVIEW                = false;
     public final static boolean                      DEBUG                        = false;
 
     /**
@@ -381,7 +382,6 @@ public class ViewRecorder {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                LocalLib.executeOnDevice("chmod 777 " + mPath + "/" + REPLAY_FILE_NAME, "/", 200);
             }
         }
     }
@@ -427,6 +427,7 @@ public class ViewRecorder {
         }
         String code = String.format(template, CafeTestCase.mActivityClass.getName(), mPackageName);
         writeToFile(code);
+        LocalLib.executeOnDevice("chmod 777 " + mPath + "/" + REPLAY_FILE_NAME, "/", 200);
     }
 
     final String template = "package com.example.demo.test;\n" + "\n"
@@ -711,7 +712,7 @@ public class ViewRecorder {
      * as possible.
      */
     private void setHookListenerOnView(View view) {
-        if (view instanceof WebView) {
+        if (DEBUG_WEBVIEW && view instanceof WebView) {
             new WebElementRecorder(this).handleWebView((WebView) view);
         }
         // handle list
@@ -750,11 +751,10 @@ public class ViewRecorder {
             return;
         }
 
+        mAbsListViewStates.put(getViewID(absListView), new AbsListViewState());
         if (null != onScrollListener) {
-            // TODO: BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!
             hookOnScrollListener(absListView, onScrollListener);
         } else {
-            mAbsListViewStates.put(getViewID(absListView), new AbsListViewState());
             printLog("set onScrollListener [" + absListView + "]");
             OnScrollListener onScrollListenerHooked = new OnScrollListener() {
 
@@ -837,8 +837,8 @@ public class ViewRecorder {
         printLog("hook onScrollListener [" + absListView + "]");
 
         // save old listener
-        //        mOnScrollListeners.put(getViewID(absListView), onScrollListener);
-        mOnScrollListeners.put(String.valueOf(absListView.hashCode()), onScrollListener);
+        mOnScrollListeners.put(getViewID(absListView), onScrollListener);
+        //        mOnScrollListeners.put(String.valueOf(absListView.hashCode()), onScrollListener);
 
         // set hook listener
         final OnScrollListener onScrollListenernew = new OnScrollListener() {
@@ -857,7 +857,7 @@ public class ViewRecorder {
                     }
                     onScrollListener.onScrollStateChanged(view, scrollState);
                 } else {
-                    printLog("onScrollListener == null");
+                    printLog("onScrollListener == null at onScrollStateChanged");
                 }
             }
 
@@ -878,7 +878,7 @@ public class ViewRecorder {
                     onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
                             totalItemCount);
                 } else {
-                    printLog("onScrollListener == null");
+                    printLog("onScrollListener == null at onScroll");
                 }
             }
         };
@@ -1326,20 +1326,20 @@ public class ViewRecorder {
         }
     }
 
+    /**
+     * @param parent
+     * @param view
+     * @param position
+     *            it can not be used for mutiple columns listview
+     * @param id
+     */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
         ClickEvent clickEvent = new ClickEvent(parent);
-        int childIndex = 0;
-        for (int i = 0; i < parent.getChildCount(); i++) {
-            if (parent.getChildAt(i).equals(view)) {
-                childIndex = i;
-            }
-        }
-        String familyString = local.getFamilyString(parent);
-        String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position,
-                familyString);
-        printLog("position:" + position);
-        printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
-        printLog("childIndex:" + childIndex);
+        String itemFamilyString = local.getFamilyString(view);
+        printLog("view:" + view);
+        printLog("itemFamilyString:" + itemFamilyString);
+        String click = String
+                .format("local.clickInListWithFamilyString(\"%s\");", itemFamilyString);
         clickEvent.setCode(getSleepCode() + "\n" + click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click");
@@ -1693,7 +1693,7 @@ public class ViewRecorder {
         if (up.view instanceof ScrollView) {
             outputAfterScrollStop((ScrollView) up.view, dragEvent);
             return;
-        } else if (up.view instanceof AbsListView || up.view instanceof WebView) {
+        } else if (up.view instanceof AbsListView || (DEBUG_WEBVIEW && up.view instanceof WebView)) {
             printLog("ignore drag event of [" + up.view + "]");
             return;
         } else {
@@ -1828,11 +1828,13 @@ public class ViewRecorder {
         String viewString = view.toString();
         if (viewString.indexOf('@') != -1) {
             return viewString.substring(viewString.indexOf("@"));
-        } else {
+        } else if (viewString.indexOf('{') != -1) {
             // after android 4.2
             int leftBracket = viewString.indexOf('{');
             int firstSpace = viewString.indexOf(' ');
             return viewString.substring(leftBracket + 1, firstSpace);
+        } else {
+            return viewString + view.getId();
         }
     }
 

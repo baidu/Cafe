@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
  * @todo
  */
 public class ShellExecute {
+    private boolean mComplete = false;
 
     public class CommandResult {
         public int     ret     = 0;
@@ -42,6 +43,38 @@ public class ShellExecute {
         public CommandResult() {
         }
 
+    }
+
+    public interface SyncRunnable {
+        public void run();
+
+    }
+
+    /**
+     * run in thread sync for some block operations
+     * 
+     * @param runner
+     */
+    public void runInThreadSync(final SyncRunnable runner) {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                runner.run();
+                synchronized (this) {
+                    mComplete = true;
+                }
+            }
+        }).start();
+
+        synchronized (this) {
+            while (!mComplete) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
     }
 
     /**
@@ -151,4 +184,21 @@ public class ShellExecute {
         return ret;
     }
 
+    public static void main(String[] args) {
+        new ShellExecute().runInThreadSync(new SyncRunnable() {
+
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                System.out.println("2");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        });
+        System.out.println("2");
+    }
 }

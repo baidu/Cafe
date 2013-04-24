@@ -133,6 +133,11 @@ class SnapshotHelper {
         view.setDrawingCacheEnabled(true);
         view.buildDrawingCache();
         Bitmap bitmap = view.getDrawingCache();
+
+        if (null == bitmap) {
+            print("null == bitmap at takeViewSnapshot");
+            return;
+        }
         if (LocalLib.mTheLastClick[0] != -1 && LocalLib.mTheLastClick[1] != -1) {
             bitmap = pressPointer(bitmap, LocalLib.mTheLastClick[0], LocalLib.mTheLastClick[1]);
             LocalLib.mTheLastClick[0] = -1;
