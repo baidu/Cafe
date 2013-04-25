@@ -147,6 +147,13 @@ public class ViewRecorder {
     private long                                     mLastEventTime               = System.currentTimeMillis();
 
     /**
+     * assume that only one ScrollView is fling
+     */
+    private String                                   mFamilyStringBeforeScroll    = "";
+
+    private DragEvent                                mTheLastDragEvent            = null;
+
+    /**
      * Saving states for each listview
      */
     private HashMap<String, AbsListViewState>        mAbsListViewStates           = new HashMap<String, AbsListViewState>();
@@ -712,7 +719,7 @@ public class ViewRecorder {
      * as possible.
      */
     private void setHookListenerOnView(View view) {
-        if (DEBUG_WEBVIEW && view instanceof WebView) {
+        if (view instanceof WebView && DEBUG_WEBVIEW) {
             new WebElementRecorder(this).handleWebView((WebView) view);
         }
         // handle list
@@ -821,7 +828,7 @@ public class ViewRecorder {
         }
         printLog("mLastFirstVisibleItem:" + absListViewState.lastFirstVisibleItem);
         printLog("mFirstVisibleItem:" + absListViewState.firstVisibleItem);
-
+        printLog("getFirstVisiblePosition:" + view.getFirstVisiblePosition());
         absListViewState.lastFirstVisibleItem = absListViewState.firstVisibleItem;
         ScrollEvent scrollEvent = new ScrollEvent(view);
         String familyString = local.getFamilyString(view);
@@ -1334,16 +1341,21 @@ public class ViewRecorder {
      * @param id
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        ClickEvent clickEvent = new ClickEvent(parent);
-        String itemFamilyString = local.getFamilyString(view);
-        printLog("view:" + view);
-        printLog("itemFamilyString:" + itemFamilyString);
-        String click = String
-                .format("local.clickInListWithFamilyString(\"%s\");", itemFamilyString);
-        clickEvent.setCode(getSleepCode() + "\n" + click);
-        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
-                + " click");
-        offerOutputEventQueue(clickEvent);
+        //        ClickEvent clickEvent = new ClickEvent(parent);
+        //        String itemFamilyString = local.getFamilyString(view);
+        //        printLog("view:" + view);
+        //        printLog("itemFamilyString:" + itemFamilyString);
+        //        printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
+        //        String click = String
+        //                .format("local.clickInListWithFamilyString(\"%s\");", itemFamilyString);
+        //        clickEvent.setCode(getSleepCode() + "\n" + click);
+        //        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
+        //                + " click");
+
+        // add getSleepCode()
+        String code = mTheLastDragEvent.getCode();
+        mTheLastDragEvent.setCode(getSleepCode() + "\n" + code);
+        offerOutputEventQueue(mTheLastDragEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
         OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) getListener(parent,
@@ -1648,6 +1660,11 @@ public class ViewRecorder {
                                 isDown = true;
                                 timeout = System.currentTimeMillis() + TIMEOUT_NEXT_EVENT;
                             }
+                            if (e.view instanceof ScrollView
+                                    && "".equals(mFamilyStringBeforeScroll)) {
+                                mFamilyStringBeforeScroll = local.getFamilyString(e.view);
+                                printLog(mFamilyStringBeforeScroll);
+                            }
                         }
 
                         if (isDown
@@ -1693,26 +1710,30 @@ public class ViewRecorder {
         if (up.view instanceof ScrollView) {
             outputAfterScrollStop((ScrollView) up.view, dragEvent);
             return;
-        } else if (up.view instanceof AbsListView || (DEBUG_WEBVIEW && up.view instanceof WebView)) {
-            printLog("ignore drag event of [" + up.view + "]");
-            return;
-        } else {
-            int stepCount = events.size() - 2;
-            stepCount = stepCount > MIN_STEP_COUNT ? stepCount : MIN_STEP_COUNT;
-            long duration = up.time - down.time;
-            // float step = local.getDisplayX() * local.getDisplayY() * stepCount;
-            String dragString = "local.dragPercent(%sf, %sf, %sf, %sf, %s);";
-            drag = String.format(dragString, local.toPercentX(down.x), local.toPercentX(up.x),
-                    local.toPercentY(down.y), local.toPercentY(up.y), stepCount);
-            dragEvent
-                    .setLog(String.format(
-                            "Drag [%s<%s>] from (%s,%s) to (%s, %s) by duration %s step %s",
-                            up.view, local.getFamilyString(up.view), down.x, down.y, up.x, up.y,
-                            duration, stepCount));
         }
 
-        dragEvent.setCode(getSleepCode() + "\n" + drag);
+        int stepCount = events.size() - 2;
+        stepCount = stepCount > MIN_STEP_COUNT ? stepCount : MIN_STEP_COUNT;
+        long duration = up.time - down.time;
+        String dragString = "local.dragPercent(%sf, %sf, %sf, %sf, %s);";
+        drag = String.format(dragString, local.toPercentX(down.x), local.toPercentX(up.x),
+                local.toPercentY(down.y), local.toPercentY(up.y), stepCount);
+        dragEvent.setLog(String.format(
+                "Drag [%s<%s>] from (%s,%s) to (%s, %s) by duration %s step %s", up.view,
+                local.getFamilyString(up.view), down.x, down.y, up.x, up.y, duration, stepCount));
+        // without getSleepCode() for AbsListView
+        // and will be added at setOnItemClick()
+        dragEvent.setCode(drag);
+        mTheLastDragEvent = dragEvent;
 
+        if (up.view instanceof AbsListView || (up.view instanceof WebView && DEBUG_WEBVIEW)) {
+            printLog("ignore drag event of [" + up.view + "]");
+            return;
+        }
+
+        // add getSleepCode()
+        String code = dragEvent.getCode();
+        dragEvent.setCode(getSleepCode() + "\n" + code);
         // wait for other type event
         sleep(100);
 
@@ -1734,10 +1755,10 @@ public class ViewRecorder {
                     ;
                 int scrollX = scrollView.getScrollX();
                 int scrollY = scrollView.getScrollY();
-                String familyString = local.getFamilyString(scrollView);
                 String drag = String.format(
-                        "local.scrollScrollViewToWithFamilyString(\"%s\", %s, %s);", familyString,
-                        scrollX, scrollY);
+                        "local.scrollScrollViewToWithFamilyString(\"%s\", %s, %s);",
+                        mFamilyStringBeforeScroll, scrollX, scrollY);
+                mFamilyStringBeforeScroll = "";
                 dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView, scrollX,
                         scrollY));
                 dragEvent.setCode(getSleepCode() + "\n" + drag);

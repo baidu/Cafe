@@ -109,8 +109,8 @@ do
 	apkPath=${apk#"Install: "};
 	cp ${ANDROID_TOP}/${apkPath} $SRC/out
 done
-	cp $SRC/cafe_setup.bat $SRC/out
-	cp $SRC/cafe_setup.sh $SRC/out
+	cp $SRC/testutils/cafe_setup.bat $SRC/out
+	cp $SRC/testutils/cafe_setup.sh $SRC/out
 	cp $SRC/testutils/utils.sh $SRC/out
 }
 

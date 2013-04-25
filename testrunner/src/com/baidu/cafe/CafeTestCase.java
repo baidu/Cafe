@@ -61,7 +61,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     private Activity                        mActivity                    = null;
 
     /**
-     * For Android version number > 2.1
+     * only for Android version number > 2.1
      * 
      * @param activityClass
      */
@@ -71,7 +71,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
     }
 
     /**
-     * For Android version number <= 2.1
+     * For Android full version
      * 
      * @param packageName
      * @param activityClass
@@ -88,13 +88,13 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         mTargetFilesDir = getInstrumentation().getTargetContext().getFilesDir().toString();
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
-        launchActivityIfNotAvailable();
+        //        launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
         String command = "chmod 777 " + mTargetFilesDir;
         CommandResult cr = LocalLib.executeOnDevice(command, "/", 1000);
-        if (null == cr){
-            Log.i(command+" failed!");
-        }else{
+        if (null == cr) {
+            Log.i(command + " failed!");
+        } else {
             Log.i(command + " " + (cr.ret == 0 ? "success" : "failed!\n" + cr.console.toString()));
         }
         remote.copyAssets(mTargetFilesDir);

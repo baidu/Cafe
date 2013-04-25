@@ -700,6 +700,7 @@ string_to_json_format() # $ret_json
 }
 
 #
+# NOTICE: This function should be used after call cafe_setup.sh
 # invoke api from Cafe.apk
 #
 invoke_cafe_api() # $serial_number $function $parameter $timeout
@@ -738,5 +739,13 @@ invoke_cafe_api() # $serial_number $function $parameter $timeout
 		sleep 1
 	done
     echo "invoke_cafe_api timeout [$timeout]!"
+}
+
+#
+# return cpu number
+#
+get_cpu_number()
+{
+    return `cat /proc/cpuinfo | grep processor | wc -l`
 }
 
