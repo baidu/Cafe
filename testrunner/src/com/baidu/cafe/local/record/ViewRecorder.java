@@ -207,7 +207,7 @@ public class ViewRecorder {
                     .format("RecordMotionEvent(%s, action=%s, x=%s, y=%s)", view, action, x, y);
         }
     }
- 
+
     class AbsListViewState {
         public int firstVisibleItem     = 0;
         public int visibleItemCount     = 0;
