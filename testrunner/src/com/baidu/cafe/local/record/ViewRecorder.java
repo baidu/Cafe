@@ -1439,7 +1439,11 @@ public class ViewRecorder {
                         OutputEvent e = pollOutputEventQueue();
                         if (e != null) {
                             events.add(e);
-                            sleep(400);
+                            if (e.view instanceof WebView) {
+                                sleep(1000);
+                            } else {
+                                sleep(400);
+                            }
                             // get all event
                             while ((e = pollOutputEventQueue()) != null) {
                                 events.add(e);

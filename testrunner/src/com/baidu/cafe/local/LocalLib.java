@@ -2148,19 +2148,29 @@ public class LocalLib extends SoloEx {
     }
 
     public void dumpPage() {
-        ArrayList<WebElement> elements = getCurrentWebElements();
-        if (elements.size() == 0) {
-            print("elements.size() == 0 at dumpPage");
-            return;
-        }
+        ArrayList<String> webElementsString = getWebElementsString();
         print("############# dumpPage begin #################");
-        for (WebElement element : elements) {
-            print("(" + element.getLocationX() + "," + element.getLocationY() + ") , {tagName : "
-                    + element.getTagName() + "} , {id : " + element.getId() + "} , {className : "
-                    + element.getClassName() + "} , {name : " + element.getName() + "} , {text : "
-                    + element.getText() + "}");
+        for (String line : webElementsString) {
+            print(line);
         }
-        sleep(5000);
         print("############# dumpPage end #################");
+    }
+
+    public ArrayList<String> getWebElementsString() {
+        ArrayList<String> webElementsString = new ArrayList<String>();
+        ArrayList<WebElement> elements = getCurrentWebElements();
+
+        for (WebElement element : elements) {
+            StringBuilder sb = new StringBuilder();
+            sb.append('(').append(element.getLocationX()).append(',')
+                    .append(element.getLocationY()).append(") , {tagName : ")
+                    .append(element.getTagName()).append("} , {id : ").append(element.getId())
+                    .append("} , {className : ").append(element.getClassName())
+                    .append("} , {name : ").append(element.getName()).append("} , {text : ")
+                    .append(element.getText()).append('}');
+            webElementsString.add(sb.toString());
+        }
+
+        return webElementsString;
     }
 }

@@ -538,10 +538,13 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
     /**
      * run command by service side on PC
+     * 
+     * server is at phone and python client is at pc
      */
     @Deprecated
     public String runCmdOnServer(String command) {
-        return new Client(getServerIP()).runCmdOnServer(command);
+        // TODO in future
+        return "";
     }
 
     public boolean checkView(String searchKey, String searchValue, int searchMode, int targetNumber) {
