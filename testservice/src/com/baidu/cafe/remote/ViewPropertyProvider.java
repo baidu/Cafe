@@ -25,10 +25,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import com.baidu.cafe.utils.ShellExecute;
-import com.baidu.cafe.utils.ShellExecute.SyncRunnable;
-
 /**
+ * Dump view property from view server. It works when "adb shell getprop
+ * ro.debuggable" returns 1.
+ * 
  * @author luxiaoyu01@baidu.com
  * @date 2011-7-6
  * @version

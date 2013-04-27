@@ -74,7 +74,7 @@ public class Arms extends Service {
             return;
         }
 
-        // It must be invoked in thread.
+        // It must be invoked in thread, because some function use socket.
         final ArmsBinder armsBinder = new ArmsBinder(this);
         new Thread(new Runnable() {
 
@@ -85,6 +85,7 @@ public class Arms extends Service {
                     String parameter = intent.getStringExtra("parameter");
                     long begin = System.currentTimeMillis();
                     Object result = ReflectHelper.invoke(armsBinder, function, parameter);
+
                     Log.print(null == result ? "" : result.toString());
                     Log.print(String.format("invoke completed [%s] timecost [%ss]", function,
                             (System.currentTimeMillis() - begin) / 1000f));
