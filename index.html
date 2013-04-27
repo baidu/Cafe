@@ -47,9 +47,20 @@
 <p><a href=https://github.com/BaiduQA/Cafe/downloads >Download Cafe</a></p>
 <p>Then you can run these test cases either on the emulator or on device. You right click the test project and select Run As --> Run As Android JUnit Test. Example of a test case</p>
 
-<pre><code>public class QuickStart extends CafeTestCase &lt;MainActivity&gt; {
-    public QuickStart() {
-        super(MainActivity.class);
+<pre><code>public class TestCafe extends CafeTestCase {
+    private static final String LAUNCHER_ACTIVITY_FULL_CLASSNAME = "com.baidu.chunlei.exercise.MainActivity";
+    private static Class<?>     launcherActivityClass;
+    private static final String TARGET_PACKAGE                   = "com.baidu.chunlei.exercise";
+    static {
+        try {
+            launcherActivityClass = Class.forName(LAUNCHER_ACTIVITY_FULL_CLASSNAME);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public TestCafe() {
+        super(TARGET_PACKAGE, launcherActivityClass);
     }
 
     @Override
@@ -57,6 +68,14 @@
         super.setUp();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    /**
+     * NOTICE: 运行case前需要开启cafe_setup.bat
+     */
     public void test_sample() {
         remote.setWifiEnabled();
         local.clickOnText("enter");
