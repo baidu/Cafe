@@ -64,13 +64,6 @@ make_cafe()
 	#adb push cafexml.xml /system/etc/permissions
 	#adb push $ANDROID_TOP/out/target/product/generic/system/framework/cafe.jar /system/framework
 
-	# make android-web-driver.jar
-	#cd $SRC/webapp
-	#mm -j$CPU_NUMBER
-	#if [ 0 -ne $? ];then
-	#	exit 1;
-	#fi
-
 	# cp classes-jarjar.jar for development
 	cd $SRC
 	rm -rf out
@@ -93,6 +86,8 @@ make_cafe()
     cp $SRC/testrunner/src/com/baidu/cafe/local/record/WebElementRecorder.js com/baidu/cafe/local/record
     jar cvf cafe.jar com/*
     cp cafe.jar ../
+    cd ../
+    rm -rf test
 
     #cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
 	#mv classes.jar android-web-driver.jar
