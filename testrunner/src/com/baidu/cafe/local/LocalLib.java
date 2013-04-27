@@ -1265,7 +1265,7 @@ public class LocalLib extends SoloEx {
         }
 
         // chmod for adb pull /data/data/<package_name>/files .
-        executeOnDevice("chmod 777 " + packagePath, "/", 200);
+        // executeOnDevice("chmod 777 " + packagePath, "/", 200);
         runOnMainSync(new Runnable() {
             public void run() {
                 takeActivitySnapshot(fileName + ".jpg");
@@ -1480,7 +1480,7 @@ public class LocalLib extends SoloEx {
     public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> viewList) {
         ArrayList<T> tmpViewList = new ArrayList<T>(viewList.size());
         for (T view : viewList) {
-            if (view != null && view.isShown() && isInScreen(view)) {
+            if (view != null && view.isShown() && isInScreen(view) && !isSize0(view)) {
                 tmpViewList.add(view);
             }
         }
@@ -1564,8 +1564,7 @@ public class LocalLib extends SoloEx {
         }
         runOnMainSync(new Runnable() {
             public void run() {
-                int[] xy = new int[2];
-                view.getLocationOnScreen(xy);
+                int[] xy = getViewCenter(view);
                 print("clickViaPerformClick:" + xy[0] + "," + xy[1]);
                 view.performClick();
             }
@@ -1605,7 +1604,7 @@ public class LocalLib extends SoloEx {
      * @param familyString
      * @return
      */
-    public View getViewByFamilyString(String familyString) {
+    public View getViewByFamilyString(String familyString, String className) {
         long endTime = System.currentTimeMillis() + TIMEOUT;
 
         // get views from current activity
@@ -1613,7 +1612,10 @@ public class LocalLib extends SoloEx {
             ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
             for (View view : views) {
                 if (getFamilyString(view).equals(familyString)) {
-                    return view;
+                    String viewClassName = view.getClass().getName();
+                    if (null == className || viewClassName.equals(className)) {
+                        return view;
+                    }
                 }
             }
             sleep(500);
@@ -1628,27 +1630,46 @@ public class LocalLib extends SoloEx {
                         decorView));
                 for (View view : invisibleViews) {
                     if (getFamilyString(view).equals(familyString)) {
-                        return view;
+                        String viewClassName = view.getClass().getName();
+                        if (null == className || viewClassName.equals(className)) {
+                            return view;
+                        }
                     }
                 }
             }
             sleep(500);
         }
 
-        // for debug when get view failed
+        printViews(familyString);
+        Assert.assertTrue(
+                String.format("getViewByFamilyString == null! familyString[%s]", familyString),
+                false);
+        return null;
+    }
+
+    /**
+     * for debug when get view failed
+     */
+    private void printViews(String targetFamilyString) {
         View[] decorViews = LocalLib.getWindowDecorViews();
         for (View decorView : decorViews) {
             ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
                     decorView));
             for (View view : invisibleViews) {
-                print(String.format("[%s][%s][%s]", getFamilyString(view), view, getViewText(view)));
+                String familyString = getFamilyString(view);
+                String star = "";
+                if (familyString.equals(targetFamilyString)) {
+                    star = "*";
+                    int[] xy = new int[2];
+                    view.getLocationOnScreen(xy);
+                    print(xy[0] + "," + xy[1]);
+                    print("isSize0:" + isSize0(view));
+                    print("isShown:" + view.isShown());
+                }
+                print(String.format("%s[%s][%s][%s]", star, getFamilyString(view), view,
+                        getViewText(view)));
             }
         }
-
-        Assert.assertTrue(
-                String.format("getViewByFamilyString == null! familyString[%s]", familyString),
-                false);
-        return null;
     }
 
     /**
@@ -1659,11 +1680,14 @@ public class LocalLib extends SoloEx {
      * @return
      */
     public View waitForViewByFamilyString(String familyString, String className) {
-        View view = getViewByFamilyString(familyString);
+        View view = getViewByFamilyString(familyString, className);
         String exceptViewClassName = view.getClass().getName();
         String assertString = String.format("Except view [%s], Actual view [%s]", className,
                 exceptViewClassName);
-        Assert.assertTrue(assertString, exceptViewClassName.equals(className));
+        if (!exceptViewClassName.equals(className)) {
+            printViews(familyString);
+            Assert.assertTrue(assertString, false);
+        }
         return view;
     }
 
@@ -1674,7 +1698,7 @@ public class LocalLib extends SoloEx {
      * @param text
      */
     public void waitForTextByFamilyString(String familyString, String text) {
-        View view = getViewByFamilyString(familyString);
+        View view = getViewByFamilyString(familyString, null);
         String actual = getViewText(view);
         Assert.assertTrue(String.format("Except text [%s], Actual text [%s]", text, actual),
                 actual.equals(text));
@@ -1689,7 +1713,7 @@ public class LocalLib extends SoloEx {
      *            the text that should be set
      */
     public void enterText(String familyString, final String text, final boolean keepPreviousText) {
-        final EditText editText = (EditText) getViewByFamilyString(familyString);
+        final EditText editText = (EditText) getViewByFamilyString(familyString, null);
 
         if (null == editText) {
             Assert.assertTrue("null == editText [" + familyString + "]", false);
@@ -1718,7 +1742,8 @@ public class LocalLib extends SoloEx {
     boolean isClicked = false;
 
     public boolean clickOnExpandableListView(final String familyString, final int flatListPosition) {
-        final ExpandableListView expandableListView = (ExpandableListView) getViewByFamilyString(familyString);
+        final ExpandableListView expandableListView = (ExpandableListView) getViewByFamilyString(
+                familyString, null);
         if (null == expandableListView) {
             print("null == adapterView");
             return false;
@@ -1807,7 +1832,7 @@ public class LocalLib extends SoloEx {
     }
 
     public void scrollListToLineWithFamilyString(final int line, final String familyString) {
-        AbsListView absListView = (AbsListView) getViewByFamilyString(familyString);
+        AbsListView absListView = (AbsListView) getViewByFamilyString(familyString, null);
         if (null == absListView) {
             print("null == absListView");
             return;
@@ -1819,7 +1844,7 @@ public class LocalLib extends SoloEx {
 
     public void scrollScrollViewToWithFamilyString(final String familyString, final int x,
             final int y) {
-        final ScrollView scrollView = (ScrollView) getViewByFamilyString(familyString);
+        final ScrollView scrollView = (ScrollView) getViewByFamilyString(familyString, null);
         runOnMainSync(new Runnable() {
             public void run() {
                 scrollView.scrollBy(x, y);
@@ -1946,16 +1971,16 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
-    public void clickInListWithFamilyString(int position, String familyString) {
+    /**
+     * use clickOnView() different from clickOn() which use performClick()
+     * 
+     * @param itemFamilyString
+     */
+    public void clickInListWithFamilyString(String itemFamilyString) {
         try {
-            AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(familyString);
-            if (null == adapterView) {
-                print("null == adapterView");
-                return;
-            }
-            int index = position - adapterView.getFirstVisiblePosition();
-            View view = adapterView.getChildAt(index);
+            View view = getViewByFamilyString(itemFamilyString, null);
             mTheLastClick = getViewCenter(view);
+            print("clickInListWithFamilyString:" + mTheLastClick[0] + "," + mTheLastClick[1]);
             clickOnView(view);
             // clickOnViewWithoutScroll(view);
         } catch (Exception e) {
@@ -1987,13 +2012,9 @@ public class LocalLib extends SoloEx {
         float toX = toScreenX(toXPersent);
         float fromY = toScreenY(fromYPersent);
         float toY = toScreenY(toYPersent);
-        // float displayX = getDisplayX();
-        // float displayY = getDisplayY();
-        // int actualStepCount = (int) (step / (displayX * displayY));
-
-        long begin = System.currentTimeMillis();
+        //        long begin = System.currentTimeMillis();
         drag(fromX, toX, fromY, toY, stepCount);
-        print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
+        //        print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
     }
 
     public static double getDistance(float x1, float y1, float x2, float y2) {
@@ -2127,19 +2148,29 @@ public class LocalLib extends SoloEx {
     }
 
     public void dumpPage() {
-        ArrayList<WebElement> elements = getCurrentWebElements();
-        if (elements.size() == 0) {
-            print("elements.size() == 0 at dumpPage");
-            return;
-        }
+        ArrayList<String> webElementsString = getWebElementsString();
         print("############# dumpPage begin #################");
-        for (WebElement element : elements) {
-            print("(" + element.getLocationX() + "," + element.getLocationY() + ") , {tagName : "
-                    + element.getTagName() + "} , {id : " + element.getId() + "} , {className : "
-                    + element.getClassName() + "} , {name : " + element.getName() + "} , {text : "
-                    + element.getText() + "}");
+        for (String line : webElementsString) {
+            print(line);
         }
-        sleep(5000);
         print("############# dumpPage end #################");
+    }
+
+    public ArrayList<String> getWebElementsString() {
+        ArrayList<String> webElementsString = new ArrayList<String>();
+        ArrayList<WebElement> elements = getCurrentWebElements();
+
+        for (WebElement element : elements) {
+            StringBuilder sb = new StringBuilder();
+            sb.append('(').append(element.getLocationX()).append(',')
+                    .append(element.getLocationY()).append(") , {tagName : ")
+                    .append(element.getTagName()).append("} , {id : ").append(element.getId())
+                    .append("} , {className : ").append(element.getClassName())
+                    .append("} , {name : ").append(element.getName()).append("} , {text : ")
+                    .append(element.getText()).append('}');
+            webElementsString.add(sb.toString());
+        }
+
+        return webElementsString;
     }
 }

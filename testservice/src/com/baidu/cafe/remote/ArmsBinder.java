@@ -16,6 +16,8 @@
 
 package com.baidu.cafe.remote;
 
+import java.util.List;
+
 import android.app.Instrumentation;
 import android.content.Context;
 
@@ -536,10 +538,13 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
     /**
      * run command by service side on PC
+     * 
+     * server is at phone and python client is at pc
      */
     @Deprecated
     public String runCmdOnServer(String command) {
-        return new Client(getServerIP()).runCmdOnServer(command);
+        // TODO in future
+        return "";
     }
 
     public boolean checkView(String searchKey, String searchValue, int searchMode, int targetNumber) {
@@ -847,31 +852,11 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
     boolean isDumpAllLinesCompleted = false;
 
-    /**
-     * timeout 60s
-     */
     public void dumpAllLines() {
         isDumpAllLinesCompleted = false;
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                mViewPropertyProvider.dumpAllLines();
-                isDumpAllLinesCompleted = true;
-            }
-
-        }).start();
-
-        long end = System.currentTimeMillis() + 60 * 1000;
-        while (System.currentTimeMillis() < end) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (isDumpAllLinesCompleted) {
-                break;
-            }
+        List<String> lines = mViewPropertyProvider.dumpAllLines();
+        for (String line : lines) {
+            Log.print(line);
         }
     }
 

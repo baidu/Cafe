@@ -159,7 +159,7 @@ public class SystemLib {
         //        "Test Acquired!");
         mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
     }
-
+    
     /**
      * light up the screen
      */
