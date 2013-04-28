@@ -834,7 +834,7 @@ public class ViewRecorder {
         String familyString = local.getFamilyString(view);
         String scroll = String.format("local.scrollListToLineWithFamilyString(%s, \"%s\");",
                 absListViewState.firstVisibleItem, familyString);
-        scrollEvent.setCode(getSleepCode() + "\n" + scroll);
+        scrollEvent.setCode(scroll);
         scrollEvent.setLog("scroll " + view + " to " + absListViewState.firstVisibleItem);
         offerOutputEventQueue(scrollEvent);
     }
@@ -944,7 +944,7 @@ public class ViewRecorder {
         ClickEvent clickEvent = new ClickEvent(parent);
         String code = String.format("local.clickOnExpandableListView(\"%s\", %s);", familyString,
                 flatListPosition);
-        clickEvent.setCode(getSleepCode() + "\n" + code);
+        clickEvent.setCode(code);
         clickEvent.setLog(String.format("click on group[%s]", groupPosition));
 
         offerOutputEventQueue(clickEvent);
@@ -1017,7 +1017,7 @@ public class ViewRecorder {
         ClickEvent clickEvent = new ClickEvent(parent);
         String code = String.format("local.clickOnExpandableListView(\"%s\", %s);", familyString,
                 flatListPosition);
-        clickEvent.setCode(getSleepCode() + "\n" + code);
+        clickEvent.setCode(code);
         clickEvent.setLog(String.format("click on group[%s] child[%s]", groupPosition,
                 childPosition));
 
@@ -1134,7 +1134,7 @@ public class ViewRecorder {
         String click = String.format("local.clickOn(\"%s\", \"%s\");//%s%s", viewClass,
                 familyString, "Click On ", getFirstLine(comments));
 
-        clickEvent.setCode(getSleepCode() + "\n" + click);
+        clickEvent.setCode(click);
 
         // clickEvent.setLog();
         offerOutputEventQueue(clickEvent);
@@ -1354,7 +1354,7 @@ public class ViewRecorder {
 
         // add getSleepCode()
         String code = mTheLastDragEvent.getCode();
-        mTheLastDragEvent.setCode(getSleepCode() + "\n" + code);
+        mTheLastDragEvent.setCode(code);
         offerOutputEventQueue(mTheLastDragEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
@@ -1609,10 +1609,10 @@ public class ViewRecorder {
     private void outputAnEvent(OutputEvent event) {
         if (mTheCurrentEventOutputime >= mTheLastTextChangedTime) {
             outputEditTextEvent();
-            printCode(event.getCode());
+            printCode(getSleepCode() + "\n" +event.getCode());
             printLog(event.getLog());
         } else {
-            printCode(event.getCode());
+            printCode(getSleepCode() + "\n" +event.getCode());
             printLog(event.getLog());
             outputEditTextEvent();
         }
@@ -1735,9 +1735,6 @@ public class ViewRecorder {
             return;
         }
 
-        // add getSleepCode()
-        String code = dragEvent.getCode();
-        dragEvent.setCode(getSleepCode() + "\n" + code);
         // wait for other type event
         sleep(100);
 
@@ -1765,7 +1762,7 @@ public class ViewRecorder {
                 mFamilyStringBeforeScroll = "";
                 dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView, scrollX,
                         scrollY));
-                dragEvent.setCode(getSleepCode() + "\n" + drag);
+                dragEvent.setCode(drag);
                 outputAnEvent(dragEvent);
             }
         }).start();
@@ -1831,7 +1828,7 @@ public class ViewRecorder {
             }
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
             String sendKey = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
-            hardKeyEvent.setCode(getSleepCode() + "\n" + sendKey);
+            hardKeyEvent.setCode(sendKey);
             hardKeyEvent.setLog("view: " + view + " " + event);
 
             offerOutputEventQueue(hardKeyEvent);
