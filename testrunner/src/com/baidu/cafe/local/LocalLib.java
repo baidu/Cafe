@@ -60,6 +60,7 @@ import com.baidu.cafe.local.record.ViewRecorder;
 import com.baidu.cafe.utils.ReflectHelper;
 import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CommandResult;
+import com.baidu.cafe.utils.Strings;
 import com.jayway.android.robotium.solo.WebElement;
 
 import dalvik.system.DexFile;
@@ -2172,5 +2173,64 @@ public class LocalLib extends SoloEx {
         }
 
         return webElementsString;
+    }
+
+    private static String            mUrl   = null;
+    private static ArrayList<String> mTexts = new ArrayList<String>();
+
+    /**
+     * dump text of activity including webview
+     * 
+     * @param saveDuplicate
+     *            true means save duplicate text
+     */
+    public void dumpActivityText(boolean saveDuplicate) {
+        String activity = getCurrentActivity().getClass().getName();
+        for (TextView textView : getCurrentViews(TextView.class)) {
+            String text = textView.getText().toString();
+            if ("".equals(text)) {
+                continue;
+            }
+            int[] xy = new int[2];
+            textView.getLocationOnScreen(xy);
+            float size = textView.getTextSize();
+            String color = "0x" + Integer.toHexString(textView.getTextColors().getDefaultColor());
+
+            if (saveDuplicate) {
+                print(String.format("[%s][%s][%s]", activity, size, text));
+                continue;
+            } else if (!isContains(text)) {
+                mTexts.add(text);
+                print(String.format("[%s][%s,%s][%s][%s][%s]", activity, xy[0], xy[1], size, color,
+                        text));
+            }
+        }
+
+        // dump web
+        print(new Strings(getWebElementsString()).toString());
+        final ArrayList<WebView> webViews = getCurrentViews(WebView.class);
+        if (webViews.size() < 1) {
+            return;
+        }
+        runOnMainSync(new Runnable() {
+
+            @Override
+            public void run() {
+                mUrl = webViews.get(0).getUrl();
+            }
+        });
+        if (!isContains(mUrl)) {
+            mTexts.add(mUrl);
+            print(String.format("[URL][%s][%s]", activity, mUrl));
+        }
+    }
+
+    private boolean isContains(String target) {
+        for (String str : mTexts) {
+            if (str.equals(target)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

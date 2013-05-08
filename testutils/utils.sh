@@ -7,6 +7,11 @@
 # REPORTING BUGS: luxiaoyu01@baidu.com
 
 
+########## alias & export ################################
+alias 'ps?'='ps ax | grep '
+export HISTTIMEFORMAT="%F %T "
+
+
 #
 # Run a command with timeout.
 #
@@ -749,3 +754,51 @@ get_cpu_number()
     return `cat /proc/cpuinfo | grep processor | wc -l`
 }
 
+#
+# Graphical tree of sub-directories
+#
+draw_sub_dir()
+{
+    ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+}
+
+#
+# Define a quick calculator function
+#
+# Example:
+# ? 1/8
+#
+? () 
+{ 
+    echo "$*" | bc -l;
+}
+
+#
+# run a command and dump output to dump.png
+#
+dump_to_png()
+{
+    $* | convert label:@- dump.png
+}
+
+#
+# Display a list of committers sorted by the frequency of commits
+#
+svn_sort_committer()
+{
+    svn log -q | grep "|" | awk "{print \$3}" | sort | uniq -c | sort -nr
+}
+
+#
+count_code_line()
+{
+    find -name "*.$1" -exec wc -l {} \; | awk '{a += $1}END{print a}'
+}
+
+#
+# rm .svn recursively
+#
+rm_svn()
+{
+    rm -rf `find . -type d -name .svn`
+}
