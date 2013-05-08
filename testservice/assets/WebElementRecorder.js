@@ -76,5 +76,5 @@ Cafe.prototype.hookWebDocument = function() {
 }
 var _cafe = new Cafe();
 _cafe.hookWebDocument();
-//setInterval("_cafe.hookWebDocument()", 200);
+setInterval("_cafe.hookWebDocument()", 200);
 
