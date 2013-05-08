@@ -71,7 +71,7 @@ public class ViewRecorder {
     private final static int                         MAX_SLEEP_TIME               = 20000;
     private final static int                         MIN_SLEEP_TIME               = 1000;
     private final static int                         MIN_STEP_COUNT               = 4;
-    private final static boolean                     DEBUG_WEBVIEW                = false;
+    private final static boolean                     DEBUG_WEBVIEW                = true;
     public final static boolean                      DEBUG                        = false;
 
     /**

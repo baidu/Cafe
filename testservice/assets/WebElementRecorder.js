@@ -42,25 +42,39 @@ Cafe.prototype.finished = function() {
 	prompt('WebElementRecorder-finished');
 }
 Cafe.prototype.hookWebDocument = function() {
-	var walk=document.createTreeWalker(document.body,NodeFilter.SHOW_ALL,null,false); 
-	while(n=walk.nextNode()){
-		if(typeof n._cafe === "undefined") {
-			n.removeEventListener('touchstart', this.onEventCallback);
-			n.removeEventListener('touchend', this.onEventCallback);
-			n.removeEventListener('touchmove', this.onTouchmoveCallback);
-			n.removeEventListener('click', this.onEventCallback);
-			
-			n.addEventListener('touchstart', this.onEventCallback, false);
-			n.addEventListener('touchend', this.onEventCallback, false);
-			n.addEventListener('touchmove', this.onTouchmoveCallback, false);
-			n.addEventListener('click', this.onEventCallback, false);
-			n._familyString = this.getElementFamilyString(n);
-			n._cafe = new Object();
-		} else {
-			n._familyString = this.getElementFamilyString(n);
-		}
-	}
+    var doc = document;
+    var a = new Array();
+    for(var i = 0; i < doc.childNodes.length; i++) {
+        if(doc.childNodes[i].nodeType === 1) {
+            doc.childNodes[i]._familyString = i.toString();
+            a.push(doc.childNodes[i]);
+        }   
+    }   
+    while(a.length > 0) {
+        var n = a.pop();
+        if(typeof n._cafe === "undefined") {
+            n.removeEventListener('touchstart', this.onEventCallback);
+            n.removeEventListener('touchend', this.onEventCallback);
+            n.removeEventListener('touchmove', this.onTouchmoveCallback);
+            n.removeEventListener('click', this.onEventCallback);
+
+            n.addEventListener('touchstart', this.onEventCallback, false);
+            n.addEventListener('touchend', this.onEventCallback, false);
+            n.addEventListener('touchmove', this.onTouchmoveCallback, false);
+            n.addEventListener('click', this.onEventCallback, false);
+            n._cafe = new Object();
+        }   
+        if(n.childNodes && n.childNodes.length > 0) {
+            for(var i = 0; i < n.childNodes.length; i++) {
+                if(n.childNodes[i].nodeType === 1) {
+                    n.childNodes[i]._familyString = n._familyString + '-' + i.toString();
+                    a.push(n.childNodes[i]);
+                }   
+            }   
+        }   
+    }   
 }
 var _cafe = new Cafe();
-setInterval("_cafe.hookWebDocument()", 200);
+_cafe.hookWebDocument();
+//setInterval("_cafe.hookWebDocument()", 200);
 

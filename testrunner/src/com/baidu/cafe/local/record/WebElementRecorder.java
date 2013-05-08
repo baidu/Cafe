@@ -22,7 +22,6 @@ import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.DESEncryption;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
-import com.baidu.cafe.local.record.ViewRecorder.RecordMotionEvent;
 
 /**
  * one object one webview
