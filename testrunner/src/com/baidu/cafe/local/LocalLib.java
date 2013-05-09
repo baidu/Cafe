@@ -92,7 +92,7 @@ public class LocalLib extends SoloEx {
     public final static int       WAIT_INTERVAL                = 1000;
 
     public static String          mTestCaseName                = null;
-    public static String         mPackageName                 = null;
+    public static String          mPackageName                 = null;
     public static int[]           mTheLastClick                = new int[2];
     public static Instrumentation mInstrumentation;
 
@@ -103,14 +103,13 @@ public class LocalLib extends SoloEx {
     private Activity              mActivity;
     private Context               mContext                     = null;
 
-    public LocalLib(Instrumentation instrumentation, Activity activity, String packageName) {
+    public LocalLib(Instrumentation instrumentation, Activity activity) {
         super(instrumentation, activity);
         mInstrumentation = instrumentation;
         mActivity = activity;
         mContext = instrumentation.getContext();
         mTheLastClick[0] = -1;
         mTheLastClick[1] = -1;
-        mPackageName = packageName;
     }
 
     private static void print(String message) {

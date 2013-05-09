@@ -482,7 +482,7 @@ public class ViewHelper {
             actions.add(ACTION_CLICK);
         }
 
-        // TODO 因为EditText的长按事件具有不可重复性，所以暂时屏蔽掉
+        // TODO EditText longclick is not repeatable, so it is disable.
         //        if (view.isLongClickable() && !(view instanceof EditText)) {
         //            actions.add(ACTION_LONG_CLICK);
         //        }

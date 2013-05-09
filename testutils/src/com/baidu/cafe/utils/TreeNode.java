@@ -16,18 +16,16 @@
 
 package com.baidu.cafe.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 
+/*
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+*/
 
 /**
  * a muti-node tree is not thread-safe
@@ -52,17 +50,17 @@ public class TreeNode<T> {
 
     // load string to avoid to compile unicode 
     static {
-        try {
-            Document doc = new SAXReader().read(new FileInputStream(new File("res/strings.xml")));
-            Element rootElement = doc.getRootElement();
-            List<Element> strings = rootElement.elements("string");
-            vertical = strings.get(0).getStringValue();
-            horizontal = strings.get(1).getStringValue();
-            big_horizontal = strings.get(2).getStringValue();
-            vertical_T = strings.get(3).getStringValue();
-            horizontal_T = strings.get(4).getStringValue();
-            left = strings.get(5).getStringValue();
-        } catch (FileNotFoundException e) {
+//        try {
+//            Document doc = new SAXReader().read(new FileInputStream(new File("res/strings.xml")));
+//            Element rootElement = doc.getRootElement();
+//            List<Element> strings = rootElement.elements("string");
+//            vertical = strings.get(0).getStringValue();
+//            horizontal = strings.get(1).getStringValue();
+//            big_horizontal = strings.get(2).getStringValue();
+//            vertical_T = strings.get(3).getStringValue();
+//            horizontal_T = strings.get(4).getStringValue();
+//            left = strings.get(5).getStringValue();
+//        } catch (FileNotFoundException e) {
             vertical = "|";
             horizontal = "-";
             big_horizontal = "--";
@@ -70,9 +68,9 @@ public class TreeNode<T> {
             horizontal_T = "|-";
             left = "'-";
             //e.printStackTrace();
-        } catch (DocumentException e) {
-            e.printStackTrace();
-        }
+//        } catch (DocumentException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override

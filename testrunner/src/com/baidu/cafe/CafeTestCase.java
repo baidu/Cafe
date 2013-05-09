@@ -98,8 +98,8 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
             Log.i(command + " " + (cr.ret == 0 ? "success" : "failed!\n" + cr.console.toString()));
         }
         remote.copyAssets(mTargetFilesDir);
-        mPackageName = local.getCurrentActivity().getPackageName();
-        local = new LocalLib(getInstrumentation(), getActivity(), mPackageName);
+        local = new LocalLib(getInstrumentation(), getActivity());
+        LocalLib.mPackageName = mPackageName = local.getCurrentActivity().getPackageName();
         orignal = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new CafeExceptionHandler(orignal, this));
         if (remote.isViewServerOpen()) {
