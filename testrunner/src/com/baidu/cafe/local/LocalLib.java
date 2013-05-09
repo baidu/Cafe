@@ -57,6 +57,8 @@ import android.widget.TextView;
 
 import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.record.ViewRecorder;
+import com.baidu.cafe.local.traveler.APPTraveler;
+import com.baidu.cafe.local.traveler.Logger;
 import com.baidu.cafe.utils.ReflectHelper;
 import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CommandResult;
@@ -90,21 +92,25 @@ public class LocalLib extends SoloEx {
     public final static int       WAIT_INTERVAL                = 1000;
 
     public static String          mTestCaseName                = null;
+    public static String         mPackageName                 = null;
     public static int[]           mTheLastClick                = new int[2];
     public static Instrumentation mInstrumentation;
+
+    private final static int      MINISLEEP                    = 100;
 
     private boolean               mHasBegin                    = false;
     private ArrayList<View>       mViews                       = null;
     private Activity              mActivity;
     private Context               mContext                     = null;
 
-    public LocalLib(Instrumentation instrumentation, Activity activity) {
+    public LocalLib(Instrumentation instrumentation, Activity activity, String packageName) {
         super(instrumentation, activity);
         mInstrumentation = instrumentation;
         mActivity = activity;
         mContext = instrumentation.getContext();
         mTheLastClick[0] = -1;
         mTheLastClick[1] = -1;
+        mPackageName = packageName;
     }
 
     private static void print(String message) {
@@ -2238,5 +2244,39 @@ public class LocalLib extends SoloEx {
             }
         }
         return false;
+    }
+
+    public void clickViewWithoutAssert(View view) {
+        if (null == view) {
+            Logger.println("null == view at clickViewWithoutAssert");
+            return;
+        }
+
+        ArrayList<TextView> textViews = APPTraveler.local.getCurrentViews(TextView.class, view);
+        for (TextView textView : textViews) {
+            String text = textView.getText().toString();
+            if (!"".equals(text)) {
+                Logger.printTextln(String.format("Click On [%s]", text));
+                break;
+            }
+        }
+
+        int[] xy = getViewCenter(view);
+        int x = xy[0];
+        int y = xy[1];
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+        MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y,
+                0);
+        MotionEvent event2 = MotionEvent
+                .obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+        try {
+            mInstrumentation.sendPointerSync(event);
+            mInstrumentation.sendPointerSync(event2);
+            APPTraveler.local.sleep(MINISLEEP);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            //            Assert.assertTrue("Click can not be completed!", false);
+        }
     }
 }
