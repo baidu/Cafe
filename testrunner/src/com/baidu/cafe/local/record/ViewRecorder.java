@@ -153,6 +153,8 @@ public class ViewRecorder {
 
     private DragEvent                                mTheLastDragEvent            = null;
 
+    private boolean                                  mIsLongClick                 = false;
+
     /**
      * Saving states for each listview
      */
@@ -207,7 +209,7 @@ public class ViewRecorder {
                     .format("RecordMotionEvent(%s, action=%s, x=%s, y=%s)", view, action, x, y);
         }
     }
- 
+
     class AbsListViewState {
         public int firstVisibleItem     = 0;
         public int visibleItemCount     = 0;
@@ -737,7 +739,9 @@ public class ViewRecorder {
             // MenuItem.OnMenuItemClickListener
         }
 
-        handleOnLongClickListener(view);
+        if (view.isLongClickable()) {
+            handleOnLongClickListener(view);
+        }
 
         if (view instanceof EditText) {
             hookEditText((EditText) view);
@@ -1120,7 +1124,7 @@ public class ViewRecorder {
 
     private void setOnClick(View v) {
         if (local.isSize0(v)) {
-            printLog(v + " is size 0.");
+            printLog(v + " is size 0 at setOnClick");
             return;
         }
 
@@ -1131,7 +1135,7 @@ public class ViewRecorder {
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
-        String click = String.format("local.clickOn(\"%s\", \"%s\");//%s%s", viewClass,
+        String click = String.format("local.clickOn(\"%s\", \"%s\", false);//%s%s", viewClass,
                 familyString, "Click On ", getFirstLine(comments));
 
         clickEvent.setCode(click);
@@ -1374,6 +1378,11 @@ public class ViewRecorder {
     }
 
     private void handleOnLongClickListener(View view) {
+        if (local.isSize0(view)) {
+            printLog(view + " is size 0 at handleOnLongClickListener");
+            return;
+        }
+
         OnLongClickListener onLongClickListener = (OnLongClickListener) getListener(view,
                 "mOnLongClickListener");
 
@@ -1414,12 +1423,26 @@ public class ViewRecorder {
             }
         } else {
             if (view.isLongClickable()) {
-                // printLog("!!!!!!!!!!!!setOnLongClickListener at " + view);
+                printLog("!!!!!!!!!!!!setOnLongClickListener at " + view);
                 view.setOnLongClickListener(new OnLongClickListener() {
 
                     @Override
                     public boolean onLongClick(View v) {
-                        printLog("local.clickLongOnView(view): " + v);
+                        ClickEvent clickEvent = new ClickEvent(v);
+                        String viewClass = getViewString(v);
+                        String familyString = local.getFamilyString(v);
+                        String r = getRString(v);
+                        String rString = r.equals("") ? "" : "[" + r + "]";
+                        String comments = String.format("[%s]%s[%s] ", v, rString,
+                                local.getViewText(v));
+                        String click = String.format("local.clickOn(\"%s\", \"%s\", true);//%s%s",
+                                viewClass, familyString, "Long Click On ", getFirstLine(comments));
+
+                        clickEvent.setCode(click);
+
+                        // clickEvent.setLog();
+                        offerOutputEventQueue(clickEvent);
+                        mIsLongClick = true;
                         return false;
                     }
                 });
@@ -1609,10 +1632,10 @@ public class ViewRecorder {
     private void outputAnEvent(OutputEvent event) {
         if (mTheCurrentEventOutputime >= mTheLastTextChangedTime) {
             outputEditTextEvent();
-            printCode(getSleepCode() + "\n" +event.getCode());
+            printCode(getSleepCode() + "\n" + event.getCode());
             printLog(event.getLog());
         } else {
-            printCode(getSleepCode() + "\n" +event.getCode());
+            printCode(getSleepCode() + "\n" + event.getCode());
             printLog(event.getLog());
             outputEditTextEvent();
         }
@@ -1730,8 +1753,9 @@ public class ViewRecorder {
         dragEvent.setCode(drag);
         mTheLastDragEvent = dragEvent;
 
-        if (up.view instanceof AbsListView || (up.view instanceof WebView && DEBUG_WEBVIEW)) {
+        if (up.view instanceof AbsListView || mIsLongClick /*|| (up.view instanceof WebView && DEBUG_WEBVIEW)*/) {
             printLog("ignore drag event of [" + up.view + "]");
+            mIsLongClick = false;
             return;
         }
 

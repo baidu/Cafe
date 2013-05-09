@@ -1533,11 +1533,13 @@ public class LocalLib extends SoloEx {
      *            or {@code ImageView.class}
      * @param familyString
      *            the family relationship of the {@code View} to be clicked
+     * @param longClick
+     *            true means long click
      */
-    public <T extends View> void clickOn(String className, String familyString) {
+    public <T extends View> void clickOn(String className, String familyString, boolean longClick) {
         try {
             View view = waitForViewByFamilyString(familyString, className);
-            clickOnViewWithoutScroll(view);// waitForView is including
+            clickOnViewWithoutScroll(view, longClick);// waitForView is including
             // clickOnView
         } catch (Exception e) {
             e.printStackTrace();
@@ -1558,7 +1560,7 @@ public class LocalLib extends SoloEx {
         return targetViews;
     }
 
-    public void clickViaPerformClick(final View view) {
+    public void clickViaPerformClick(final View view, final boolean longClick) {
         if (null == view) {
             print("null == view at clickViaPerformClick");
             return;
@@ -1567,14 +1569,18 @@ public class LocalLib extends SoloEx {
             public void run() {
                 int[] xy = getViewCenter(view);
                 print("clickViaPerformClick:" + xy[0] + "," + xy[1]);
-                view.performClick();
+                if (longClick) {
+                    view.performLongClick();
+                } else {
+                    view.performClick();
+                }
             }
         });
     }
 
     private final int SMALLTIMEOUT = 10000;
 
-    public void clickOnViewWithoutScroll(View view) {
+    public void clickOnViewWithoutScroll(View view, boolean longClick) {
         // invoke(mWaiter, "waitForView", new Class[] { View.class, int.class,
         // boolean.class },
         // new Object[] { view, SMALLTIMEOUT, false });//
@@ -1582,7 +1588,7 @@ public class LocalLib extends SoloEx {
         mTheLastClick = getViewCenter(view);
         // invoke(mClicker, "clickOnScreen", new Class[] { View.class }, new
         // Object[] { view });// clicker.clickOnScreen(view);
-        clickViaPerformClick(view);
+        clickViaPerformClick(view, longClick);
     }
 
     public static int[] getViewCenter(View view) {
