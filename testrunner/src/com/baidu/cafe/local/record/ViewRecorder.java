@@ -539,20 +539,22 @@ public class ViewRecorder {
         View[] views = LocalLib.getWindowDecorViews();
         for (View view : views) {
             handleOnTouchListener(view);
-            //            OnTouchListener onTouchListener = (OnTouchListener) getListener(view,
-            //                    "mOnTouchListener");
-            //            if (null == onTouchListener) {
-            //                view.setOnTouchListener(new OnTouchListener() {
-            //
-            //                    @Override
-            //                    public boolean onTouch(View v, MotionEvent event) {
-            //                        printLog("onTouch:" + event);
-            //                        addEvent(v, event);
-            //                        //                        return activity.onTouchEvent(event);
-            //                        return false;
-            //                    }
-            //                });
-            //            }
+            /*
+            OnTouchListener onTouchListener = (OnTouchListener) getListener(view,
+                    "mOnTouchListener");
+            if (null == onTouchListener) {
+                view.setOnTouchListener(new OnTouchListener() {
+
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        printLog("onTouch:" + event);
+                        addEvent(v, event);
+                        //                        return activity.onTouchEvent(event);
+                        return false;
+                    }
+                });
+            }
+            */
         }
         //        View decorView = activity.getWindow().getDecorView();
     }
@@ -564,6 +566,10 @@ public class ViewRecorder {
         ArrayList<View> targetViews = new ArrayList<View>();
 
         for (View view : views) {
+            // for thread safe
+            if (null == view) {
+                continue;
+            }
             boolean isOld = mAllViewPosition.containsKey(getViewID(view));
             // refresh view layout
             if (hasChange(view)) {
@@ -691,7 +697,8 @@ public class ViewRecorder {
 
     private Class<?> getClassByListenerName(String listenerName) {
         Class<?> viewClass = null;
-        if ("mOnItemClickListener".equals(listenerName)) {
+        if ("mOnItemClickListener".equals(listenerName)
+                || "mOnItemLongClickListener".equals(listenerName)) {
             viewClass = AdapterView.class;
         } else if ("mOnScrollListener".equals(listenerName)) {
             viewClass = AbsListView.class;
@@ -721,9 +728,15 @@ public class ViewRecorder {
      * as possible.
      */
     private void setHookListenerOnView(View view) {
+        // for thread safe
+        if (null == view) {
+            return;
+        }
+
         if (view instanceof WebView && DEBUG_WEBVIEW) {
             new WebElementRecorder(this).handleWebView((WebView) view);
         }
+
         // handle list
         if (view instanceof AdapterView) {
             if (view instanceof ExpandableListView) {
@@ -734,7 +747,8 @@ public class ViewRecorder {
             if (view instanceof AbsListView) {
                 handleOnScrollListener((AbsListView) view);
             }
-            // adapterView.setOnItemLongClickListener(listener);
+            //            view.isLongClickable()
+            handleOnItemLongClickListener((AdapterView<?>) view);
             // adapterView.setOnItemSelectedListener(listener);
             // MenuItem.OnMenuItemClickListener
         }
@@ -1070,6 +1084,7 @@ public class ViewRecorder {
             }
             return true;
         } else {
+            // only care of views which has OnClickListener
         }
 
         return false;
@@ -1180,7 +1195,6 @@ public class ViewRecorder {
             return "R.id." + rString.substring(rString.lastIndexOf("/") + 1, rString.length());
         } catch (Exception e) {
             // eat it for some view has no res id
-            // e.printStackTrace();
         }
         return "";
     }
@@ -1231,7 +1245,7 @@ public class ViewRecorder {
         if (null != onTouchListener) {
             hookOnTouchListener(view, onTouchListener);
         } else {
-            //            printLog("setOnTouchListener [" + view + "]");
+            // printLog("setOnTouchListener [" + view + "]");
             OnTouchListener onTouchListenerHooked = new OnTouchListener() {
 
                 @Override
@@ -1317,17 +1331,6 @@ public class ViewRecorder {
             }
         };
         setListener(adapterView, "mOnItemClickListener", onItemClickListenerHooked);
-        //        view.setOnItemLongClickListener(new OnItemLongClickListener() {
-        //
-        //            @Override
-        //            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        //                ClickEvent clickEvent = new ClickEvent(parent);
-        //                clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
-        //                        + " longclick");
-        //                offerOutputEventQueue(clickEvent);
-        //                return false;
-        //            }
-        //        });
 
         // save hashcode of hooked listener
         onItemClickListenerHooked = (OnItemClickListener) getListener(adapterView,
@@ -1345,17 +1348,6 @@ public class ViewRecorder {
      * @param id
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        //        ClickEvent clickEvent = new ClickEvent(parent);
-        //        String itemFamilyString = local.getFamilyString(view);
-        //        printLog("view:" + view);
-        //        printLog("itemFamilyString:" + itemFamilyString);
-        //        printLog("getFirstVisiblePosition:" + parent.getFirstVisiblePosition());
-        //        String click = String
-        //                .format("local.clickInListWithFamilyString(\"%s\");", itemFamilyString);
-        //        clickEvent.setCode(getSleepCode() + "\n" + click);
-        //        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
-        //                + " click");
-
         // add getSleepCode()
         String code = mTheLastDragEvent.getCode();
         mTheLastDragEvent.setCode(code);
@@ -1374,6 +1366,65 @@ public class ViewRecorder {
         } else {
             printLog("onItemClickListener == null");
             //parent.performItemClick(view, position, id);
+        }
+    }
+
+    private void handleOnItemLongClickListener(AdapterView<?> view) {
+        //        if (local.isSize0(view)) {
+        //            printLog(view + " is size 0 at handleOnItemLongClickListener");
+        //            return;
+        //        }
+
+        OnItemLongClickListener onItemLongClickListener = (OnItemLongClickListener) getListener(
+                view, "mOnItemLongClickListener");
+
+        // has hooked listener
+        if (onItemLongClickListener != null
+                && mAllListenerHashcodes.contains(onItemLongClickListener.hashCode())) {
+            return;
+        }
+
+        if (null != onItemLongClickListener) {
+            printLog("hookOnItemLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
+
+            // save old listener
+            mOnItemLongClickListeners.put(getViewID(view), onItemLongClickListener);
+
+            // set hook listener
+            view.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
+                        long id) {
+                    setOnLongClick(view);
+                    OnItemLongClickListener onItemLongClickListener = mOnItemLongClickListeners
+                            .get(getViewID(parent));
+                    if (onItemLongClickListener != null) {
+                        return onItemLongClickListener.onItemLongClick(parent, view, position, id);
+                    } else {
+                        printLog("onItemLongClickListener == null");
+                    }
+                    return false;
+                }
+            });
+
+            // save hashcode of hooked listener
+            OnItemLongClickListener onItemLongClickListenerHooked = (OnItemLongClickListener) getListener(
+                    view, "mOnItemLongClickListener");
+            if (onItemLongClickListenerHooked != null) {
+                mAllListenerHashcodes.add(onItemLongClickListenerHooked.hashCode());
+            }
+        } else {
+            printLog("!!!!!!!!!!!!setOnItemLongClickListener at " + view);
+            view.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
+                        long id) {
+                    setOnLongClick(view);
+                    return false;
+                }
+            });
         }
     }
 
@@ -1403,7 +1454,7 @@ public class ViewRecorder {
 
                 @Override
                 public boolean onLongClick(View v) {
-                    printLog("local.clickLongOnView(view): " + v);
+                    setOnLongClick(v);
                     OnLongClickListener onLongClickListener = mOnLongClickListeners
                             .get(getViewID(v));
                     if (onLongClickListener != null) {
@@ -1416,38 +1467,39 @@ public class ViewRecorder {
             });
 
             // save hashcode of hooked listener
-            OnLongClickListener onLongClickListenerHooked = (OnLongClickListener) local
-                    .getListener(view, View.class, "mOnLongClickListener");
+            OnLongClickListener onLongClickListenerHooked = (OnLongClickListener) getListener(view,
+                    "mOnLongClickListener");
             if (onLongClickListenerHooked != null) {
                 mAllListenerHashcodes.add(onLongClickListenerHooked.hashCode());
             }
         } else {
-            if (view.isLongClickable()) {
-                printLog("!!!!!!!!!!!!setOnLongClickListener at " + view);
-                view.setOnLongClickListener(new OnLongClickListener() {
+            printLog("!!!!!!!!!!!!setOnLongClickListener at " + view);
+            view.setOnLongClickListener(new OnLongClickListener() {
 
-                    @Override
-                    public boolean onLongClick(View v) {
-                        ClickEvent clickEvent = new ClickEvent(v);
-                        String viewClass = getViewString(v);
-                        String familyString = local.getFamilyString(v);
-                        String r = getRString(v);
-                        String rString = r.equals("") ? "" : "[" + r + "]";
-                        String comments = String.format("[%s]%s[%s] ", v, rString,
-                                local.getViewText(v));
-                        String click = String.format("local.clickOn(\"%s\", \"%s\", true);//%s%s",
-                                viewClass, familyString, "Long Click On ", getFirstLine(comments));
-
-                        clickEvent.setCode(click);
-
-                        // clickEvent.setLog();
-                        offerOutputEventQueue(clickEvent);
-                        mIsLongClick = true;
-                        return false;
-                    }
-                });
-            }
+                @Override
+                public boolean onLongClick(View v) {
+                    setOnLongClick(v);
+                    return false;
+                }
+            });
         }
+    }
+
+    private void setOnLongClick(View v) {
+        ClickEvent clickEvent = new ClickEvent(v);
+        String viewClass = getViewString(v);
+        String familyString = local.getFamilyString(v);
+        String r = getRString(v);
+        String rString = r.equals("") ? "" : "[" + r + "]";
+        String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
+        String click = String.format("local.clickOn(\"%s\", \"%s\", true);//%s%s", viewClass,
+                familyString, "Long Click On ", getFirstLine(comments));
+
+        clickEvent.setCode(click);
+
+        // clickEvent.setLog();
+        offerOutputEventQueue(clickEvent);
+        mIsLongClick = true;
     }
 
     private void handleOutputEventQueue() {
@@ -1742,6 +1794,11 @@ public class ViewRecorder {
         int stepCount = events.size() - 2;
         stepCount = stepCount > MIN_STEP_COUNT ? stepCount : MIN_STEP_COUNT;
         long duration = up.time - down.time;
+        if (0 == duration) {
+            printLog("ignore drag event of [" + up.view + "] because 0 == duration");
+            return;
+        }
+
         String dragString = "local.dragPercent(%sf, %sf, %sf, %sf, %s);";
         drag = String.format(dragString, local.toPercentX(down.x), local.toPercentX(up.x),
                 local.toPercentY(down.y), local.toPercentY(up.y), stepCount);
@@ -1796,6 +1853,11 @@ public class ViewRecorder {
     }
 
     private void handleOnKeyListener(View view) {
+        // for thread safe
+        if (null == view) {
+            return;
+        }
+
         OnKeyListener onKeyListener = (OnKeyListener) getListener(view, "mOnKeyListener");
 
         // has hooked listener

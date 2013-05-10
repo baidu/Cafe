@@ -250,12 +250,9 @@ public class LocalLib extends SoloEx {
         if (-1 == level) {
             return null;
         }
+        
         try {
-            if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API
-                // Level:
-                // 14.
-                // Android
-                // 4.0
+            if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API Level 14: Android 4.0
                 Object mListenerInfo = ReflectHelper
                         .getObjectProperty(view, level, "mListenerInfo");
                 return null == mListenerInfo ? null : ReflectHelper.getObjectProperty(
