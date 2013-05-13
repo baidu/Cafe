@@ -27,7 +27,7 @@
     public protected *;
 }
 -keep class com.jayway.android.robotium.solo.*{
-    public protected private *;
+    *;
 }
 -keep public class com.baidu.cafe.local.LocalLib{
     public protected *;

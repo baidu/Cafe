@@ -250,7 +250,7 @@ public class LocalLib extends SoloEx {
         if (-1 == level) {
             return null;
         }
-        
+
         try {
             if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API Level 14: Android 4.0
                 Object mListenerInfo = ReflectHelper
@@ -1618,7 +1618,9 @@ public class LocalLib extends SoloEx {
 
         // get views from current activity
         while (System.currentTimeMillis() < endTime) {
-            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
+            // ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
+            // it must be the same as ViewRecorder.getTargetViews()
+            ArrayList<View> views = getViews();
             for (View view : views) {
                 if (getFamilyString(view).equals(familyString)) {
                     String viewClassName = view.getClass().getName();
