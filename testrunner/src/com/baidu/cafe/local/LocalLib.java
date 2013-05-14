@@ -1567,6 +1567,7 @@ public class LocalLib extends SoloEx {
             print("null == view at clickViaPerformClick");
             return;
         }
+
         runOnMainSync(new Runnable() {
             public void run() {
                 int[] xy = getViewCenter(view);

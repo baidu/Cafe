@@ -907,6 +907,7 @@ public class ViewRecorder {
                 }
             }
         };
+        
         local.runOnMainSync(new Runnable() {
 
             @Override
@@ -1119,27 +1120,10 @@ public class ViewRecorder {
         }
     }
 
-    private long getSleepTime() {
-        long ret = System.currentTimeMillis() - mLastEventTime;
-
-        // update mLastEventTime lately
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                local.sleep(300);
-                mLastEventTime = System.currentTimeMillis();
-            }
-        }).start();
-
-        ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
-        ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
-        return ret;
-    }
-
     private void setOnClick(View v) {
         if (local.isSize0(v)) {
             printLog(v + " is size 0 at setOnClick");
+            invokeOriginOnClickListener(v);
             return;
         }
 
@@ -1157,7 +1141,10 @@ public class ViewRecorder {
 
         // clickEvent.setLog();
         offerOutputEventQueue(clickEvent);
+        invokeOriginOnClickListener(v);
+    }
 
+    private void invokeOriginOnClickListener(View v) {
         OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
         OnClickListener onClickListenerHooked = (OnClickListener) getListener(v, "mOnClickListener");
         if (onClickListener != null) {
@@ -1197,6 +1184,24 @@ public class ViewRecorder {
             // eat it for some view has no res id
         }
         return "";
+    }
+
+    private long getSleepTime() {
+        long ret = System.currentTimeMillis() - mLastEventTime;
+
+        // update mLastEventTime lately
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                local.sleep(300);
+                mLastEventTime = System.currentTimeMillis();
+            }
+        }).start();
+
+        ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
+        ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
+        return ret;
     }
 
     private void hookEditText(final EditText editText) {
@@ -1266,7 +1271,7 @@ public class ViewRecorder {
     }
 
     private void hookOnTouchListener(View view, OnTouchListener onTouchListener) {
-        //        printLog("hookOnTouchListener [" + view + "(" + local.getViewText(view) + ")]");
+        // printLog("hookOnTouchListener [" + view + "(" + local.getViewText(view) + ")]");
 
         // save old listener
         mOnTouchListeners.put(getViewID(view), onTouchListener);
@@ -1431,6 +1436,7 @@ public class ViewRecorder {
     private void handleOnLongClickListener(View view) {
         if (local.isSize0(view)) {
             printLog(view + " is size 0 at handleOnLongClickListener");
+            invokeOriginOnLongClickListener(view);
             return;
         }
 
@@ -1455,13 +1461,7 @@ public class ViewRecorder {
                 @Override
                 public boolean onLongClick(View v) {
                     setOnLongClick(v);
-                    OnLongClickListener onLongClickListener = mOnLongClickListeners
-                            .get(getViewID(v));
-                    if (onLongClickListener != null) {
-                        onLongClickListener.onLongClick(v);
-                    } else {
-                        printLog("onLongClickListener == null");
-                    }
+                    invokeOriginOnLongClickListener(v);
                     return false;
                 }
             });
@@ -1482,6 +1482,15 @@ public class ViewRecorder {
                     return false;
                 }
             });
+        }
+    }
+
+    private void invokeOriginOnLongClickListener(View v) {
+        OnLongClickListener onLongClickListener = mOnLongClickListeners.get(getViewID(v));
+        if (onLongClickListener != null) {
+            onLongClickListener.onLongClick(v);
+        } else {
+            printLog("onLongClickListener == null");
         }
     }
 
