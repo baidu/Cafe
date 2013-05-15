@@ -27,6 +27,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityManagerNative;
 import android.app.backup.BackupManager;
+import android.app.StatusBarManager;
 import android.app.IActivityManager;
 import android.app.KeyguardManager;
 import android.bluetooth.BluetoothAdapter;
@@ -90,6 +91,7 @@ import com.android.internal.os.BatteryStatsImpl;
 import com.android.internal.os.storage.ExternalStorageFormatter;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.widget.LockPatternUtils;
+import com.baidu.cafe.utils.ReflectHelper;
 import com.baidu.cafe.utils.ShellExecute;
 
 import java.io.BufferedReader;
@@ -141,9 +143,11 @@ public class SystemLib {
     private IMountService        mMountService   = null;
     private WakeLock             mWakeLock;
     private ActivityManager      mActivityManager;
+    private StatusBarManager     mStatusBarManager;
 
     public SystemLib(Context context) {
         mContext = context;
+        mStatusBarManager = (StatusBarManager) mContext.getSystemService("statusbar");
         mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
         mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
         mBatteryState = new BatteryState(mContext);
@@ -159,7 +163,7 @@ public class SystemLib {
         //        "Test Acquired!");
         mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
     }
-    
+
     /**
      * light up the screen
      */
@@ -2633,6 +2637,14 @@ public class SystemLib {
             fos.close();
             new ShellExecute().execute("chmod 777 " + dist, "/", 200);
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void expandStatusBar() {
+        try {
+            ReflectHelper.invoke(mStatusBarManager, 0, "expand", new Class[] {}, new Object[] {});
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

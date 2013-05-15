@@ -867,4 +867,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
         return clickView("mText", text, SEARCHMODE_COMPLETE_MATCHING, 0,
                 TIMEOUT_DEFAULT_VALUE/*10000*/, 0, 0, 0, null, 0);
     }
+
+    public void expandStatusBar() {
+        mSystemLib.expandStatusBar();
+    }
 }

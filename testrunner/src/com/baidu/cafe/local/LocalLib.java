@@ -1619,14 +1619,22 @@ public class LocalLib extends SoloEx {
 
         // get views from current activity
         while (System.currentTimeMillis() < endTime) {
-            // ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
+            //            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
             // it must be the same as ViewRecorder.getTargetViews()
             ArrayList<View> views = getViews();
             for (View view : views) {
                 if (getFamilyString(view).equals(familyString)) {
-                    String viewClassName = view.getClass().getName();
-                    if (null == className || viewClassName.equals(className)) {
+                    if (null == className) {
                         return view;
+                    }
+                    String viewClassName = view.getClass().getName();
+                    try {
+                        if (viewClassName.equals(className)
+                                || Class.forName(className).isAssignableFrom(view.getClass())) {
+                            return view;
+                        }
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -1664,6 +1672,7 @@ public class LocalLib extends SoloEx {
      */
     private void printViews(String targetFamilyString) {
         View[] decorViews = LocalLib.getWindowDecorViews();
+        print("########## decorViews: " + decorViews.length);
         for (View decorView : decorViews) {
             ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
                     decorView));
@@ -1725,7 +1734,8 @@ public class LocalLib extends SoloEx {
      *            the text that should be set
      */
     public void enterText(String familyString, final String text, final boolean keepPreviousText) {
-        final EditText editText = (EditText) getViewByFamilyString(familyString, null);
+        final EditText editText = (EditText) getViewByFamilyString(familyString,
+                "android.widget.EditText");
 
         if (null == editText) {
             Assert.assertTrue("null == editText [" + familyString + "]", false);
@@ -1755,7 +1765,7 @@ public class LocalLib extends SoloEx {
 
     public boolean clickOnExpandableListView(final String familyString, final int flatListPosition) {
         final ExpandableListView expandableListView = (ExpandableListView) getViewByFamilyString(
-                familyString, null);
+                familyString, "android.widget.ExpandableListView");
         if (null == expandableListView) {
             print("null == adapterView");
             return false;
@@ -1844,7 +1854,16 @@ public class LocalLib extends SoloEx {
     }
 
     public void scrollListToLineWithFamilyString(final int line, final String familyString) {
-        AbsListView absListView = (AbsListView) getViewByFamilyString(familyString, null);
+        AbsListView absListView = null;
+        try {
+            absListView = (AbsListView) getViewByFamilyString(familyString,
+                    "android.widget.AbsListView");
+        } catch (Exception e) {
+            e.printStackTrace();
+            printViews(familyString);
+            System.exit(1);
+        }
+
         if (null == absListView) {
             print("null == absListView");
             return;
@@ -1856,7 +1875,8 @@ public class LocalLib extends SoloEx {
 
     public void scrollScrollViewToWithFamilyString(final String familyString, final int x,
             final int y) {
-        final ScrollView scrollView = (ScrollView) getViewByFamilyString(familyString, null);
+        final ScrollView scrollView = (ScrollView) getViewByFamilyString(familyString,
+                "android.widget.ScrollView");
         runOnMainSync(new Runnable() {
             public void run() {
                 scrollView.scrollBy(x, y);
@@ -2024,9 +2044,10 @@ public class LocalLib extends SoloEx {
         float toX = toScreenX(toXPersent);
         float fromY = toScreenY(fromYPersent);
         float toY = toScreenY(toYPersent);
-        //        long begin = System.currentTimeMillis();
+        // long begin = System.currentTimeMillis();
         drag(fromX, toX, fromY, toY, stepCount);
-        //        print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
+        print(String.format("fromX:%s toX:%s fromY:%s toY:%s", fromX, toX, fromY, toY));
+        // print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
     }
 
     public static double getDistance(float x1, float y1, float x2, float y2) {

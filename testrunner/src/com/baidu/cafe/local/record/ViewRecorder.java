@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import android.app.Activity;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -150,8 +151,6 @@ public class ViewRecorder {
      * assume that only one ScrollView is fling
      */
     private String                                   mFamilyStringBeforeScroll    = "";
-
-    private DragEvent                                mTheLastDragEvent            = null;
 
     private boolean                                  mIsLongClick                 = false;
 
@@ -549,20 +548,20 @@ public class ViewRecorder {
                     public boolean onTouch(View v, MotionEvent event) {
                         printLog("onTouch:" + event);
                         addEvent(v, event);
-                        //                        return activity.onTouchEvent(event);
+                        // return activity.onTouchEvent(event);
                         return false;
                     }
                 });
             }
             */
         }
-        //        View decorView = activity.getWindow().getDecorView();
+        // View decorView = activity.getWindow().getDecorView();
     }
 
     private ArrayList<View> getTargetViews() {
-        //        ArrayList<View> views = local
-        //                .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
-        ArrayList<View> views = local.getViews();
+//        ArrayList<View> views = local
+//                .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
+                ArrayList<View> views = local.getViews();
         ArrayList<View> targetViews = new ArrayList<View>();
 
         for (View view : views) {
@@ -907,7 +906,7 @@ public class ViewRecorder {
                 }
             }
         };
-        
+
         local.runOnMainSync(new Runnable() {
 
             @Override
@@ -1304,7 +1303,7 @@ public class ViewRecorder {
     private void addEvent(View v, MotionEvent event) {
         //        printLog(v + " " + event);
         if (!offerMotionEventQueue(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
-                event.getRawY(), System.currentTimeMillis()))) {
+                event.getRawY(), SystemClock.currentThreadTimeMillis()))) {
             printLog("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
                     + "mMotionEventQueue.size=" + mMotionEventQueue.size());
         }
@@ -1353,10 +1352,12 @@ public class ViewRecorder {
      * @param id
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // add getSleepCode()
-        String code = mTheLastDragEvent.getCode();
-        mTheLastDragEvent.setCode(code);
-        offerOutputEventQueue(mTheLastDragEvent);
+        // use center of item 
+        int[] center = LocalLib.getViewCenter(view);
+        DragEvent dragEvent = new DragEvent(view);
+        dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
+        dragEvent.setLog("genernated by setOnItemClick");
+        offerOutputEventQueue(dragEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
         OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) getListener(parent,
@@ -1420,7 +1421,7 @@ public class ViewRecorder {
                 mAllListenerHashcodes.add(onItemLongClickListenerHooked.hashCode());
             }
         } else {
-            printLog("!!!!!!!!!!!!setOnItemLongClickListener at " + view);
+            printLog("setOnItemLongClickListener at " + view);
             view.setOnItemLongClickListener(new OnItemLongClickListener() {
 
                 @Override
@@ -1473,7 +1474,7 @@ public class ViewRecorder {
                 mAllListenerHashcodes.add(onLongClickListenerHooked.hashCode());
             }
         } else {
-            printLog("!!!!!!!!!!!!setOnLongClickListener at " + view);
+            printLog("setOnLongClickListener at " + view);
             view.setOnLongClickListener(new OnLongClickListener() {
 
                 @Override
@@ -1567,9 +1568,9 @@ public class ViewRecorder {
     }
 
     private OutputEvent pollOutputEventQueue() {
-        //        synchronized (mSyncOutputEventQueue) {
-        return mOutputEventQueue.poll();
-        //        }
+        synchronized (mSyncOutputEventQueue) {
+            return mOutputEventQueue.poll();
+        }
     }
 
     public boolean offerOutputEventQueue(OutputEvent e) {
@@ -1692,8 +1693,11 @@ public class ViewRecorder {
 
     private void outputAnEvent(OutputEvent event) {
         if (mTheCurrentEventOutputime >= mTheLastTextChangedTime) {
-            outputEditTextEvent();
-            printCode(getSleepCode() + "\n" + event.getCode());
+            if (outputEditTextEvent()) {
+                printCode(event.getCode());
+            } else {
+                printCode(getSleepCode() + "\n" + event.getCode());
+            }
             printLog(event.getLog());
         } else {
             printCode(getSleepCode() + "\n" + event.getCode());
@@ -1702,9 +1706,9 @@ public class ViewRecorder {
         }
     }
 
-    private void outputEditTextEvent() {
+    private boolean outputEditTextEvent() {
         if (mCurrentEditTextFamilyString.equals("")) {
-            return;
+            return false;
         }
 
         String code = String.format("local.enterText(\"%s\", \"%s\", false);",
@@ -1714,6 +1718,7 @@ public class ViewRecorder {
         // restore var
         mCurrentEditTextFamilyString = "";
         mCurrentEditTextString = "";
+        return true;
     }
 
     private final static int TIMEOUT_NEXT_EVENT = 100;
@@ -1793,7 +1798,6 @@ public class ViewRecorder {
         RecordMotionEvent down = events.get(0);
         RecordMotionEvent up = events.get(events.size() - 1);
         DragEvent dragEvent = new DragEvent(up.view);
-        String drag = "";
 
         if (up.view instanceof ScrollView) {
             outputAfterScrollStop((ScrollView) up.view, dragEvent);
@@ -1803,23 +1807,20 @@ public class ViewRecorder {
         int stepCount = events.size() - 2;
         stepCount = stepCount > MIN_STEP_COUNT ? stepCount : MIN_STEP_COUNT;
         long duration = up.time - down.time;
+        /*
         if (0 == duration) {
             printLog("ignore drag event of [" + up.view + "] because 0 == duration");
+            printLog("x:" + up.x + " y:" + up.y);
             return;
-        }
+        }*/
 
-        String dragString = "local.dragPercent(%sf, %sf, %sf, %sf, %s);";
-        drag = String.format(dragString, local.toPercentX(down.x), local.toPercentX(up.x),
-                local.toPercentY(down.y), local.toPercentY(up.y), stepCount);
         dragEvent.setLog(String.format(
                 "Drag [%s<%s>] from (%s,%s) to (%s, %s) by duration %s step %s", up.view,
                 local.getFamilyString(up.view), down.x, down.y, up.x, up.y, duration, stepCount));
-        // without getSleepCode() for AbsListView
-        // and will be added at setOnItemClick()
-        dragEvent.setCode(drag);
-        mTheLastDragEvent = dragEvent;
+        dragEvent.setCode(getDragCode(down.x, up.x, down.y, up.y, stepCount));
 
-        if (up.view instanceof AbsListView || mIsLongClick /*|| (up.view instanceof WebView && DEBUG_WEBVIEW)*/) {
+        if (up.view instanceof AbsListView || mIsLongClick
+        /*|| (up.view instanceof WebView && DEBUG_WEBVIEW)*/) {
             printLog("ignore drag event of [" + up.view + "]");
             mIsLongClick = false;
             return;
@@ -1827,8 +1828,12 @@ public class ViewRecorder {
 
         // wait for other type event
         sleep(100);
-
         offerOutputEventQueue(dragEvent);
+    }
+
+    private String getDragCode(float downX, float upX, float downY, float upY, int stepCount) {
+        return String.format("local.dragPercent(%sf, %sf, %sf, %sf, %s);", local.toPercentX(downX),
+                local.toPercentX(upX), local.toPercentY(downY), local.toPercentY(upY), stepCount);
     }
 
     /**

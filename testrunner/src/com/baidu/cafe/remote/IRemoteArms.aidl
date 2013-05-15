@@ -163,4 +163,5 @@ interface IRemoteArms {
     boolean isNetworkEnable();
     String getTopPackage();
     void copyAssets(String dist);
+    void expandStatusBar();
 }

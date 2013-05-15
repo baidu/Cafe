@@ -3058,4 +3058,12 @@ public class Armser {
             e.printStackTrace();
         }
     }
+
+    public void expandStatusBar() {
+        try {
+            iArms.expandStatusBar();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
