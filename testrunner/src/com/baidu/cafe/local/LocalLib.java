@@ -1623,7 +1623,6 @@ public class LocalLib extends SoloEx {
     public View getViewByFamilyString(String familyString, String className) {
         long endTime = System.currentTimeMillis() + TIMEOUT;
         int decorViewIndex = Integer.valueOf("" + familyString.charAt(familyString.length() - 1));
-        print("decorViewIndex:" + decorViewIndex);
 
         // get views from current activity
         while (System.currentTimeMillis() < endTime) {

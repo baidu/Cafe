@@ -1102,7 +1102,7 @@ public class ViewRecorder {
     }
 
     private void hookOnClickListener(final View view, OnClickListener onClickListener) {
-        printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
+        // printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
 
         // save old listener
         mOnClickListeners.put(getViewID(view), onClickListener);
@@ -1146,7 +1146,6 @@ public class ViewRecorder {
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String click = String.format("local.clickOn(\"%s\", \"%s\", false);//%s%s", viewClass,
                 familyString, "Click On ", getFirstLine(comments));
-        printLog("getWindowDecorViews: " + local.getWindowDecorViews().length);
         clickEvent.setCode(click);
 
         // clickEvent.setLog();
