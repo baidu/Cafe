@@ -1568,14 +1568,20 @@ public class LocalLib extends SoloEx {
             return;
         }
 
-        runOnMainSync(new Runnable() {
+        view.post(new Runnable() {
             public void run() {
                 int[] xy = getViewCenter(view);
-                print("clickViaPerformClick:" + xy[0] + "," + xy[1]);
-                if (longClick) {
-                    view.performLongClick();
-                } else {
-                    view.performClick();
+                print("clickViaPerformClick:" + xy[0] + "," + xy[1] + " " + view);
+                print("familyString:" + getFamilyString(view));
+                try {
+                    if (longClick) {
+                        view.performLongClick();
+                    } else {
+                        view.performClick();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    clickOnView(view);
                 }
             }
         });
@@ -1606,7 +1612,7 @@ public class LocalLib extends SoloEx {
         return new int[] { (int) x, (int) y };
     }
 
-    private final int TIMEOUT = 10000;
+    private final int TIMEOUT = 20000;
 
     /**
      * This method is protected by assert.
@@ -1616,12 +1622,15 @@ public class LocalLib extends SoloEx {
      */
     public View getViewByFamilyString(String familyString, String className) {
         long endTime = System.currentTimeMillis() + TIMEOUT;
+        int decorViewIndex = Integer.valueOf("" + familyString.charAt(familyString.length() - 1));
+        print("decorViewIndex:" + decorViewIndex);
 
         // get views from current activity
         while (System.currentTimeMillis() < endTime) {
             //            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
             // it must be the same as ViewRecorder.getTargetViews()
-            ArrayList<View> views = getViews();
+            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class,
+                    LocalLib.getWindowDecorViews()[decorViewIndex]));
             for (View view : views) {
                 if (getFamilyString(view).equals(familyString)) {
                     if (null == className) {
@@ -1631,29 +1640,11 @@ public class LocalLib extends SoloEx {
                     try {
                         if (viewClassName.equals(className)
                                 || Class.forName(className).isAssignableFrom(view.getClass())) {
+                            print("decorViewIndex:" + decorViewIndex);
                             return view;
                         }
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
-                    }
-                }
-            }
-            sleep(500);
-        }
-
-        // get views from all opened activities
-        endTime += TIMEOUT;
-        while (System.currentTimeMillis() < endTime) {
-            View[] decorViews = LocalLib.getWindowDecorViews();
-            for (View decorView : decorViews) {
-                ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
-                        decorView));
-                for (View view : invisibleViews) {
-                    if (getFamilyString(view).equals(familyString)) {
-                        String viewClassName = view.getClass().getName();
-                        if (null == className || viewClassName.equals(className)) {
-                            return view;
-                        }
                     }
                 }
             }
@@ -1839,8 +1830,12 @@ public class LocalLib extends SoloEx {
     public boolean isInScreen(View view) {
         int[] location = new int[2];
         view.getLocationOnScreen(location);
-        return location[0] < 0 || location[0] > getDisplayX() || location[1] < 0
-                || location[1] > getDisplayY() ? false : true;
+        int leftX = location[0];
+        int righX = location[0] + view.getWidth();
+        int leftY = location[1];
+        int righY = location[1] + view.getHeight();
+        return righX < 0 || leftX > getDisplayX() || righY < 0 || leftY > getDisplayY() ? false
+                : true;
     }
 
     public <T extends View> ArrayList<T> removeOutOfScreenViews(ArrayList<T> viewList) {
@@ -1951,7 +1946,7 @@ public class LocalLib extends SoloEx {
     }
 
     public boolean isSize0(final View view) {
-        return view.getHeight() * view.getWidth() == 0 ? true : false;
+        return view.getHeight() == 0 || view.getWidth() == 0;
     }
 
     public boolean waitForView(String className, final int index, final int timeout,
@@ -1987,6 +1982,8 @@ public class LocalLib extends SoloEx {
             view = parent;
         }
 
+        // add decorview index
+        familyString += getDecorViewIndex(v);
         return familyString;
     }
 
@@ -1998,6 +1995,23 @@ public class LocalLib extends SoloEx {
             }
             if (parent.getChildAt(i).getVisibility() != View.VISIBLE) {
                 countInvisible++;
+            }
+        }
+        return -1;
+    }
+
+    private int getDecorViewIndex(View targetView) {
+        View[] decorViews = LocalLib.getWindowDecorViews();
+        if (decorViews.length == 1) {
+            return 0;
+        }
+
+        for (int i = 0; i < decorViews.length; i++) {
+            ArrayList<View> currentiews = getCurrentViews(View.class, decorViews[i]);
+            for (View view : currentiews) {
+                if (view.equals(targetView)) {
+                    return i;
+                }
             }
         }
         return -1;

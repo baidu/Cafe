@@ -73,6 +73,7 @@ public class ViewRecorder {
     private final static int                         MIN_SLEEP_TIME               = 1000;
     private final static int                         MIN_STEP_COUNT               = 4;
     private final static boolean                     DEBUG_WEBVIEW                = true;
+
     public final static boolean                      DEBUG                        = false;
 
     /**
@@ -153,6 +154,10 @@ public class ViewRecorder {
     private String                                   mFamilyStringBeforeScroll    = "";
 
     private boolean                                  mIsLongClick                 = false;
+
+    private boolean                                  mDragWithoutUp               = false;
+
+    private boolean                                  mIsAbsListViewToTheEnd       = false;
 
     /**
      * Saving states for each listview
@@ -318,8 +323,8 @@ public class ViewRecorder {
         int[] xy = new int[2];
         view.getLocationOnScreen(xy);
         // local.getRIdNameByValue(packageName, value)
-        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", "", view,
-                local.getViewText(view), xy[0], xy[1], view.getWidth(), view.getHeight());
+        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", local.getFamilyString(view),
+                view, local.getViewText(view), xy[0], xy[1], view.getWidth(), view.getHeight());
         print("ViewLayout", msg);
     }
 
@@ -559,9 +564,9 @@ public class ViewRecorder {
     }
 
     private ArrayList<View> getTargetViews() {
-//        ArrayList<View> views = local
-//                .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
-                ArrayList<View> views = local.getViews();
+        ArrayList<View> views = local
+                .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
+        //        ArrayList<View> views = local.getViews();
         ArrayList<View> targetViews = new ArrayList<View>();
 
         for (View view : views) {
@@ -812,7 +817,13 @@ public class ViewRecorder {
             return;
         }
         mCurrentScrollState = scrollState;
+
         if (OnScrollListener.SCROLL_STATE_IDLE == scrollState) {
+            printLog("getLastVisiblePosition:" + view.getLastVisiblePosition());
+            printLog("totalItemCount:" + absListViewState.totalItemCount);
+            if (view.getLastVisiblePosition() + 1 == absListViewState.totalItemCount) {
+                mIsAbsListViewToTheEnd = true;
+            }
             outputAScroll(view);
         }
         if (OnScrollListener.SCROLL_STATE_TOUCH_SCROLL == scrollState) {
@@ -1135,7 +1146,7 @@ public class ViewRecorder {
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String click = String.format("local.clickOn(\"%s\", \"%s\", false);//%s%s", viewClass,
                 familyString, "Click On ", getFirstLine(comments));
-
+        printLog("getWindowDecorViews: " + local.getWindowDecorViews().length);
         clickEvent.setCode(click);
 
         // clickEvent.setLog();
@@ -1524,7 +1535,7 @@ public class ViewRecorder {
                         OutputEvent e = pollOutputEventQueue();
                         if (e != null) {
                             events.add(e);
-                            if (e.view instanceof WebView) {
+                            if (e.view instanceof WebView || mDragWithoutUp) {
                                 sleep(1000);
                             } else {
                                 sleep(400);
@@ -1539,6 +1550,7 @@ public class ViewRecorder {
                             Collections.sort(events, new SortByView());
                             outputEvents(events);
                             events.clear();
+                            mDragWithoutUp = false;
                         } else {
                             sleep(50);
                         }
@@ -1763,8 +1775,10 @@ public class ViewRecorder {
                         if (isDown
                                 && System.currentTimeMillis() > timeout
                                 && mCurrentScrollState != OnScrollListener.SCROLL_STATE_FLING
-                                && mCurrentScrollState != OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+                                && mCurrentScrollState != OnScrollListener.SCROLL_STATE_TOUCH_SCROLL
+                                && !mIsAbsListViewToTheEnd) {
                             printLog("output a drag without up");
+                            mDragWithoutUp = true;
                             mergeMotionEvents(events);
                             events.clear();
                             isDown = false;
@@ -1781,7 +1795,7 @@ public class ViewRecorder {
                             aTouch.add(recordMotionEvent);
                             // }
                         }
-
+                        mDragWithoutUp = false;
                         mergeMotionEvents(aTouch);
                         events.clear();
                     }
