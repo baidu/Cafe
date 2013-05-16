@@ -2134,13 +2134,6 @@ public class LocalLib extends SoloEx {
                 return i;
             }
         }
-        // View[] views = getUniqueViews(getCurrentViews(view.getClass(),
-        // true));
-        // for (int i = 0; i < views.length; i++) {
-        // if (views[i].equals(view)) {
-        // return i;
-        // }
-        // }
         return -1;
     }
 

@@ -66,15 +66,15 @@ import com.baidu.cafe.local.Log;
  * @todo
  */
 public class ViewRecorder {
-    private final static String                      REPLAY_CLASS_NAME            = "CafeReplay";
-    private final static String                      REPLAY_FILE_NAME             = REPLAY_CLASS_NAME
-                                                                                          + ".java";
-    private final static int                         MAX_SLEEP_TIME               = 20000;
-    private final static int                         MIN_SLEEP_TIME               = 1000;
-    private final static int                         MIN_STEP_COUNT               = 4;
-    private final static boolean                     DEBUG_WEBVIEW                = true;
+    private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
+    private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
+                                                                                       + ".java";
+    private final static int                         MAX_SLEEP_TIME            = 20000;
+    private final static int                         MIN_SLEEP_TIME            = 1000;
+    private final static int                         MIN_STEP_COUNT            = 4;
+    private final static boolean                     DEBUG_WEBVIEW             = true;
 
-    public final static boolean                      DEBUG                        = false;
+    public final static boolean                      DEBUG                     = false;
 
     /**
      * For judging whether a view is an old one.
@@ -83,38 +83,38 @@ public class ViewRecorder {
      * 
      * Value is position array of view.
      */
-    private HashMap<String, int[]>                   mAllViewPosition             = new HashMap<String, int[]>();
+    private HashMap<String, int[]>                   mAllViewPosition          = new HashMap<String, int[]>();
 
     /**
      * For judging whether a view has been hooked.
      */
-    private ArrayList<Integer>                       mAllListenerHashcodes        = new ArrayList<Integer>();
+    private ArrayList<Integer>                       mAllListenerHashcodes     = new ArrayList<Integer>();
 
     /**
      * For judging whether a EditText has been hooked.
      */
-    private ArrayList<EditText>                      mAllEditTexts                = new ArrayList<EditText>();
+    private ArrayList<EditText>                      mAllEditTexts             = new ArrayList<EditText>();
 
     /**
      * For merge a sequeue of MotionEvents to a drag.
      */
-    private Queue<RecordMotionEvent>                 mMotionEventQueue            = new LinkedList<RecordMotionEvent>();
+    private Queue<RecordMotionEvent>                 mMotionEventQueue         = new LinkedList<RecordMotionEvent>();
 
     /**
      * For judging events of the same view at the same time which should be
      * keeped by their priorities.
      */
-    private Queue<OutputEvent>                       mOutputEventQueue            = new LinkedList<OutputEvent>();
+    private Queue<OutputEvent>                       mOutputEventQueue         = new LinkedList<OutputEvent>();
 
     /**
      * For mapping keycode to keyname
      */
-    private HashMap<Integer, String>                 mKeyCodeMap                  = new HashMap<Integer, String>();
+    private HashMap<Integer, String>                 mKeyCodeMap               = new HashMap<Integer, String>();
 
     /**
      * For judging whether UI is static.
      */
-    private ArrayList<View>                          mLastViews                   = new ArrayList<View>();
+    private ArrayList<View>                          mLastViews                = new ArrayList<View>();
 
     /**
      * lock for OutputEventQueue
@@ -125,66 +125,66 @@ public class ViewRecorder {
      * on something that other code might also be locking. This could result in
      * very strange and hard to diagnose blocking and deadlock behavior.
      */
-    private static String                            mSyncOutputEventQueue        = new String(
-                                                                                          "mSyncOutputEventQueue");
+    private static String                            mSyncOutputEventQueue     = new String(
+                                                                                       "mSyncOutputEventQueue");
 
     /**
      * lock for MotionEventQueue
      */
-    private static String                            mSyncMotionEventQueue        = new String(
-                                                                                          "mSyncMotionEventQueue");
+    private static String                            mSyncMotionEventQueue     = new String(
+                                                                                       "mSyncMotionEventQueue");
     /**
      * Time when event was being generated.
      */
-    private long                                     mTheCurrentEventOutputime    = System.currentTimeMillis();
+    private long                                     mTheCurrentEventOutputime = System.currentTimeMillis();
 
     /**
      * event count for naming screenshot
      */
-    private int                                      mEventCount                  = 0;
+    private int                                      mEventCount               = 0;
 
     /**
      * interval between events
      */
-    private long                                     mLastEventTime               = System.currentTimeMillis();
+    private long                                     mLastEventTime            = System.currentTimeMillis();
 
     /**
      * assume that only one ScrollView is fling
      */
-    private String                                   mFamilyStringBeforeScroll    = "";
+    private String                                   mFamilyStringBeforeScroll = "";
 
-    private boolean                                  mIsLongClick                 = false;
+    private boolean                                  mIsLongClick              = false;
 
-    private boolean                                  mDragWithoutUp               = false;
+    private boolean                                  mDragWithoutUp            = false;
 
-    private boolean                                  mIsAbsListViewToTheEnd       = false;
+    private boolean                                  mIsAbsListViewToTheEnd    = false;
 
     /**
      * Saving states for each listview
      */
-    private HashMap<String, AbsListViewState>        mAbsListViewStates           = new HashMap<String, AbsListViewState>();
+    private HashMap<String, AbsListViewState>        mAbsListViewStates        = new HashMap<String, AbsListViewState>();
 
     /**
      * Saving old listener for invoking when needed
      */
-    private HashMap<String, OnClickListener>         mOnClickListeners            = new HashMap<String, OnClickListener>();
-    private HashMap<String, OnLongClickListener>     mOnLongClickListeners        = new HashMap<String, OnLongClickListener>();
-    private HashMap<String, OnTouchListener>         mOnTouchListeners            = new HashMap<String, OnTouchListener>();
-    private HashMap<String, OnKeyListener>           mOnKeyListeners              = new HashMap<String, OnKeyListener>();
-    private HashMap<String, OnItemClickListener>     mOnItemClickListeners        = new HashMap<String, OnItemClickListener>();
-    private HashMap<String, OnGroupClickListener>    mOnGroupClickListeners       = new HashMap<String, OnGroupClickListener>();
-    private HashMap<String, OnChildClickListener>    mOnChildClickListeners       = new HashMap<String, OnChildClickListener>();
-    private HashMap<String, OnScrollListener>        mOnScrollListeners           = new HashMap<String, OnScrollListener>();
-    private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners    = new HashMap<String, OnItemLongClickListener>();
-    private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners     = new HashMap<String, OnItemSelectedListener>();
-    private LocalLib                                 local                        = null;
-    private File                                     mRecord                      = null;
-    private String                                   mPackageName                 = null;
-    private String                                   mPath                        = null;
-    private String                                   mCurrentEditTextFamilyString = "";
-    private String                                   mCurrentEditTextString       = "";
-    private long                                     mTheLastTextChangedTime      = System.currentTimeMillis();
-    private int                                      mCurrentScrollState          = 0;
+    private HashMap<String, OnClickListener>         mOnClickListeners         = new HashMap<String, OnClickListener>();
+    private HashMap<String, OnLongClickListener>     mOnLongClickListeners     = new HashMap<String, OnLongClickListener>();
+    private HashMap<String, OnTouchListener>         mOnTouchListeners         = new HashMap<String, OnTouchListener>();
+    private HashMap<String, OnKeyListener>           mOnKeyListeners           = new HashMap<String, OnKeyListener>();
+    private HashMap<String, OnItemClickListener>     mOnItemClickListeners     = new HashMap<String, OnItemClickListener>();
+    private HashMap<String, OnGroupClickListener>    mOnGroupClickListeners    = new HashMap<String, OnGroupClickListener>();
+    private HashMap<String, OnChildClickListener>    mOnChildClickListeners    = new HashMap<String, OnChildClickListener>();
+    private HashMap<String, OnScrollListener>        mOnScrollListeners        = new HashMap<String, OnScrollListener>();
+    private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners = new HashMap<String, OnItemLongClickListener>();
+    private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners  = new HashMap<String, OnItemSelectedListener>();
+    private LocalLib                                 local                     = null;
+    private File                                     mRecord                   = null;
+    private String                                   mPackageName              = null;
+    private String                                   mPath                     = null;
+    private String                                   mCurrentEditTextString    = "";
+    private int                                      mCurrentEditTextIndex     = 0;
+    private long                                     mTheLastTextChangedTime   = System.currentTimeMillis();
+    private int                                      mCurrentScrollState       = 0;
 
     public ViewRecorder(LocalLib local) {
         this.local = local;
@@ -1233,8 +1233,8 @@ public class ViewRecorder {
                 }
                 printLog("onTextChanged: " + local.getFamilyString(editText) + " getVisibility:"
                         + editText + " " + editText.getVisibility());
-                mCurrentEditTextFamilyString = local.getFamilyString(editText);
                 mTheLastTextChangedTime = System.currentTimeMillis();
+                mCurrentEditTextIndex = local.getCurrentViewIndex(editText);
                 mCurrentEditTextString = text;
             }
 
@@ -1730,16 +1730,15 @@ public class ViewRecorder {
     }
 
     private boolean outputEditTextEvent() {
-        if (mCurrentEditTextFamilyString.equals("")) {
+        if ("".equals(mCurrentEditTextString) || mCurrentEditTextIndex < 0) {
             return false;
         }
 
-        String code = String.format("local.enterText(\"%s\", \"%s\", false);",
-                mCurrentEditTextFamilyString, mCurrentEditTextString);
+        String code = String.format("local.enterText(%s, \"%s\");", mCurrentEditTextIndex,
+                mCurrentEditTextString);
         printCode(getSleepCode() + "\n" + code);
 
         // restore var
-        mCurrentEditTextFamilyString = "";
         mCurrentEditTextString = "";
         return true;
     }
