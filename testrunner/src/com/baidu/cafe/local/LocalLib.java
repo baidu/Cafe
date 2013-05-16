@@ -1616,37 +1616,39 @@ public class LocalLib extends SoloEx {
 
     /**
      * This method is protected by assert.
-     * 
-     * @param familyString
-     * @return
      */
     public View getViewByFamilyString(String familyString, String className) {
         long endTime = System.currentTimeMillis() + TIMEOUT;
-        int decorViewIndex = Integer.valueOf("" + familyString.charAt(familyString.length() - 1));
+        char decorViewIndexString = familyString.charAt(familyString.length() - 1);
+        boolean shouldSeacherAllDecorView = false;
+        int decorViewIndex = 0;
+        if (ALL_DECORVIEW_INDEX == decorViewIndexString) {
+            shouldSeacherAllDecorView = true;
+        } else {
+            decorViewIndex = Integer.valueOf(String.valueOf(decorViewIndexString));
+        }
 
-        // get views from current activity
         while (System.currentTimeMillis() < endTime) {
-            //            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class));
-            // it must be the same as ViewRecorder.getTargetViews()
-            ArrayList<View> views = removeInvisibleViews(getCurrentViews(View.class,
-                    LocalLib.getWindowDecorViews()[decorViewIndex]));
-            for (View view : views) {
-                if (getFamilyString(view).equals(familyString)) {
-                    if (null == className) {
-                        return view;
-                    }
-                    String viewClassName = view.getClass().getName();
-                    try {
-                        if (viewClassName.equals(className)
-                                || Class.forName(className).isAssignableFrom(view.getClass())) {
-                            print("decorViewIndex:" + decorViewIndex);
-                            return view;
-                        }
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
+            View[] decorViews = LocalLib.getWindowDecorViews();
+            if (decorViews.length <= decorViewIndex) {
+                sleep(500);
+                continue;
             }
+
+            View targetView = null;
+            if (shouldSeacherAllDecorView) {
+                // it must be the same as ViewRecorder.getTargetViews()
+                targetView = getViewFromViews(familyString, className, getCurrentViews());
+            } else {
+                // get views from specify decorView
+                targetView = getViewFromViews(familyString, className,
+                        getCurrentViews(View.class, decorViews[decorViewIndex]));
+            }
+
+            if (targetView != null) {
+                return targetView;
+            }
+
             sleep(500);
         }
 
@@ -1654,6 +1656,27 @@ public class LocalLib extends SoloEx {
         Assert.assertTrue(
                 String.format("getViewByFamilyString == null! familyString[%s]", familyString),
                 false);
+        return null;
+    }
+
+    private View getViewFromViews(String familyString, String className, ArrayList<View> originViews) {
+        ArrayList<View> views = removeInvisibleViews(originViews);
+        for (View view : views) {
+            if (getFamilyString(view).equals(familyString)) {
+                if (null == className) {
+                    return view;
+                }
+                String viewClassName = view.getClass().getName();
+                try {
+                    if (viewClassName.equals(className)
+                            || Class.forName(className).isAssignableFrom(view.getClass())) {
+                        return view;
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return null;
     }
 
@@ -1849,14 +1872,8 @@ public class LocalLib extends SoloEx {
 
     public void scrollListToLineWithFamilyString(final int line, final String familyString) {
         AbsListView absListView = null;
-        try {
-            absListView = (AbsListView) getViewByFamilyString(familyString,
-                    "android.widget.AbsListView");
-        } catch (Exception e) {
-            e.printStackTrace();
-            printViews(familyString);
-            System.exit(1);
-        }
+        absListView = (AbsListView) getViewByFamilyString(familyString,
+                "android.widget.AbsListView");
 
         if (null == absListView) {
             print("null == absListView");
@@ -1999,21 +2016,34 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
-    private int getDecorViewIndex(View targetView) {
+    private final static char ALL_DECORVIEW_INDEX = '*';
+
+    /**
+     * @param targetView
+     * @return * means all decorview
+     */
+    private String getDecorViewIndex(View targetView) {
         View[] decorViews = LocalLib.getWindowDecorViews();
         if (decorViews.length == 1) {
-            return 0;
+            return "0";
+        }
+
+        View view = targetView;
+        while (view.getParent() instanceof ViewGroup) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            view = parent;
+            if (parent.getClass().getName().equals(CLASSNAME_DECORVIEW)) {
+                break;
+            }
         }
 
         for (int i = 0; i < decorViews.length; i++) {
-            ArrayList<View> currentiews = getCurrentViews(View.class, decorViews[i]);
-            for (View view : currentiews) {
-                if (view.equals(targetView)) {
-                    return i;
-                }
+            if (view.equals(decorViews[i])) {
+                return String.valueOf(i);
             }
         }
-        return -1;
+
+        return String.valueOf(ALL_DECORVIEW_INDEX);
     }
 
     /**
@@ -2028,6 +2058,26 @@ public class LocalLib extends SoloEx {
             print("clickInListWithFamilyString:" + mTheLastClick[0] + "," + mTheLastClick[1]);
             clickOnView(view);
             // clickOnViewWithoutScroll(view);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void clickInListWithFamilyString(int position, String familyString) {
+        try {
+            AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(familyString,
+                    "android.widget.AdapterView");
+            if (null == adapterView) {
+                print("null == adapterView");
+                return;
+            }
+            int index = position - adapterView.getFirstVisiblePosition();
+            print("index: " + index);
+            print("getFirstVisiblePosition: " + adapterView.getFirstVisiblePosition());
+            View view = adapterView.getChildAt(index);
+            mTheLastClick = getViewCenter(view);
+            clickOnView(view);
+            // clickOnViewWithoutScroll(view);          
         } catch (Exception e) {
             e.printStackTrace();
         }

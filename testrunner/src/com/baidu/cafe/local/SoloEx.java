@@ -156,9 +156,9 @@ class SoloEx extends Solo {
             mAsserter = asserterConstructor.newInstance(mActivitiyUtils, mWaiter);
             mDialogUtils = dialogUtilsConstructor.newInstance(mViewFetcher, mSleeper);
             mChecker = checkerConstructor.newInstance(mViewFetcher, mWaiter);
-            mTextEnterer = textEnterer.newInstance(mInstrumentation, mActivitiyUtils, mClicker);
             mClicker = clickerConstructor.newInstance(mActivitiyUtils, mViewFetcher, mSender,
                     mInstrumentation, mSleeper, mWaiter, mWebUtils);
+            mTextEnterer = textEnterer.newInstance(mInstrumentation, mActivitiyUtils, mClicker);
             mPresser = presserConstructor
                     .newInstance(mClicker, mInstrumentation, mSleeper, mWaiter);
         } catch (ClassNotFoundException e) {

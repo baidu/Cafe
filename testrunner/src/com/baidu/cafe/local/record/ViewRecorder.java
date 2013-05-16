@@ -180,7 +180,6 @@ public class ViewRecorder {
     private LocalLib                                 local                        = null;
     private File                                     mRecord                      = null;
     private String                                   mPackageName                 = null;
-    private Activity                                 mCurrentActivity             = null;
     private String                                   mPath                        = null;
     private String                                   mCurrentEditTextFamilyString = "";
     private String                                   mCurrentEditTextString       = "";
@@ -566,7 +565,7 @@ public class ViewRecorder {
     private ArrayList<View> getTargetViews() {
         ArrayList<View> views = local
                 .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
-        //        ArrayList<View> views = local.getViews();
+        // ArrayList<View> views = local.getViews();
         ArrayList<View> targetViews = new ArrayList<View>();
 
         for (View view : views) {
@@ -842,7 +841,10 @@ public class ViewRecorder {
         absListViewState.visibleItemCount = visibleItemCount;
         absListViewState.totalItemCount = totalItemCount;
 
-        if (firstVisibleItem + visibleItemCount == totalItemCount) {
+        if (firstVisibleItem + visibleItemCount == totalItemCount && firstVisibleItem != 0) {
+            printLog("firstVisibleItem:" + firstVisibleItem);
+            printLog("visibleItemCount:" + visibleItemCount);
+            printLog("totalItemCount:" + totalItemCount);
             outputAScroll(view);
         }
     }
@@ -1187,7 +1189,8 @@ public class ViewRecorder {
         }
 
         try {
-            String rString = mCurrentActivity.getResources().getResourceName(view.getId());
+            String rString = local.getCurrentActivity().getResources()
+                    .getResourceName(view.getId());
             return "R.id." + rString.substring(rString.lastIndexOf("/") + 1, rString.length());
         } catch (Exception e) {
             // eat it for some view has no res id
@@ -1362,12 +1365,21 @@ public class ViewRecorder {
      * @param id
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // use center of item 
+        //use center of item 
         int[] center = LocalLib.getViewCenter(view);
         DragEvent dragEvent = new DragEvent(view);
         dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
         dragEvent.setLog("genernated by setOnItemClick");
         offerOutputEventQueue(dragEvent);
+
+        //        ClickEvent clickEvent = new ClickEvent(parent);
+        //        String familyString = local.getFamilyString(parent);
+        //        String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position,
+        //                familyString);
+        //        clickEvent.setCode(click);
+        //        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
+        //                + " click");
+        //        offerOutputEventQueue(clickEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
         OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) getListener(parent,
@@ -1767,7 +1779,6 @@ public class ViewRecorder {
                             if (e.view instanceof ScrollView
                                     && "".equals(mFamilyStringBeforeScroll)) {
                                 mFamilyStringBeforeScroll = local.getFamilyString(e.view);
-                                printLog(mFamilyStringBeforeScroll);
                             }
                         }
 
