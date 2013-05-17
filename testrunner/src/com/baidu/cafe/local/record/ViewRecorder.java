@@ -165,6 +165,11 @@ public class ViewRecorder {
     private HashMap<String, AbsListViewState>        mAbsListViewStates        = new HashMap<String, AbsListViewState>();
 
     /**
+     * save edittext the lastest text
+     */
+    private HashMap<String, String>                  mEditTextLastText         = new HashMap<String, String>();
+
+    /**
      * Saving old listener for invoking when needed
      */
     private HashMap<String, OnClickListener>         mOnClickListeners         = new HashMap<String, OnClickListener>();
@@ -181,8 +186,9 @@ public class ViewRecorder {
     private File                                     mRecord                   = null;
     private String                                   mPackageName              = null;
     private String                                   mPath                     = null;
-    private String                                   mCurrentEditTextString    = "";
     private int                                      mCurrentEditTextIndex     = 0;
+    private String                                   mCurrentEditTextString    = "";
+    private boolean                                  mHasTextChange            = false;
     private long                                     mTheLastTextChangedTime   = System.currentTimeMillis();
     private int                                      mCurrentScrollState       = 0;
 
@@ -1221,21 +1227,27 @@ public class ViewRecorder {
             return;
         }
 
-        // all TextWatcher works at the same time
+        // save origin text
+        mEditTextLastText.put(getViewID(editText), editText.getText().toString());
+
+        // all TextWatchers work at the same time
         editText.addTextChangedListener(new TextWatcher() {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String text = s.toString().replace("\\", "\\\\").replace("\"", "\\\"")
                         .replace("\r\n", "\\n").replace("\n", "\\n");
-                if ("".equals(s.toString()) || text.equals(mCurrentEditTextString)) {
+                String lastText = mEditTextLastText.get(getViewID(editText));
+                if ("".equals(s.toString()) || text.equals(lastText) || editText.isShown() == false) {
                     return;
                 }
                 printLog("onTextChanged: " + local.getFamilyString(editText) + " getVisibility:"
                         + editText + " " + editText.getVisibility());
                 mTheLastTextChangedTime = System.currentTimeMillis();
                 mCurrentEditTextIndex = local.getCurrentViewIndex(editText);
+                mEditTextLastText.put(getViewID(editText), text);
                 mCurrentEditTextString = text;
+                mHasTextChange = true;
             }
 
             @Override
@@ -1730,7 +1742,7 @@ public class ViewRecorder {
     }
 
     private boolean outputEditTextEvent() {
-        if ("".equals(mCurrentEditTextString) || mCurrentEditTextIndex < 0) {
+        if ("".equals(mCurrentEditTextString) || mCurrentEditTextIndex < 0 || !mHasTextChange) {
             return false;
         }
 
@@ -1740,6 +1752,8 @@ public class ViewRecorder {
 
         // restore var
         mCurrentEditTextString = "";
+        mCurrentEditTextIndex = -1;
+        mHasTextChange = false;
         return true;
     }
 
@@ -1884,9 +1898,6 @@ public class ViewRecorder {
                 outputAnEvent(dragEvent);
             }
         }).start();
-    }
-
-    private void hookOnItemSelectedListener(AdapterView view) {
     }
 
     private void handleOnKeyListener(View view) {
