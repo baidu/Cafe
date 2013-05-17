@@ -66,16 +66,15 @@ import com.baidu.cafe.local.Log;
  * @todo
  */
 public class ViewRecorder {
-    private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
-    private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
-                                                                                       + ".java";
+    public final static boolean                      DEBUG                     = false;
+
     private final static int                         MAX_SLEEP_TIME            = 20000;
     private final static int                         MIN_SLEEP_TIME            = 1000;
     private final static int                         MIN_STEP_COUNT            = 4;
     private final static boolean                     DEBUG_WEBVIEW             = true;
-
-    public final static boolean                      DEBUG                     = false;
-
+    private final static String                      REPLAY_CLASS_NAME         = "CafeReplay";
+    private final static String                      REPLAY_FILE_NAME          = REPLAY_CLASS_NAME
+                                                                                       + ".java";
     /**
      * For judging whether a view is an old one.
      * 
@@ -153,10 +152,16 @@ public class ViewRecorder {
      */
     private String                                   mFamilyStringBeforeScroll = "";
 
+    /**
+     * to ignore drag event
+     */
     private boolean                                  mIsLongClick              = false;
 
     private boolean                                  mDragWithoutUp            = false;
 
+    /**
+     * to ignore drag event when "output a drag without up"
+     */
     private boolean                                  mIsAbsListViewToTheEnd    = false;
 
     /**
@@ -1378,20 +1383,20 @@ public class ViewRecorder {
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
         //use center of item 
-        int[] center = LocalLib.getViewCenter(view);
-        DragEvent dragEvent = new DragEvent(view);
-        dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
-        dragEvent.setLog("genernated by setOnItemClick");
-        offerOutputEventQueue(dragEvent);
+        //        int[] center = LocalLib.getViewCenter(view);
+        //        DragEvent dragEvent = new DragEvent(view);
+        //        dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
+        //        dragEvent.setLog("genernated by setOnItemClick");
+        //        offerOutputEventQueue(dragEvent);
 
-        //        ClickEvent clickEvent = new ClickEvent(parent);
-        //        String familyString = local.getFamilyString(parent);
-        //        String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position,
-        //                familyString);
-        //        clickEvent.setCode(click);
-        //        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
-        //                + " click");
-        //        offerOutputEventQueue(clickEvent);
+        ClickEvent clickEvent = new ClickEvent(parent);
+        String familyString = local.getFamilyString(parent);
+        String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position,
+                familyString);
+        clickEvent.setCode(click);
+        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
+                + " click");
+        offerOutputEventQueue(clickEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
         OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) getListener(parent,
@@ -1976,22 +1981,7 @@ public class ViewRecorder {
     }
 
     private String getViewID(View view) {
-        if (null == view) {
-            printLog("null == view at getViewID!!!");
-            return "";
-        }
-
-        String viewString = view.toString();
-        if (viewString.indexOf('@') != -1) {
-            return viewString.substring(viewString.indexOf("@"));
-        } else if (viewString.indexOf('{') != -1) {
-            // after android 4.2
-            int leftBracket = viewString.indexOf('{');
-            int firstSpace = viewString.indexOf(' ');
-            return viewString.substring(leftBracket + 1, firstSpace);
-        } else {
-            return viewString + view.getId();
-        }
+        return null == view ? "" : String.valueOf(view.getId());
     }
 
     private String getViewString(View view) {

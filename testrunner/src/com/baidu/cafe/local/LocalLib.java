@@ -2046,38 +2046,27 @@ public class LocalLib extends SoloEx {
         return String.valueOf(ALL_DECORVIEW_INDEX);
     }
 
-    /**
-     * use clickOnView() different from clickOn() which use performClick()
-     * 
-     * @param itemFamilyString
-     */
-    public void clickInListWithFamilyString(String itemFamilyString) {
-        try {
-            View view = getViewByFamilyString(itemFamilyString, null);
-            mTheLastClick = getViewCenter(view);
-            print("clickInListWithFamilyString:" + mTheLastClick[0] + "," + mTheLastClick[1]);
-            clickOnView(view);
-            // clickOnViewWithoutScroll(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private View targetViewInList = null;
 
-    public void clickInListWithFamilyString(int position, String familyString) {
+    public void clickInListWithFamilyString(final int position, String familyString) {
         try {
-            AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(familyString,
+            final AdapterView<?> adapterView = (AdapterView<?>) getViewByFamilyString(familyString,
                     "android.widget.AdapterView");
             if (null == adapterView) {
                 print("null == adapterView");
                 return;
             }
-            int index = position - adapterView.getFirstVisiblePosition();
-            print("index: " + index);
-            print("getFirstVisiblePosition: " + adapterView.getFirstVisiblePosition());
-            View view = adapterView.getChildAt(index);
-            mTheLastClick = getViewCenter(view);
-            clickOnView(view);
-            // clickOnViewWithoutScroll(view);          
+
+            adapterView.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    adapterView.setSelection(position);
+                    targetViewInList = adapterView.getSelectedView();
+                    mTheLastClick = getViewCenter(targetViewInList);
+                }
+            });
+            clickOnView(targetViewInList);
         } catch (Exception e) {
             e.printStackTrace();
         }
