@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import junit.framework.Assert;
 import android.view.View;
 
+import com.baidu.cafe.CafeTestCase;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.remote.Armser;
 import com.baidu.cafe.utils.TreeNode;
@@ -96,24 +97,25 @@ public class APPTraveler {
     }
 
     private void init() {
-        TreeNode.vertical = local.getTestRString("vertical");
-        TreeNode.horizontal = local.getTestRString("horizontal");
-        TreeNode.big_horizontal = local.getTestRString("big_horizontal");
-        TreeNode.vertical_T = local.getTestRString("vertical_T");
-        TreeNode.horizontal_T = local.getTestRString("horizontal_T");
-        TreeNode.left = local.getTestRString("left");
-        ViewHelper.mBlackList.add(local.getTestRString("update"));
-        ViewHelper.mBlackList.add(local.getTestRString("download"));
-        ViewHelper.mBlackList.add(local.getTestRString("update_immediately"));
-        ViewHelper.mBlackList.add(local.getTestRString("download_immediately"));
-        local.traceFPS();
+        TreeNode.vertical = remote.getStringByName("vertical");
+        TreeNode.horizontal = remote.getStringByName("horizontal");
+        TreeNode.big_horizontal = remote.getStringByName("big_horizontal");
+        TreeNode.vertical_T = remote.getStringByName("vertical_T");
+        TreeNode.horizontal_T = remote.getStringByName("horizontal_T");
+        TreeNode.left = remote.getStringByName("left");
+        ViewHelper.mBlackList.add(remote.getStringByName("update"));
+        ViewHelper.mBlackList.add(remote.getStringByName("download"));
+        ViewHelper.mBlackList.add(remote.getStringByName("update_immediately"));
+        ViewHelper.mBlackList.add(remote.getStringByName("download_immediately"));
+        //local.traceFPS();
     }
 
     public void travel(int depth) {
-        ViewHelper.sleep();
-        //        if (CafeCaller.getRemote().getTopActivity().indexOf(mPackageName) == -1) {
-        //            ViewOperator.goBack();
-        //        }
+        while (remote.getTopActivity().indexOf(CafeTestCase.mActivityClass.getName()) == -1) {
+            local.sleep(1000);
+            Logger.println("wait for " + CafeTestCase.mActivityClass.getName());
+        }
+
         mCrashBeforeTravel = false;
         // prepare root node
         mRoot = newEmptyTreeNode();

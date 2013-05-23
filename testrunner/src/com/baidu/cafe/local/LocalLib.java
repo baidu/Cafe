@@ -426,30 +426,8 @@ public class LocalLib extends SoloEx {
         return diffViews;
     }
 
-    private int getRStringId(String packageName, String stringName) {
-        Class<?> stringClass = getRClass(packageName, "string");
-        if (null == stringClass) {
-            return -1;
-        }
-        try {
-            return (Integer) stringClass.getDeclaredField(stringName)
-                    .get(stringClass.newInstance());
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
     public String getRIdNameByValue(String packageName, int value) {
-        Class<?> idClass = getRClass(packageName, "id");
+        Class<?> idClass = Strings.getRClass(packageName, "id");
         if (null == idClass) {
             return "";
         }
@@ -471,29 +449,6 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * NOTICE: This method can not work at apk which is chaos.
-     * 
-     * @param packageName
-     * @param className
-     * @return
-     */
-    private Class<?> getRClass(String packageName, String className) {
-        try {
-            Class<?>[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
-            for (int i = 0; i < classes.length; i++) {
-                if (classes[i].getName().indexOf("$" + className) != -1) {
-                    return classes[i];
-                }
-            }
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
      * get R.string.yourTargetString from test package
      * 
      * @param stringName
@@ -502,7 +457,7 @@ public class LocalLib extends SoloEx {
      */
     public String getTestRString(String stringName) {
         return mContext.getResources().getString(
-                getRStringId(mContext.getPackageName(), stringName));
+                Strings.getRStringId(mContext.getPackageName(), stringName));
     }
 
     /**
@@ -514,7 +469,7 @@ public class LocalLib extends SoloEx {
      */
     @Deprecated
     public String getTestedRString(String stringName) {
-        return getString(getRStringId(mActivity.getPackageName(), stringName));
+        return getString(Strings.getRStringId(mActivity.getPackageName(), stringName));
     }
 
     /**
@@ -1819,7 +1774,7 @@ public class LocalLib extends SoloEx {
      * @return
      */
     public View getViewByRString(String R) {
-        Class<?> idClass = getRClass(mActivity.getPackageName(), "id");
+        Class<?> idClass = Strings.getRClass(mActivity.getPackageName(), "id");
         if (null == idClass) {
             return null;
         }
@@ -2346,10 +2301,27 @@ public class LocalLib extends SoloEx {
         try {
             mInstrumentation.sendPointerSync(event);
             mInstrumentation.sendPointerSync(event2);
-            APPTraveler.local.sleep(MINISLEEP);
+            sleep(MINISLEEP);
         } catch (SecurityException e) {
             e.printStackTrace();
             //            Assert.assertTrue("Click can not be completed!", false);
         }
+    }
+
+    /**
+     * @param depth
+     * @param username
+     * @param password
+     */
+    public void travel(int depth, String username, String password) {
+        new APPTraveler(CafeTestCase.remote, this, username, password).travel(depth);
+    }
+
+    public void travel(int depth) {
+        travel(depth, null, null);
+    }
+
+    public void travel() {
+        travel(4, null, null);
     }
 }

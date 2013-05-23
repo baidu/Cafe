@@ -3066,4 +3066,15 @@ public class Armser {
             e.printStackTrace();
         }
     }
+
+    public String getStringByName(String name) {
+        String ret = "";
+        try {
+            ret = iArms.getStringByName(name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return ret;
+        }
+    }
 }

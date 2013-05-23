@@ -18,6 +18,8 @@ package com.baidu.cafe.remote;
 
 import java.util.List;
 
+import com.baidu.cafe.utils.Strings;
+
 import android.app.Instrumentation;
 import android.content.Context;
 
@@ -870,5 +872,10 @@ public class ArmsBinder extends IRemoteArms.Stub {
 
     public void expandStatusBar() {
         mSystemLib.expandStatusBar();
+    }
+
+    public String getStringByName(String name) {
+        return mContext.getResources().getString(
+                Strings.getRStringId(mContext.getPackageName(), name));
     }
 }

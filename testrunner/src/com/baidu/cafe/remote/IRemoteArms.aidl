@@ -164,4 +164,5 @@ interface IRemoteArms {
     String getTopPackage();
     void copyAssets(String dist);
     void expandStatusBar();
+    String getStringByName(String name);
 }

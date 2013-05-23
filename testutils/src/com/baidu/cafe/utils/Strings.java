@@ -84,4 +84,49 @@ public class Strings {
         }
         return "";
     }
+
+    public static int getRStringId(String packageName, String stringName) {
+        Class<?> stringClass = getRClass(packageName, "string");
+        if (null == stringClass) {
+            return -1;
+        }
+        try {
+            return (Integer) stringClass.getDeclaredField(stringName)
+                    .get(stringClass.newInstance());
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
+     * NOTICE: This method can not work at apk which is chaos.
+     * 
+     * @param packageName
+     * @param className
+     * @return
+     */
+    public static Class<?> getRClass(String packageName, String className) {
+        try {
+            Class<?>[] classes = Class.forName(packageName + ".R").getDeclaredClasses();
+            for (int i = 0; i < classes.length; i++) {
+                if (classes[i].getName().indexOf("$" + className) != -1) {
+                    return classes[i];
+                }
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

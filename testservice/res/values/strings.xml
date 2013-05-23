@@ -9,4 +9,17 @@
     <string name="menu_settings">Settings</string>
     <string name="title_activity_lock">ActivityLock</string>
     <string name="textview_notice">退出请按HOME键</string>
+    <string name="vertical">│</string>
+    <string name="horizontal">─</string>
+    <string name="big_horizontal">──</string>
+    <string name="vertical_T">─┬</string>
+    <string name="horizontal_T">├</string>
+    <string name="left">└</string>
+    <string name="update">更新</string>
+    <string name="download">下载</string>
+    <string name="update_immediately">立即更新</string>
+    <string name="download_immediately">立即下载</string>
+    <string name="login1">登</string>
+    <string name="login2">录</string>
+
 </resources>

@@ -4,6 +4,8 @@ include $(CLEAR_VARS)
 # We only want this apk build for tests.
 LOCAL_MODULE_TAGS := tests
 
+LOCAL_DEX_PREOPT := false
+
 LOCAL_JAVA_LIBRARIES := android.test.runner
 
 LOCAL_STATIC_JAVA_LIBRARIES := libCafe
