@@ -1619,6 +1619,7 @@ public class LocalLib extends SoloEx {
      */
     public View getViewByFamilyString(String familyString, String className) {
         long endTime = System.currentTimeMillis() + TIMEOUT;
+        /*
         char decorViewIndexString = familyString.charAt(familyString.length() - 1);
         boolean shouldSeacherAllDecorView = false;
         int decorViewIndex = 0;
@@ -1627,24 +1628,25 @@ public class LocalLib extends SoloEx {
         } else {
             decorViewIndex = Integer.valueOf(String.valueOf(decorViewIndexString));
         }
-
+        */
         while (System.currentTimeMillis() < endTime) {
+            /*
             View[] decorViews = LocalLib.getWindowDecorViews();
             if (decorViews.length <= decorViewIndex) {
                 sleep(500);
                 continue;
-            }
+            }*/
 
             View targetView = null;
+            /*
             if (shouldSeacherAllDecorView) {
                 // it must be the same as ViewRecorder.getTargetViews()
                 targetView = getViewFromViews(familyString, className, getCurrentViews());
             } else {
                 // get views from specify decorView
-                targetView = getViewFromViews(familyString, className,
-                        getCurrentViews(View.class, decorViews[decorViewIndex]));
-            }
+            }*/
 
+            targetView = getViewFromViews(familyString, className, getCurrentViews());
             if (targetView != null) {
                 return targetView;
             }
@@ -1652,7 +1654,7 @@ public class LocalLib extends SoloEx {
             sleep(500);
         }
 
-        printViews(familyString);
+        //printViews(familyString);
         Assert.assertTrue(
                 String.format("getViewByFamilyString == null! familyString[%s]", familyString),
                 false);
@@ -1660,8 +1662,12 @@ public class LocalLib extends SoloEx {
     }
 
     private View getViewFromViews(String familyString, String className, ArrayList<View> originViews) {
-        ArrayList<View> views = removeInvisibleViews(originViews);
+        ArrayList<View> views = originViews;
         for (View view : views) {
+            /* for bug 1036
+            if ("00400000".equals(getFamilyString(view))) {
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            }*/
             if (getFamilyString(view).equals(familyString)) {
                 if (null == className) {
                     return view;
@@ -1687,8 +1693,7 @@ public class LocalLib extends SoloEx {
         View[] decorViews = LocalLib.getWindowDecorViews();
         print("########## decorViews: " + decorViews.length);
         for (View decorView : decorViews) {
-            ArrayList<View> invisibleViews = removeInvisibleViews(getCurrentViews(View.class,
-                    decorView));
+            ArrayList<View> invisibleViews = getCurrentViews(View.class, decorView);
             for (View view : invisibleViews) {
                 String familyString = getFamilyString(view);
                 String star = "";
@@ -1999,7 +2004,7 @@ public class LocalLib extends SoloEx {
         }
 
         // add decorview index
-        familyString += getDecorViewIndex(v);
+        //familyString += getDecorViewIndex(v);
         return familyString;
     }
 
@@ -2062,6 +2067,9 @@ public class LocalLib extends SoloEx {
                 @Override
                 public void run() {
                     adapterView.setSelection(position);
+                    adapterView.requestFocusFromTouch();
+                    adapterView.setSelection(position);
+                    sleep(300);
                     targetViewInList = adapterView.getSelectedView();
                     mTheLastClick = getViewCenter(targetViewInList);
                 }
