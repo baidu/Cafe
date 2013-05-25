@@ -67,7 +67,7 @@ public class DESEncryption {
                 sb.append(base64EncodeChars[b1 >>> 2]);
                 sb.append(base64EncodeChars[((b1 & 0x03) << 4) | ((b2 & 0xf0) >>> 4)]);
                 sb.append(base64EncodeChars[(b2 & 0x0f) << 2]);
-                sb.append("=");
+                sb.append('=');
                 break;
             }
             b3 = data[i++] & 0xff;

@@ -496,8 +496,8 @@ public class SystemLib {
                         + " groups");
                 return "Unavailable";
             } else {
-                return (new StringBuilder(m.group(1)).append("\n").append(m.group(2)).append(" ")
-                        .append(m.group(3)).append("\n").append(m.group(4))).toString();
+                return (new StringBuilder(m.group(1)).append('\n').append(m.group(2)).append(' ')
+                        .append(m.group(3)).append('\n').append(m.group(4))).toString();
             }
         } catch (IOException e) {
             Log.print("IO Exception when getting kernel version for Device Info screen\n" + e);
@@ -918,6 +918,7 @@ public class SystemLib {
 
                 size = totalBlocks * blockSize;
             } catch (IllegalArgumentException e) {
+                e.printStackTrace();
             }
         }
         return size;
@@ -943,6 +944,7 @@ public class SystemLib {
                 size = availableBlocks * blockSize;
 
             } catch (IllegalArgumentException e) {
+                e.printStackTrace();
             }
         }
         return size;
@@ -1237,6 +1239,7 @@ public class SystemLib {
 
             SystemClock.setCurrentTimeMillis(cal.getTimeInMillis());
         } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 
@@ -1713,7 +1716,7 @@ public class SystemLib {
             }
         }
 
-        if (isregister == true) {
+        if (isregister) {
             mContext.unregisterReceiver(mReceiver);
             isregister = false;
         }
@@ -1728,7 +1731,7 @@ public class SystemLib {
      */
     public boolean installApkSync(String filename, long timeout) {
         boolean ret = false;
-        if (isregister == false) {
+        if (!isregister) {
             isregister = true;
             IntentFilter intentFilter = new IntentFilter(MyIntent.ACTION_INSTALL_BEGIN);
             intentFilter.addAction(MyIntent.ACTION_INSTALL_END);
@@ -1750,7 +1753,7 @@ public class SystemLib {
                 ret = false;
                 break;
             }
-            if (isinstallapkfinish == true) {
+            if (isinstallapkfinish) {
                 ret = true;
                 break;
             }
@@ -1921,7 +1924,7 @@ public class SystemLib {
                 }
             }
 
-            return (String[]) logLines.toArray(new String[logLines.size()]);
+            return logLines.toArray(new String[logLines.size()]);
         } catch (Exception e) {
             e.printStackTrace();
             if (reader != null) {
@@ -1950,7 +1953,7 @@ public class SystemLib {
             public void run(AccountManagerFuture<Boolean> future) {
                 boolean failed = true;
                 try {
-                    if (future.getResult() == true) {
+                    if (future.getResult()) {
                         failed = false;
                     }
                 } catch (OperationCanceledException e) {
@@ -1995,7 +1998,7 @@ public class SystemLib {
                 ret = false;
                 break;
             }
-            if (isscreencapfinish == true) {
+            if (isscreencapfinish) {
                 ret = true;
                 break;
             }
@@ -2240,7 +2243,7 @@ public class SystemLib {
                     }
                 }
             }
-        }).start();
+        }, "keepState").start();
     }
 
     public boolean isAirplaneModeOn() {
@@ -2318,7 +2321,7 @@ public class SystemLib {
                     }
                 }
             }
-        }).start();
+        }, "lockDangerousActivity").start();
     }
 
     /**

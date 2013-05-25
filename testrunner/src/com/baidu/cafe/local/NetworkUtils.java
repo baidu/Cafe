@@ -161,7 +161,7 @@ class NetworkUtils {
     }
 
     public static int getPackageRcv(final String packageName) {
-        Integer ret = (Integer) ShellExecute.doInTimeout(new CallBack<Integer>() {
+        Integer ret = ShellExecute.doInTimeout(new CallBack<Integer>() {
             @Override
             public Integer runInTimeout() throws InterruptedException {
                 return getPackageTraffic(packageName, MODE_RCV);
@@ -175,7 +175,7 @@ class NetworkUtils {
     }
 
     public static int getPackageSnd(final String packageName) {
-        Integer ret = (Integer) ShellExecute.doInTimeout(new CallBack<Integer>() {
+        Integer ret = ShellExecute.doInTimeout(new CallBack<Integer>() {
             @Override
             public Integer runInTimeout() throws InterruptedException {
                 return getPackageTraffic(packageName, MODE_SND);

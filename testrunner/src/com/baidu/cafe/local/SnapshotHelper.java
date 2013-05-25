@@ -61,7 +61,8 @@ class SnapshotHelper {
             if (fos != null) {
                 try {
                     fos.close();
-                } catch (Exception e2) {
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             //            FileUtils.setPermissions(savePath, FileUtils.S_IRWXU | FileUtils.S_IRWXG

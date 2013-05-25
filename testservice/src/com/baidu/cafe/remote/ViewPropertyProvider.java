@@ -347,7 +347,7 @@ public class ViewPropertyProvider {
             String[] levelSplit = levelString.split("\\.");
             int level = countFrontWhitespace(lines.get(i));
             for (int j = 0; j < level; j++) {
-                levelBuf.append(levelSplit[j]).append(".");
+                levelBuf.append(levelSplit[j]).append('.');
             }
             String currentLevel = levelBuf.toString();
             levelString = currentLevel + i;
@@ -380,7 +380,7 @@ public class ViewPropertyProvider {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        }, "completeRemainingDump").start();
         mThreadNumber++;
     }
 
@@ -584,7 +584,6 @@ public class ViewPropertyProvider {
         return targetLines;
     }
 
-    @SuppressWarnings("finally")
     public static boolean isViewServerOpen() {
         boolean open = true;
         Socket socket = new Socket();
@@ -600,8 +599,8 @@ public class ViewPropertyProvider {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return open;
         }
+        return open;
     }
 
     /**
@@ -977,17 +976,9 @@ public class ViewPropertyProvider {
     private boolean isMatch(String searchValue, String getValue, int searchMode) {
         switch (searchMode) {
         case SEARCHMODE_COMPLETE_MATCHING:
-            if (searchValue.equals(getValue)) {
-                return true;
-            } else {
-                return false;
-            }
+            return searchValue.equals(getValue) ? true : false;
         case SEARCHMODE_INCLUDE_MATCHING:
-            if (getValue.indexOf(searchValue) != -1) {
-                return true;
-            } else {
-                return false;
-            }
+            return getValue.indexOf(searchValue) != -1 ? true : false;
         default:
             Log.print("Unknown type of SEARCHMODE");
             return false;
@@ -1008,13 +999,7 @@ public class ViewPropertyProvider {
      * @return true if visible, else false
      */
     private boolean isVisible(String line) {
-        String visibility = getPropertyValue(line, "getVisibility()");
-
-        if ("VISIBLE".equals(visibility)) {
-            return true;
-        } else {
-            return false;
-        }
+        return "VISIBLE".equals(getPropertyValue(line, "getVisibility()")) ? true : false;
     }
 
     /**

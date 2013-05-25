@@ -32,7 +32,7 @@ import com.baidu.cafe.local.LocalLib;
  * @todo
  */
 public class Util {
-    private final static String base = "abcdefghijklmnopqrstuvwxyz0123456789";
+    private final static String BASE = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     /**
      * @param <T>
@@ -119,7 +119,7 @@ public class Util {
         Random random = new Random();
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length; i++) {
-            sb.append(base.charAt(random.nextInt(base.length())));
+            sb.append(BASE.charAt(random.nextInt(BASE.length())));
         }
         return sb.toString();
     }

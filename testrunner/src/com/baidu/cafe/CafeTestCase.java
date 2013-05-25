@@ -40,7 +40,7 @@ import com.baidu.cafe.utils.ShellExecute.CommandResult;
 public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTestCase2<T> implements
         ExceptionCallBack {
 
-    public static Armser                 remote                       = null;
+    public static Armser                    remote                       = null;
     protected static LocalLib               local                        = null;
 
     public final static int                 SCREEN_ORIENTATION_PORTRAIT  = 0;

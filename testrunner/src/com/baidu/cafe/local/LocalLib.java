@@ -308,7 +308,7 @@ public class LocalLib extends SoloEx {
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
-            // System.err.println("view:" + view);
+            // eat it
             // e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -820,8 +820,9 @@ public class LocalLib extends SoloEx {
         ArrayList<TabWidget> tabList = new ArrayList<TabWidget>();
         ArrayList<View> viewList = getViews();
         for (View view : viewList) {
-            if (view instanceof android.widget.TabWidget)
+            if (view instanceof android.widget.TabWidget) {
                 tabList.add((TabWidget) view);
+            }
         }
         return tabList;
     }
@@ -1091,7 +1092,7 @@ public class LocalLib extends SoloEx {
         for (View view : views) {
             String strid = "";
             int resid = view.getId();
-            if (false == view.isShown() || View.NO_ID == resid) {
+            if (!view.isShown() || View.NO_ID == resid) {
                 continue;
             }
 
@@ -1126,13 +1127,13 @@ public class LocalLib extends SoloEx {
         boolean flag = false;
         ArrayList<View> viewArray = getViews();
         for (View view : viewArray) {
-            if ((true == isVisiable)
+            if (isVisiable
                     && ((view.getVisibility() == View.GONE) || (view.getVisibility() == View.INVISIBLE))) {
                 continue;
             }
             int resid = view.getId();
             // we only concern the shown view
-            if (false == view.isShown() || View.NO_ID == resid) {
+            if (!view.isShown() || View.NO_ID == resid) {
                 continue;
             }
             String strid;
@@ -1295,7 +1296,7 @@ public class LocalLib extends SoloEx {
             DexFile dexfile = new DexFile(path);
             Enumeration<String> entries = dexfile.entries();
             while (entries.hasMoreElements()) {
-                String name = (String) entries.nextElement();
+                String name = entries.nextElement();
                 if (name.indexOf('$') == -1) {
                     classes.add(name);
                 }

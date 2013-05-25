@@ -93,7 +93,7 @@ public class Arms extends Service {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        }, "invokeArmsBinder").start();
     }
 
 }

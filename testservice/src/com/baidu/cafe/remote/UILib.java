@@ -495,11 +495,7 @@ public class UILib {
             drag(centerX, centerX, y + 1, (y + height - 1) * scrollDistance, STEP_COUNT);
         }
 
-        if (scrollAmount == getScrollAmount(scrollViewId, scrollViewIndex, true)) {
-            return false;
-        } else {
-            return true;
-        }
+        return getScrollAmount(scrollViewId, scrollViewIndex, true) == scrollAmount ? false : true;
     }
 
     /**

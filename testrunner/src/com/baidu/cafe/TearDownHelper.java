@@ -91,7 +91,7 @@ public class TearDownHelper {
             }
         }
 
-        return (String[]) list.toArray(new String[list.size()]);
+        return list.toArray(new String[list.size()]);
     }
 
     private String[] subArray(String[] bigArray, String[] smallArray) {

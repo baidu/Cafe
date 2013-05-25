@@ -493,7 +493,6 @@ public class ViewRecorder {
     public void beginRecordCode() {
         monitorCurrentActivity();
 
-        // keep hooking new views
         new Thread(new Runnable() {
             public void run() {
                 while (true) {
@@ -512,7 +511,7 @@ public class ViewRecorder {
                     }
                 }
             }
-        }).start();
+        }, "keep hooking new views").start();
 
         handleRecordMotionEventQueue();
         handleOutputEventQueue();
@@ -532,7 +531,7 @@ public class ViewRecorder {
                     sleep(1000);
                 }
             }
-        }).start();
+        }, "monitorCurrentActivity").start();
     }
 
     /**
@@ -620,7 +619,7 @@ public class ViewRecorder {
             public void run() {
                 flushViewLayout(views);
             }
-        }).start();
+        }, "flushViewLayout").start();
         mLastViews.clear();
         mLastViews.addAll(views);
     }
@@ -1212,7 +1211,6 @@ public class ViewRecorder {
     private long getSleepTime() {
         long ret = System.currentTimeMillis() - mLastEventTime;
 
-        // update mLastEventTime lately
         new Thread(new Runnable() {
 
             @Override
@@ -1220,7 +1218,7 @@ public class ViewRecorder {
                 local.sleep(300);
                 mLastEventTime = System.currentTimeMillis();
             }
-        }).start();
+        }, "update mLastEventTime lately").start();
 
         ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
         ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
@@ -1243,7 +1241,7 @@ public class ViewRecorder {
                 String text = s.toString().replace("\\", "\\\\").replace("\"", "\\\"")
                         .replace("\r\n", "\\n").replace("\n", "\\n");
                 String lastText = mEditTextLastText.get(getViewID(editText));
-                if ("".equals(s.toString()) || text.equals(lastText) || editText.isShown() == false) {
+                if ("".equals(s.toString()) || text.equals(lastText) || !editText.isShown()) {
                     return;
                 }
                 printLog("onTextChanged: " + local.getFamilyString(editText) + " getVisibility:"
@@ -1587,7 +1585,7 @@ public class ViewRecorder {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        }, "handleOutputEventQueue").start();
     }
 
     private ArrayList<OutputEvent> removeDuplicatePriority(ArrayList<OutputEvent> events) {
@@ -1830,7 +1828,7 @@ public class ViewRecorder {
                     sleep(50);
                 }
             }
-        }).start();
+        }, "handleRecordMotionEventQueue").start();
     }
 
     /**
@@ -1889,8 +1887,9 @@ public class ViewRecorder {
 
             @Override
             public void run() {
-                while (!local.isScrollStoped(scrollView))
-                    ;
+                while (!local.isScrollStoped(scrollView)) {
+                    // wait for scroll stoping
+                }
                 int scrollX = scrollView.getScrollX();
                 int scrollY = scrollView.getScrollY();
                 String drag = String.format(
@@ -1902,7 +1901,7 @@ public class ViewRecorder {
                 dragEvent.setCode(drag);
                 outputAnEvent(dragEvent);
             }
-        }).start();
+        }, "outputAfterScrollStop").start();
     }
 
     private void handleOnKeyListener(View view) {

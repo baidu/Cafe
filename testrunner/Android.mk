@@ -7,7 +7,8 @@ LOCAL_DEX_PREOPT := false
 #LOCAL_PROGUARD_ENABLED := full
 #LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 
-LOCAL_SRC_FILES := $(call all-subdir-java-files)
+#LOCAL_SRC_FILES := $(call all-subdir-java-files)
+LOCAL_SRC_FILES += $(call all-java-files-under, src/)
 LOCAL_SRC_FILES += $(call all-java-files-under, ../testutils/src/)
 LOCAL_SRC_FILES += \
         src/com/baidu/cafe/remote/IRemoteArms.aidl
@@ -21,7 +22,7 @@ include $(BUILD_JAVA_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := librobotium:third/robotium-solo-4.1.jar \
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := librobotium:libs/robotium-solo-4.1.jar \
 #	libzutubi:third/android-junit-report-1.5.8.jar
 
 include $(BUILD_MULTI_PREBUILT) 

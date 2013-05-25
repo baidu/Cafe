@@ -117,9 +117,8 @@ public class Armser {
             str = iArms.getAccountName();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -131,9 +130,8 @@ public class Armser {
             str = iArms.getAccountType();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -145,9 +143,8 @@ public class Armser {
             str = iArms.getAllRunningActivities();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -159,9 +156,8 @@ public class Armser {
             str = iArms.getAllRunningServices();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -172,7 +168,6 @@ public class Armser {
             iArms.setInputMethodShowOff();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -184,7 +179,6 @@ public class Armser {
             iArms.setInputMethodShowOn();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -194,14 +188,13 @@ public class Armser {
      * @return true if screen is locked
      */
     public boolean isScreenLocked() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.isScreenLocked();
+            ret = iArms.isScreenLocked();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -212,7 +205,6 @@ public class Armser {
             iArms.setScreenLocked();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -224,7 +216,6 @@ public class Armser {
             iArms.setScreenUnlocked();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -244,9 +235,8 @@ public class Armser {
             str = iArms.getBatteryStatus();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -266,9 +256,8 @@ public class Armser {
             str = iArms.getBatteryHealth();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -277,14 +266,13 @@ public class Armser {
      * @return true or false indicating whether a battery is present
      */
     public boolean getBatteryPresent() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.getBatteryPresent();
+            ret = iArms.getBatteryPresent();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -299,9 +287,8 @@ public class Armser {
             i = iArms.getBatteryLevel();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -315,9 +302,8 @@ public class Armser {
             i = iArms.getBatteryScale();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -332,9 +318,8 @@ public class Armser {
             i = iArms.getBatteryIconsmall();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -351,9 +336,8 @@ public class Armser {
             str = iArms.getBatteryPlugged();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -367,9 +351,8 @@ public class Armser {
             i = iArms.getBatteryVoltage();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -383,9 +366,8 @@ public class Armser {
             i = iArms.getBatteryTemperature();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -399,9 +381,8 @@ public class Armser {
             str = iArms.getBatteryTechnology();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -417,9 +398,8 @@ public class Armser {
             str = iArms.getBlueToothAddress();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -431,9 +411,8 @@ public class Armser {
             str = iArms.getBuildVersion();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -447,9 +426,8 @@ public class Armser {
             str = iArms.getBuildVersion();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -463,9 +441,8 @@ public class Armser {
             str = iArms.getDeviceModel();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -480,9 +457,8 @@ public class Armser {
             str = iArms.getBuildNumber();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -494,9 +470,8 @@ public class Armser {
             str = iArms.getKernelVersion();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -507,7 +482,6 @@ public class Armser {
             iArms.recordVideo();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -520,7 +494,6 @@ public class Armser {
         } catch (RemoteException e) {
             e.printStackTrace();
             return null;
-        } finally {
         }
     }
 
@@ -533,7 +506,6 @@ public class Armser {
         } catch (RemoteException e) {
             e.printStackTrace();
             return -1;
-        } finally {
         }
     }
 
@@ -553,9 +525,8 @@ public class Armser {
             i = iArms.getAudioMode();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -584,9 +555,8 @@ public class Armser {
             i = iArms.getAudioVolume(streamType);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -603,9 +573,8 @@ public class Armser {
             i = iArms.getRingtoneMode();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -614,14 +583,13 @@ public class Armser {
      * @return true if any music tracks are active
      */
     public boolean isMusicActive() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.isMusicActive();
+            ret = iArms.isMusicActive();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -647,7 +615,6 @@ public class Armser {
             iArms.setAudioVolumeDown(streamType);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -674,7 +641,6 @@ public class Armser {
             iArms.setAudioVolumeUp(streamType);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -686,7 +652,6 @@ public class Armser {
             iArms.setAudioMuteOn(streamType);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -698,7 +663,6 @@ public class Armser {
             iArms.setAudioMuteOff(streamType);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -716,9 +680,8 @@ public class Armser {
             i = iArms.getMemoryInternalAvail();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -729,7 +692,6 @@ public class Armser {
             iArms.goToSleep();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -737,14 +699,13 @@ public class Armser {
      * check if screen is currently on
      */
     public boolean isScreenOn() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.isScreenOn();
+            ret = iArms.isScreenOn();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -755,7 +716,6 @@ public class Armser {
             iArms.reboot();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -767,7 +727,6 @@ public class Armser {
             iArms.rebootToRecoveryMode();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -779,7 +738,6 @@ public class Armser {
             iArms.rebootToBootloader();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -787,28 +745,26 @@ public class Armser {
      * check if storage card is currently valid
      */
     public boolean isStorageCardValid() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.isStorageCardValid();
+            ret = iArms.isStorageCardValid();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
      * check if storage card is currently readonly
      */
     public boolean isStorageCardReadOnly() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.isStorageCardReadOnly();
+            ret = iArms.isStorageCardReadOnly();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -824,9 +780,8 @@ public class Armser {
             i = iArms.getStorageCardSize();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -841,23 +796,21 @@ public class Armser {
             i = iArms.getStorageCardAvail();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
      * check if any app is accessing storage card
      */
     public boolean hasAppsAccessingStorage() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.hasAppsAccessingStorage();
+            ret = iArms.hasAppsAccessingStorage();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -868,7 +821,6 @@ public class Armser {
             iArms.mount();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -880,7 +832,6 @@ public class Armser {
             iArms.unmount();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -893,9 +844,8 @@ public class Armser {
             i = iArms.getDisplayX();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -907,9 +857,8 @@ public class Armser {
             i = iArms.getDisplayY();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -921,9 +870,8 @@ public class Armser {
             i = iArms.getScreenBrightness();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -937,9 +885,8 @@ public class Armser {
             str = iArms.getSystemTime();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -954,7 +901,6 @@ public class Armser {
             iArms.setScreenBrightness(brightness);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -969,7 +915,6 @@ public class Armser {
             iArms.setSystemTime(time);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -983,9 +928,8 @@ public class Armser {
             str = iArms.getMyPhoneNumber();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -999,9 +943,8 @@ public class Armser {
             str = iArms.getNetworkType();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1016,9 +959,8 @@ public class Armser {
             str = iArms.getDataState();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1037,9 +979,8 @@ public class Armser {
             i = iArms.getSimCardState();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
@@ -1051,9 +992,8 @@ public class Armser {
             str = iArms.getSmsState();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1067,7 +1007,6 @@ public class Armser {
             iArms.setAirplaneMode(enable);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -1079,7 +1018,6 @@ public class Armser {
             iArms.setDataConnectionDisabled();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -1091,7 +1029,6 @@ public class Armser {
             iArms.setDataConnectionEnabled();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
         }
     }
 
@@ -1108,9 +1045,8 @@ public class Armser {
             str = iArms.formatSize(size);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1122,9 +1058,8 @@ public class Armser {
             str = iArms.getWlanMacAddress();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1142,23 +1077,21 @@ public class Armser {
             i = iArms.getWifiState();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return i;
         }
+        return i;
     }
 
     /**
      * check if wifi is currently enabled
      */
     public boolean isWifiEnabled() {
-        boolean b = true;
+        boolean ret = true;
         try {
-            b = iArms.isWifiEnabled();
+            ret = iArms.isWifiEnabled();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return ret;
     }
 
     /**
@@ -1170,9 +1103,8 @@ public class Armser {
             b = iArms.setWifiDisabled();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return b;
     }
 
     /**
@@ -1184,9 +1116,8 @@ public class Armser {
             b = iArms.setWifiEnabled();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return b;
     }
 
     /**
@@ -1198,9 +1129,8 @@ public class Armser {
             b = iArms.setWifiDisconnect();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return b;
     }
 
     /**
@@ -1212,9 +1142,8 @@ public class Armser {
             b = iArms.setWifiReconnect();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return b;
     }
 
     /**
@@ -1226,9 +1155,8 @@ public class Armser {
             b = iArms.setWifiStartScan();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return b;
         }
+        return b;
     }
 
     /**
@@ -1251,9 +1179,8 @@ public class Armser {
             str = iArms.getServerIP();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1266,9 +1193,8 @@ public class Armser {
             str = iArms.runCmdOnServer(command);
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     private static final int TIMEOUT_DEFAULT_VALUE = 10000;
@@ -1306,9 +1232,8 @@ public class Armser {
             str = iArms.getTopActivity();
         } catch (RemoteException e) {
             e.printStackTrace();
-        } finally {
-            return str;
         }
+        return str;
     }
 
     /**
@@ -1488,7 +1413,7 @@ public class Armser {
                 if (timedOut)
                     return false;
 
-                if (true == iArms.checkView(searchKey, searchValue, searchMode, index + 1))
+                if (iArms.checkView(searchKey, searchValue, searchMode, index + 1))
                     return true;
                 sleep(500);
             }
@@ -2843,9 +2768,8 @@ public class Armser {
             ret = iArms.getScreenBrightnessMode();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     /**
@@ -2896,9 +2820,8 @@ public class Armser {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public boolean isAccelerometerRotationEnabled() {
@@ -2907,9 +2830,8 @@ public class Armser {
             ret = iArms.isAccelerometerRotationEnabled();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public void setAccelerometerRotationEnabled(boolean enabled) {
@@ -2926,9 +2848,8 @@ public class Armser {
             ret = iArms.getBackgroundDataState();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public void setBackgroundDataSetting(boolean enabled) {
@@ -2945,9 +2866,8 @@ public class Armser {
             ret = iArms.getMasterSyncAutomatically();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public void setMasterSyncAutomatically(boolean sync) {
@@ -2986,9 +2906,8 @@ public class Armser {
             ret = iArms.getCurrentTaskActivitiesNumber();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public void setStatusBarHeight(int height) {
@@ -3005,9 +2924,8 @@ public class Armser {
             ret = iArms.isViewServerOpen();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     /**
@@ -3019,9 +2937,8 @@ public class Armser {
             ret = iArms.isHome();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     /**
@@ -3035,9 +2952,8 @@ public class Armser {
             ret = iArms.isNetworkEnable();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public String getTopPackage() {
@@ -3046,9 +2962,8 @@ public class Armser {
             ret = iArms.getTopPackage();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 
     public void copyAssets(String dist) {
@@ -3073,8 +2988,7 @@ public class Armser {
             ret = iArms.getStringByName(name);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return ret;
         }
+        return ret;
     }
 }

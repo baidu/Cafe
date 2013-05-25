@@ -28,7 +28,7 @@ import android.view.ViewTreeObserver;
  * @todo
  */
 class FPSTracer {
-    private final static int interval      = 1000;
+    private final static int INTERVAL      = 1000;
     private static long      mFpsStartTime = -1;
     private static long      mFpsPrevTime  = -1;
     private static int       mFpsNumFrames = 0;
@@ -46,7 +46,7 @@ class FPSTracer {
                 while (threadDisable) {
                     time++;
                     try {
-                        Thread.sleep(interval);
+                        Thread.sleep(INTERVAL);
                     } catch (InterruptedException e) {
                         // eat it
                     }
@@ -78,7 +78,7 @@ class FPSTracer {
                 }
             }
 
-        }).start();
+        }, "trace").start();
     }
 
     private static void countFPS() {
