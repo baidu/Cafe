@@ -80,8 +80,7 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
     private boolean             mMultiFile                 = false;
 
     // added by luxiaoyu01@baidu.com
-    private static final String ARG_CUSTOM_ARG             = "custom";
-    public static String        mCustom                    = null;
+    public static Bundle        mArguments                 = null;
 
     @Override
     public void onCreate(Bundle arguments) {
@@ -92,8 +91,7 @@ public class JUnitReportTestRunner extends InstrumentationTestRunner {
             mFilterTraces = getBooleanArgument(arguments, ARG_FILTER_TRACES, true);
             mMultiFile = getBooleanArgument(arguments, ARG_MULTI_FILE, false);
             // added by luxiaoyu01@baidu.com
-            mCustom = arguments.getString(ARG_CUSTOM_ARG);
-            System.out.println("mCustom:" + mCustom);
+            mArguments = arguments;
         } else {
             Log.i(LOG_TAG, "No arguments provided");
         }

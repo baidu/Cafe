@@ -64,6 +64,7 @@ import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CommandResult;
 import com.baidu.cafe.utils.Strings;
 import com.jayway.android.robotium.solo.WebElement;
+import com.zutubi.android.junitreport.JUnitReportTestRunner;
 
 import dalvik.system.DexFile;
 
@@ -2324,5 +2325,9 @@ public class LocalLib extends SoloEx {
 
     public void travel() {
         travel(4, null, null);
+    }
+
+    public String getStringFromArguments(String key) {
+        return JUnitReportTestRunner.mArguments.getString(key);
     }
 }
