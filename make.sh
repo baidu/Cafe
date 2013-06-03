@@ -92,8 +92,11 @@ make_cafe()
     # generate javadoc
     # added by zhangjunjun@baidu.com
     cd $SRC/testrunner
-    
-
+    javadoc -classpath ../out/cafe.jar:libs/android.jar -d ../doc \
+        src/com/baidu/cafe/local/LocalLib.java src/com/baidu/cafe/remote/Armser.java
+    cd $SRC/doc
+    jar cf ../out/cafe_doc.jar *
+    rm -rf $SRC/doc
 
     #cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
 	#mv classes.jar android-web-driver.jar
