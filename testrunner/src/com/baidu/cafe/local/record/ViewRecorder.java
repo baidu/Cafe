@@ -1156,8 +1156,15 @@ public class ViewRecorder {
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
-        String click = String.format("local.clickOn(\"%s\", \"%s\", false);//%s%s", viewClass,
-                familyString, "Click On ", getFirstLine(comments));
+        String click = "";
+        if ("".equals(rString)) {
+            click = String.format("local.clickOn(\"%s\", \"%s\", false);//%s%s", viewClass,
+                    familyString, "Click On ", getFirstLine(comments));
+        } else {
+            String rStringSuffix = getRStringSuffix(v);
+            click = String.format("local.clickViewById(\"id/%s\");//%s%s", rStringSuffix,
+                    "Click On ", getFirstLine(comments));
+        }
         clickEvent.setCode(click);
 
         // clickEvent.setLog();
@@ -1169,7 +1176,7 @@ public class ViewRecorder {
         OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
         OnClickListener onClickListenerHooked = (OnClickListener) getListener(v, "mOnClickListener");
         if (onClickListener != null) {
-            // TODO It's a bug. It can not be fix by below.
+            // TODO It's a bug. It can not be fixed by below.
             if (onClickListener.equals(onClickListenerHooked)) {
                 printLog("onClickListener == onClickListenerHooked!!!");
                 return;
@@ -1193,6 +1200,11 @@ public class ViewRecorder {
     }
 
     private String getRString(View view) {
+        String rStringSuffix = getRStringSuffix(view);
+        return "".equals(rStringSuffix) ? "" : "R.id." + rStringSuffix;
+    }
+
+    private String getRStringSuffix(View view) {
         int id = view.getId();
         if (-1 == id) {
             return "";
@@ -1201,9 +1213,9 @@ public class ViewRecorder {
         try {
             String rString = local.getCurrentActivity().getResources()
                     .getResourceName(view.getId());
-            return "R.id." + rString.substring(rString.lastIndexOf("/") + 1, rString.length());
+            return rString.substring(rString.lastIndexOf("/") + 1, rString.length());
         } catch (Exception e) {
-            // eat it for some view has no res id
+            // eat it because some view has no res id
         }
         return "";
     }

@@ -74,11 +74,11 @@ import dalvik.system.DexFile;
  * 1.get or set a object's private property and invoke a object's private
  * function
  * 
- * 2.find view by text
+ * 2.find view by text or resid
  * 
  * 3.get views which is generated dynamically
  * 
- * 4.record hands operation and generate Cafe code
+ * 4.record human operations and generate Cafe codes
  * 
  * @author luxiaoyu01@baidu.com
  * @date 2011-5-17
@@ -1495,7 +1495,7 @@ public class LocalLib extends SoloEx {
      * @param longClick
      *            true means long click
      */
-    public <T extends View> void clickOn(String className, String familyString, boolean longClick) {
+    public void clickOn(String className, String familyString, boolean longClick) {
         try {
             View view = waitForViewByFamilyString(familyString, className);
             clickOnViewWithoutScroll(view, longClick);// waitForView is including
