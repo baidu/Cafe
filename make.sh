@@ -89,6 +89,12 @@ make_cafe()
     cd ../
     rm -rf test
 
+    # generate javadoc
+    # added by zhangjunjun@baidu.com
+    cd $SRC/testrunner
+    
+
+
     #cp $ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/android-web-driver_intermediates/classes.jar .
 	#mv classes.jar android-web-driver.jar
 }
