@@ -645,7 +645,7 @@ public class ViewRecorder {
 
     private void saveView(View view) {
         if (null == view) {
-            printLog("null == view at saveView!!!");
+            printLog("null == view " + Log.getThreadInfo());
             return;
         }
         String viewID = getViewID(view);
@@ -904,7 +904,7 @@ public class ViewRecorder {
                     }
                     onScrollListener.onScrollStateChanged(view, scrollState);
                 } else {
-                    printLog("onScrollListener == null at onScrollStateChanged");
+                    printLog("onScrollListener == null " + Log.getThreadInfo());
                 }
             }
 
@@ -925,7 +925,7 @@ public class ViewRecorder {
                     onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
                             totalItemCount);
                 } else {
-                    printLog("onScrollListener == null at onScroll");
+                    printLog("onScrollListener == null " + Log.getThreadInfo());
                 }
             }
         };
@@ -1144,7 +1144,7 @@ public class ViewRecorder {
 
     private void setOnClick(View v) {
         if (local.isSize0(v)) {
-            printLog(v + " is size 0 at setOnClick");
+            printLog(v + " is size 0 " + Log.getThreadInfo());
             invokeOriginOnClickListener(v);
             return;
         }
@@ -1162,8 +1162,9 @@ public class ViewRecorder {
                     familyString, "Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
-            click = String.format("local.clickViewById(\"id/%s\");//%s%s", rStringSuffix,
-                    "Click On ", getFirstLine(comments));
+            int index = local.getResIdIndex(v);
+            click = String.format("local.clickOn(\"id/%s\", \"%s\", false);//%s%s", rStringSuffix,
+                    index, "Click On ", getFirstLine(comments));
         }
         clickEvent.setCode(click);
 
@@ -1393,20 +1394,20 @@ public class ViewRecorder {
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
         //use center of item 
-        int[] center = LocalLib.getViewCenter(view);
-        DragEvent dragEvent = new DragEvent(view);
-        dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
-        dragEvent.setLog("genernated by setOnItemClick");
-        offerOutputEventQueue(dragEvent);
+        //        int[] center = LocalLib.getViewCenter(view);
+        //        DragEvent dragEvent = new DragEvent(view);
+        //        dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
+        //        dragEvent.setLog("genernated by setOnItemClick");
+        //        offerOutputEventQueue(dragEvent);
 
-        //        ClickEvent clickEvent = new ClickEvent(parent);
-        //        String familyString = local.getFamilyString(parent);
-        //        String click = String.format("local.clickInListWithFamilyString(%s, \"%s\");", position,
-        //                familyString);
-        //        clickEvent.setCode(click);
-        //        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
-        //                + " click");
-        //        offerOutputEventQueue(clickEvent);
+        ClickEvent clickEvent = new ClickEvent(parent);
+        String familyString = local.getFamilyString(parent);
+        String click = String.format("local.clickInList(%s, \"%s\");", position,
+                familyString);
+        clickEvent.setCode(click);
+        clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
+                + " click");
+        offerOutputEventQueue(clickEvent);
 
         OnItemClickListener onItemClickListener = mOnItemClickListeners.get(getViewID(parent));
         OnItemClickListener onItemClickListenerHooked = (OnItemClickListener) getListener(parent,
@@ -1485,7 +1486,7 @@ public class ViewRecorder {
 
     private void handleOnLongClickListener(View view) {
         if (local.isSize0(view)) {
-            printLog(view + " is size 0 at handleOnLongClickListener");
+            printLog(view + " is size 0 " + Log.getThreadInfo());
             invokeOriginOnLongClickListener(view);
             return;
         }
@@ -1551,8 +1552,17 @@ public class ViewRecorder {
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
-        String click = String.format("local.clickOn(\"%s\", \"%s\", true);//%s%s", viewClass,
-                familyString, "Long Click On ", getFirstLine(comments));
+        String click = "";
+
+        if ("".equals(rString)) {
+            click = String.format("local.clickOn(\"%s\", \"%s\", true);//%s%s", viewClass,
+                    familyString, "Long Click On ", getFirstLine(comments));
+        } else {
+            String rStringSuffix = getRStringSuffix(v);
+            int index = local.getResIdIndex(v);
+            click = String.format("local.clickOn(\"id/%s\", \"%s\", true);//%s%s", rStringSuffix,
+                    index, "Long Click On ", getFirstLine(comments));
+        }
 
         clickEvent.setCode(click);
 
@@ -1902,6 +1912,10 @@ public class ViewRecorder {
                 while (!local.isScrollStoped(scrollView)) {
                     // wait for scroll stoping
                 }
+                if ("".equals(mFamilyStringBeforeScroll)) {
+                    printLog("mFamilyStringBeforeScroll is \"\"");
+                    return;
+                }
                 int scrollX = scrollView.getScrollX();
                 int scrollY = scrollView.getScrollY();
                 String drag = String.format(
@@ -1996,7 +2010,7 @@ public class ViewRecorder {
      */
     private String getViewID(View view) {
         if (null == view) {
-            printLog("null == view at getViewID!!!");
+            printLog("null == view " + Log.getThreadInfo());
             return "";
         }
 

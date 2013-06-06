@@ -111,31 +111,6 @@ public class Log {
         }
     }
 
-    /**
-     * record UI operation history;when UI operated, it will log a message
-     * 
-     * @param isRecorded
-     *            open or closed recording operation history
-     * @todo this function will be released at V0.2 as soon.
-     */
-    public static void recordOperationHistory(boolean isRecorded) {
-        if (isRecorded) {
-
-        } else {
-
-        }
-    }
-
-    /**
-     * print build version at log
-     * 
-     * @param arms
-     *            the object of Armser with full initialization
-     */
-    public static void printBuildVersion(Armser arms) {
-        Log.d(arms.getBuildVersion());
-    }
-
     private static String getTag() {
         switch (mTag) {
         case CASE_NAME:
@@ -145,6 +120,16 @@ public class Log {
         default:
             return "NO_TAG";
         }
+    }
+
+    public static String getThreadInfo(int distance) {
+        StackTraceElement invoker = Thread.currentThread().getStackTrace()[distance];
+        return String.format("at %s.%s():%s", invoker.getClassName(), invoker.getMethodName(),
+                invoker.getLineNumber());
+    }
+
+    public static String getThreadInfo() {
+        return getThreadInfo(3);
     }
 
     /**
