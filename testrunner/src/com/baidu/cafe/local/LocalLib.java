@@ -1541,7 +1541,7 @@ public class LocalLib extends SoloEx {
             public void run() {
                 int[] xy = getViewCenter(view);
                 print("clickViaPerformClick:" + xy[0] + "," + xy[1] + " " + view);
-                print("familyString:" + getFamilyString(view));
+                //print("familyString:" + getFamilyString(view));
                 try {
                     if (longClick) {
                         view.performLongClick();
@@ -1578,7 +1578,8 @@ public class LocalLib extends SoloEx {
     private final int TIMEOUT = 20000;
 
     /**
-     * This method is protected by assert.
+     * This method is protected by assert. If arg1 contains "id/", arg1 will be
+     * judged to resid otherwise it will be judged to className.
      * 
      * @param arg1
      *            it could be className or resid
@@ -1930,8 +1931,6 @@ public class LocalLib extends SoloEx {
             view = parent;
         }
 
-        // add decorview index
-        //familyString += getDecorViewIndex(v);
         return familyString;
     }
 
@@ -1948,6 +1947,10 @@ public class LocalLib extends SoloEx {
         return -1;
     }
 
+    /**
+     * only for getting selected view from AdapterView at clickInList(final int
+     * position, String... args)
+     */
     private View targetViewInList = null;
 
     /**
@@ -1973,11 +1976,12 @@ public class LocalLib extends SoloEx {
             }
 
             targetViewInList = null;
+            final long end = System.currentTimeMillis() + 1000;
             runOnMainSync(new Runnable() {
 
                 @Override
                 public void run() {
-                    while (null == targetViewInList) {
+                    while (null == targetViewInList && System.currentTimeMillis() < end) {
                         print("get targetViewInList");
                         adapterView.setSelection(position);
                         adapterView.requestFocusFromTouch();
@@ -1988,6 +1992,13 @@ public class LocalLib extends SoloEx {
                     }
                 }
             });
+
+            if (null == targetViewInList) {
+                print("change to single column mode at " + adapterView);
+                print("getLastVisiblePosition:" + adapterView.getLastVisiblePosition());
+                int index = position - adapterView.getFirstVisiblePosition();
+                targetViewInList = adapterView.getChildAt(index);
+            }
             clickOnView(targetViewInList);
         } catch (Exception e) {
             e.printStackTrace();

@@ -36,6 +36,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
@@ -852,9 +853,9 @@ public class ViewRecorder {
         absListViewState.totalItemCount = totalItemCount;
 
         if (firstVisibleItem + visibleItemCount == totalItemCount && firstVisibleItem != 0) {
-            printLog("firstVisibleItem:" + firstVisibleItem);
-            printLog("visibleItemCount:" + visibleItemCount);
-            printLog("totalItemCount:" + totalItemCount);
+            //printLog("firstVisibleItem:" + firstVisibleItem);
+            //printLog("visibleItemCount:" + visibleItemCount);
+            //printLog("totalItemCount:" + totalItemCount);
             outputAScroll(view);
         }
     }
@@ -1401,9 +1402,20 @@ public class ViewRecorder {
         //        offerOutputEventQueue(dragEvent);
 
         ClickEvent clickEvent = new ClickEvent(parent);
-        String familyString = local.getFamilyString(parent);
-        String click = String.format("local.clickInList(%s, \"%s\");", position,
-                familyString);
+
+        String r = getRString(parent);
+        String rString = r.equals("") ? "" : "[" + r + "]";
+        String click = "";
+        if ("".equals(rString)) {
+            String familyString = local.getFamilyString(parent);
+            click = String.format("local.clickInList(%s, \"%s\");", position, familyString);
+        } else {
+            String rStringSuffix = getRStringSuffix(parent);
+            int index = local.getResIdIndex(parent);
+            click = String.format("local.clickInList(%s, \"id/%s\", \"%s\");", position,
+                    rStringSuffix, index);
+        }
+
         clickEvent.setCode(click);
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click");
@@ -1771,7 +1783,7 @@ public class ViewRecorder {
             return false;
         }
 
-        String code = String.format("local.enterText(%s, \"%s\");", mCurrentEditTextIndex,
+        String code = String.format("local.enterText(%s, \"%s\", false);", mCurrentEditTextIndex,
                 mCurrentEditTextString);
         printCode(getSleepCode() + "\n" + code);
 
@@ -1825,11 +1837,19 @@ public class ViewRecorder {
                                 && mCurrentScrollState != OnScrollListener.SCROLL_STATE_FLING
                                 && mCurrentScrollState != OnScrollListener.SCROLL_STATE_TOUCH_SCROLL
                                 && !mIsAbsListViewToTheEnd) {
-                            printLog("output a drag without up");
-                            mDragWithoutUp = true;
-                            mergeMotionEvents(events);
-                            events.clear();
-                            isDown = false;
+                            // events.get(0) is ACTION_DOWN
+                            if (!isParentScrollable(events.get(0).view)) {
+                                printLog("output a drag without up at " + events.get(0).view);
+                                printLog("isParentScrollable:"
+                                        + isParentScrollable(events.get(0).view));
+
+                                mDragWithoutUp = true;
+                                mergeMotionEvents(events);
+                                events.clear();
+                                isDown = false;
+                            } else {
+                                //printLog("ignore a drag without up");
+                            }
                         }
                         sleep(10);
                     }
@@ -2057,4 +2077,14 @@ public class ViewRecorder {
         }
     }
 
+    private boolean isParentScrollable(View view) {
+        while (view.getParent() instanceof ViewGroup) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            if (parent instanceof ScrollView || parent instanceof AbsListView) {
+                return true;
+            }
+            view = parent;
+        }
+        return null == view.getParent() ? true : false;
+    }
 }
