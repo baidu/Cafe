@@ -1540,14 +1540,13 @@ public class LocalLib extends SoloEx {
         view.post(new Runnable() {
             public void run() {
                 int[] xy = getViewCenter(view);
-                print("clickViaPerformClick:" + xy[0] + "," + xy[1] + " " + view);
-                //print("familyString:" + getFamilyString(view));
                 try {
                     if (longClick) {
                         view.performLongClick();
                     } else {
                         view.performClick();
                     }
+                    print("clickViaPerformClick:" + xy[0] + "," + xy[1] + " " + view);
                 } catch (Exception e) {
                     e.printStackTrace();
                     clickOnView(view);
@@ -1985,9 +1984,10 @@ public class LocalLib extends SoloEx {
                         print("get targetViewInList");
                         adapterView.setSelection(position);
                         adapterView.requestFocusFromTouch();
-                        adapterView.setSelection(position);
+                        //adapterView.setSelection(position);
                         sleep(300);// wait setSelection is done
                         targetViewInList = adapterView.getSelectedView();
+                        print("done getSelectedView");
                         mTheLastClick = getViewCenter(targetViewInList);
                     }
                 }
@@ -1999,7 +1999,9 @@ public class LocalLib extends SoloEx {
                 int index = position - adapterView.getFirstVisiblePosition();
                 targetViewInList = adapterView.getChildAt(index);
             }
-            clickOnView(targetViewInList);
+            int[] center = getViewCenter(targetViewInList);
+            print("click on " + center[0] + ", " + center[1]);
+            clickOnScreen(center[0], center[1]);
         } catch (Exception e) {
             e.printStackTrace();
         }

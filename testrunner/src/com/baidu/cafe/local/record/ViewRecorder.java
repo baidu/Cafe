@@ -1840,9 +1840,6 @@ public class ViewRecorder {
                             // events.get(0) is ACTION_DOWN
                             if (!isParentScrollable(events.get(0).view)) {
                                 printLog("output a drag without up at " + events.get(0).view);
-                                printLog("isParentScrollable:"
-                                        + isParentScrollable(events.get(0).view));
-
                                 mDragWithoutUp = true;
                                 mergeMotionEvents(events);
                                 events.clear();
