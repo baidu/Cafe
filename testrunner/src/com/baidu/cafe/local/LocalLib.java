@@ -2092,7 +2092,7 @@ public class LocalLib extends SoloEx {
                 return null;
             }
             invoke(this.mSleeper, "sleep");
-            String js = "function familyString(s) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){var id=e.id;var text=e.textContent;var name=e.getAttribute('name');var className=e.className;var tagName=e.tagName;var rect=e.getBoundingClientRect();prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';,'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
+            String js = "function familyString(s) {var e=document.body;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){var id=e.id;var text=e.textContent;var name=e.getAttribute('name');var className=e.className;var tagName=e.tagName;var rect=e.getBoundingClientRect();prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';,'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
                     + "familyString('" + familyString + "');";
             // executeJavaScriptFunction(js);
             boolean javaScriptWasExecuted = (Boolean) invoke(mWebUtils,

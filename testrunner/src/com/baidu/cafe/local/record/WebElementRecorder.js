@@ -1,7 +1,7 @@
 var Cafe = function() {};
 Cafe.prototype.getElementFamilyString = function(element) {
     var familyString = '';
-    for ( ; element && element.nodeType == 1; element = element.parentNode ) {
+    for ( ; element && element !== document.body && element.nodeType == 1; element = element.parentNode ) {
         var children = element.parentNode.childNodes;
         var id = '';
         var i = 0;
