@@ -1533,7 +1533,7 @@ public class LocalLib extends SoloEx {
 
     public void clickViaPerformClick(final View view, final boolean longClick) {
         if (null == view) {
-            print("null == view at clickViaPerformClick");
+            print("null == view at" + Log.getThreadInfo());
             return;
         }
 
@@ -1549,7 +1549,6 @@ public class LocalLib extends SoloEx {
                     print("clickViaPerformClick:" + xy[0] + "," + xy[1] + " " + view);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    clickOnView(view);
                 }
             }
         });
@@ -1558,8 +1557,19 @@ public class LocalLib extends SoloEx {
     private final int SMALLTIMEOUT = 10000;
 
     public void clickOnViewWithoutScroll(View view, boolean longClick) {
-        mTheLastClick = getViewCenter(view);
+        if (null == view) {
+            print("null == view at" + Log.getThreadInfo());
+            return;
+        }
         clickViaPerformClick(view, longClick);
+        //        mTheLastClick = getViewCenter(view);
+        //        int[] center = mTheLastClick;
+        //        print("click on " + center[0] + ", " + center[1]);
+        //        if (longClick) {
+        //            clickLongOnScreen(center[0], center[1]);
+        //        } else {
+        //            clickOnScreen(center[0], center[1]);
+        //        }
     }
 
     public static int[] getViewCenter(View view) {
@@ -1987,8 +1997,6 @@ public class LocalLib extends SoloEx {
                         //adapterView.setSelection(position);
                         sleep(300);// wait setSelection is done
                         targetViewInList = adapterView.getSelectedView();
-                        print("done getSelectedView");
-                        mTheLastClick = getViewCenter(targetViewInList);
                     }
                 }
             });
@@ -1999,6 +2007,7 @@ public class LocalLib extends SoloEx {
                 int index = position - adapterView.getFirstVisiblePosition();
                 targetViewInList = adapterView.getChildAt(index);
             }
+            mTheLastClick = getViewCenter(targetViewInList);
             int[] center = getViewCenter(targetViewInList);
             print("click on " + center[0] + ", " + center[1]);
             clickOnScreen(center[0], center[1]);
