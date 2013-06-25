@@ -32,6 +32,9 @@
 -keep public class com.baidu.cafe.local.LocalLib{
     public protected *;
 }
+-keep public class com.baidu.cafe.local.LocalLib$RecordReplay{
+    public protected *;
+}
 -keep public class  android.view.WindowManagerImpl{
     private android.view.View[] mViews;
 }

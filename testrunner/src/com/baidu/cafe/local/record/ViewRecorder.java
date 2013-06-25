@@ -310,12 +310,17 @@ public class ViewRecorder {
             if (null == e2 || null == e2.view) {
                 return 1;
             }
+
             // longer means younger
-            if (local.getFamilyString(e1.view).length() > local.getFamilyString(e2.view).length()) {
+            if (getFamilyString(e1.view).length() > getFamilyString(e2.view).length()) {
                 return 1;
             }
             return -1;
         }
+    }
+
+    private String getFamilyString(View view) {
+        return local.recordReplay.getFamilyString(view);
     }
 
     private void print(String tag, String message) {
@@ -334,8 +339,9 @@ public class ViewRecorder {
         int[] xy = new int[2];
         view.getLocationOnScreen(xy);
         // local.getRIdNameByValue(packageName, value)
-        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", local.getFamilyString(view),
-                view, local.getViewText(view), xy[0], xy[1], view.getWidth(), view.getHeight());
+        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", getFamilyString(view),
+                getViewString(view), local.getViewText(view), xy[0], xy[1], view.getWidth(),
+                view.getHeight());
         print("ViewLayout", msg);
     }
 
@@ -688,7 +694,7 @@ public class ViewRecorder {
             return;
         }
         boolean hasFocus = local.requestFocus(view);
-        //        printLog(view + " hasFocus: " + hasFocus);
+        // printLog(view + " hasFocus: " + hasFocus);
         String viewID = getViewID(view);
         if (!mAllViewPosition.containsKey(viewID)) {
             saveView(view);
@@ -872,8 +878,8 @@ public class ViewRecorder {
         printLog("getFirstVisiblePosition:" + view.getFirstVisiblePosition());
         absListViewState.lastFirstVisibleItem = absListViewState.firstVisibleItem;
         ScrollEvent scrollEvent = new ScrollEvent(view);
-        String familyString = local.getFamilyString(view);
-        String scroll = String.format("local.scrollListToLineWithFamilyString(%s, \"%s\");",
+        String familyString = getFamilyString(view);
+        String scroll = String.format("local.recordReplay.scrollListToLine(%s, \"%s\");",
                 absListViewState.firstVisibleItem, familyString);
         scrollEvent.setCode(scroll);
         scrollEvent.setLog("scroll " + view + " to " + absListViewState.firstVisibleItem);
@@ -982,10 +988,10 @@ public class ViewRecorder {
     private void setOnGroupClick(ExpandableListView parent, int groupPosition) {
         int flatListPosition = parent.getFlatListPosition(ExpandableListView
                 .getPackedPositionForGroup(groupPosition));
-        String familyString = local.getFamilyString(parent);
+        String familyString = getFamilyString(parent);
         ClickEvent clickEvent = new ClickEvent(parent);
-        String code = String.format("local.clickOnExpandableListView(\"%s\", %s);", familyString,
-                flatListPosition);
+        String code = String.format("local.recordReplay.clickOnExpandableListView(\"%s\", %s);",
+                familyString, flatListPosition);
         clickEvent.setCode(code);
         clickEvent.setLog(String.format("click on group[%s]", groupPosition));
 
@@ -1055,10 +1061,10 @@ public class ViewRecorder {
     private void setOnChildClick(ExpandableListView parent, int groupPosition, int childPosition) {
         int flatListPosition = parent.getFlatListPosition(ExpandableListView
                 .getPackedPositionForChild(groupPosition, childPosition));
-        String familyString = local.getFamilyString(parent);
+        String familyString = getFamilyString(parent);
         ClickEvent clickEvent = new ClickEvent(parent);
-        String code = String.format("local.clickOnExpandableListView(\"%s\", %s);", familyString,
-                flatListPosition);
+        String code = String.format("local.recordReplay.clickOnExpandableListView(\"%s\", %s);",
+                familyString, flatListPosition);
         clickEvent.setCode(code);
         clickEvent.setLog(String.format("click on group[%s] child[%s]", groupPosition,
                 childPosition));
@@ -1153,19 +1159,19 @@ public class ViewRecorder {
         // set click event output
         ClickEvent clickEvent = new ClickEvent(v);
         String viewClass = getViewString(v);
-        String familyString = local.getFamilyString(v);
+        String familyString = getFamilyString(v);
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String click = "";
         if ("".equals(rString)) {
-            click = String.format("local.clickOn(\"%s\", \"%s\", false);//%s%s", viewClass,
-                    familyString, "Click On ", getFirstLine(comments));
+            click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", false);//%s%s",
+                    viewClass, familyString, "Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
             int index = local.getResIdIndex(v);
-            click = String.format("local.clickOn(\"id/%s\", \"%s\", false);//%s%s", rStringSuffix,
-                    index, "Click On ", getFirstLine(comments));
+            click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", false);//%s%s",
+                    rStringSuffix, index, "Click On ", getFirstLine(comments));
         }
         clickEvent.setCode(click);
 
@@ -1258,7 +1264,7 @@ public class ViewRecorder {
                 if ("".equals(s.toString()) || text.equals(lastText) || !editText.isShown()) {
                     return;
                 }
-                printLog("onTextChanged: " + local.getFamilyString(editText) + " getVisibility:"
+                printLog("onTextChanged: " + getFamilyString(editText) + " getVisibility:"
                         + editText + " " + editText.getVisibility());
                 mTheLastTextChangedTime = System.currentTimeMillis();
                 mCurrentEditTextIndex = local.getCurrentViewIndex(editText);
@@ -1407,13 +1413,14 @@ public class ViewRecorder {
         String rString = r.equals("") ? "" : "[" + r + "]";
         String click = "";
         if ("".equals(rString)) {
-            String familyString = local.getFamilyString(parent);
-            click = String.format("local.clickInList(%s, \"%s\");", position, familyString);
+            String familyString = getFamilyString(parent);
+            click = String.format("local.recordReplay.clickInList(%s, \"%s\");", position,
+                    familyString);
         } else {
             String rStringSuffix = getRStringSuffix(parent);
             int index = local.getResIdIndex(parent);
-            click = String.format("local.clickInList(%s, \"id/%s\", \"%s\");", position,
-                    rStringSuffix, index);
+            click = String.format("local.recordReplay.clickInList(%s, \"id/%s\", \"%s\");",
+                    position, rStringSuffix, index);
         }
 
         clickEvent.setCode(click);
@@ -1560,20 +1567,20 @@ public class ViewRecorder {
     private void setOnLongClick(View v) {
         ClickEvent clickEvent = new ClickEvent(v);
         String viewClass = getViewString(v);
-        String familyString = local.getFamilyString(v);
+        String familyString = getFamilyString(v);
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String click = "";
 
         if ("".equals(rString)) {
-            click = String.format("local.clickOn(\"%s\", \"%s\", true);//%s%s", viewClass,
-                    familyString, "Long Click On ", getFirstLine(comments));
+            click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", true);//%s%s",
+                    viewClass, familyString, "Long Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
             int index = local.getResIdIndex(v);
-            click = String.format("local.clickOn(\"id/%s\", \"%s\", true);//%s%s", rStringSuffix,
-                    index, "Long Click On ", getFirstLine(comments));
+            click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", true);//%s%s",
+                    rStringSuffix, index, "Long Click On ", getFirstLine(comments));
         }
 
         clickEvent.setCode(click);
@@ -1752,8 +1759,8 @@ public class ViewRecorder {
     }
 
     private int getRelationship(View v1, View v2) {
-        String familyString1 = local.getFamilyString(v1);
-        String familyString2 = local.getFamilyString(v2);
+        String familyString1 = getFamilyString(v1);
+        String familyString2 = getFamilyString(v2);
         if (familyString1.contains(familyString2)) {
             return -1;// -1 means v1 is a child of v2
         } else if (familyString2.contains(familyString1)) {
@@ -1828,7 +1835,7 @@ public class ViewRecorder {
                             }
                             if (e.view instanceof ScrollView
                                     && "".equals(mFamilyStringBeforeScroll)) {
-                                mFamilyStringBeforeScroll = local.getFamilyString(e.view);
+                                mFamilyStringBeforeScroll = getFamilyString(e.view);
                             }
                         }
 
@@ -1895,7 +1902,7 @@ public class ViewRecorder {
 
         dragEvent.setLog(String.format(
                 "Drag [%s<%s>] from (%s,%s) to (%s, %s) by duration %s step %s", up.view,
-                local.getFamilyString(up.view), down.x, down.y, up.x, up.y, duration, stepCount));
+                getFamilyString(up.view), down.x, down.y, up.x, up.y, duration, stepCount));
         dragEvent.setCode(getDragCode(down.x, up.x, down.y, up.y, stepCount));
 
         if (up.view instanceof AbsListView || mIsLongClick
@@ -1911,8 +1918,11 @@ public class ViewRecorder {
     }
 
     private String getDragCode(float downX, float upX, float downY, float upY, int stepCount) {
-        return String.format("local.dragPercent(%sf, %sf, %sf, %sf, %s);", local.toPercentX(downX),
-                local.toPercentX(upX), local.toPercentY(downY), local.toPercentY(upY), stepCount);
+        return String
+                .format("local.recordReplay.dragPercent(%sf, %sf, %sf, %sf, %s);",
+                        local.recordReplay.toPercentX(downX), local.recordReplay.toPercentX(upX),
+                        local.recordReplay.toPercentY(downY), local.recordReplay.toPercentY(upY),
+                        stepCount);
     }
 
     /**
@@ -1936,7 +1946,7 @@ public class ViewRecorder {
                 int scrollX = scrollView.getScrollX();
                 int scrollY = scrollView.getScrollY();
                 String drag = String.format(
-                        "local.scrollScrollViewToWithFamilyString(\"%s\", %s, %s);",
+                        "local.recordReplay.scrollScrollViewTo(\"%s\", %s, %s);",
                         mFamilyStringBeforeScroll, scrollX, scrollY);
                 mFamilyStringBeforeScroll = "";
                 dragEvent.setLog(String.format("Scroll [%s] to (%s, %s)", scrollView, scrollX,

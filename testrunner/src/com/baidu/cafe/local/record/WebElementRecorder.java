@@ -43,7 +43,6 @@ import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebChromeClient.CustomViewCallback;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebStorage.QuotaUpdater;
 import android.webkit.WebView;
@@ -218,7 +217,7 @@ public class WebElementRecorder {
 		if (eventOffered) {
 			WebElementRecordEvent e = events.get(0);
 			OutputEvent outputEvent = new WebElementClickEvent(e.view);
-			outputEvent.setCode(String.format("local.clickOnWebElementByFamilyString(\"%s\"); // Click On [%s]",
+			outputEvent.setCode(String.format("local.recordReplay.clickOnWebElementByFamilyString(\"%s\"); // Click On [%s]",
 					e.familyString, e.tag));
 			viewRecorder.offerOutputEventQueue(outputEvent);
 		}

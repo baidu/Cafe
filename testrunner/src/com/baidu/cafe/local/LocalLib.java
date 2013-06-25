@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import junit.framework.Assert;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
@@ -34,7 +35,6 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
@@ -64,6 +64,7 @@ import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CommandResult;
 import com.baidu.cafe.utils.Strings;
 import com.jayway.android.robotium.solo.WebElement;
+import com.zutubi.android.junitreport.CafeTestRunner;
 import com.zutubi.android.junitreport.JUnitReportTestRunner;
 
 import dalvik.system.DexFile;
@@ -90,14 +91,17 @@ public class LocalLib extends SoloEx {
     public final static int       SEARCHMODE_COMPLETE_MATCHING = 1;
     public final static int       SEARCHMODE_DEFAULT           = 1;
     public final static int       SEARCHMODE_INCLUDE_MATCHING  = 2;
-    public final static int       WAIT_INTERVAL                = 1000;
+
+    private final static int      WAIT_INTERVAL                = 1000;
+    private final static int      MINISLEEP                    = 100;
+    private final static int      SMALL_WAIT_TIMEOUT           = 10000;
 
     public static String          mTestCaseName                = null;
     public static String          mPackageName                 = null;
     public static int[]           mTheLastClick                = new int[2];
     public static Instrumentation mInstrumentation;
 
-    private final static int      MINISLEEP                    = 100;
+    public RecordReplay           recordReplay                 = null;
 
     private boolean               mHasBegin                    = false;
     private ArrayList<View>       mViews                       = null;
@@ -111,6 +115,7 @@ public class LocalLib extends SoloEx {
         mContext = instrumentation.getContext();
         mTheLastClick[0] = -1;
         mTheLastClick[1] = -1;
+        recordReplay = new RecordReplay();
     }
 
     private static void print(String message) {
@@ -226,7 +231,7 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * add listeners on all views for generating Cafe code automatically
+     * hook listeners on all views for generating Cafe code automatically
      */
     public void beginRecordCode() {
         new ViewRecorder(this).beginRecordCode();
@@ -474,7 +479,7 @@ public class LocalLib extends SoloEx {
     }
 
     /**
-     * you can use this function when getActivtiy is hang. when you want to
+     * you can use this function when getActivtiy is hanging. When you want to
      * reinit solo you should recall public void init(Activity macy)
      * 
      * @param activityName
@@ -521,12 +526,27 @@ public class LocalLib extends SoloEx {
      * 
      * @param resId
      *            the id you see in hierarchy . for example in Launcher
-     *            "id/workspace" timeout is default 8000 scroll is default true
-     *            only visible is default true
+     *            "id/workspace" timeout is default SMALL_WAIT_TIMEOUT scroll is
+     *            default true only visible is default true
      * @return true we get it
      */
     public boolean waitForViewVanishById(String resId) {
-        return waitForViewVanishById(resId, 8000, true, true);
+        return waitForViewVanishById(resId, 0, SMALL_WAIT_TIMEOUT, true);
+    }
+
+    /**
+     * Waits for a view to vanish
+     * 
+     * @param resId
+     *            the id you see in hierarchy . for example in Launcher
+     *            "id/workspace" timeout is default SMALL_WAIT_TIMEOUT scroll is
+     *            default true only visible is default true
+     * @param index
+     *            specify resId with a given index.
+     * @return true we get it
+     */
+    public boolean waitForViewVanishById(String resId, int index) {
+        return waitForViewVanishById(resId, index, SMALL_WAIT_TIMEOUT, true);
     }
 
     /**
@@ -535,35 +555,21 @@ public class LocalLib extends SoloEx {
      * @param resId
      *            the id you see in hierarchy. for example in Launcher
      *            "id/workspace"
+     * @param index
+     *            specify resId with a given index.
      * @param timeout
      *            the delay milliseconds scroll is default true only visible is
      *            default true
      * @return true we get it
      */
-    public boolean waitForViewVanishById(String resId, long timeout) {
-        return waitForViewVanishById(resId, timeout, true, true);
-    }
-
-    /**
-     * Waits for a view to vanish
-     * 
-     * @param resId
-     *            the id you see in hierarchy . for example in Launcher
-     *            "id/workspace"
-     * @param timeout
-     *            the delay milliseconds
-     * @param scroll
-     *            true you want to scroll onlyvisible is default true
-     * @return true we get it
-     */
-    public boolean waitForViewVanishById(String resId, long timeout, boolean scroll) {
-        return waitForViewVanishById(resId, timeout, scroll, true);
+    public boolean waitForViewVanishById(String resId, int index, long timeout) {
+        return waitForViewVanishById(resId, index, timeout, true);
     }
 
     /**
      * Waits for a view vanished
      * 
-     * @param resId
+     * @param resName
      *            the id you see in hierarchy. for example in Launcher
      *            "id/workspace"
      * @param timeout
@@ -574,14 +580,13 @@ public class LocalLib extends SoloEx {
      *            true we only deal with the view visible
      * @return true we get it
      */
-    public boolean waitForViewVanishById(String resId, long timeout, boolean scroll,
-            boolean onlyvisible) {
+    public boolean waitForViewVanishById(String resName, int index, long timeout, boolean scroll) {
         Long end = System.currentTimeMillis() + timeout;
         while (true) {
             if (System.currentTimeMillis() > end) {
                 return false;
             }
-            if (!waitforViewById(resId, WAIT_INTERVAL, scroll, onlyvisible)) {
+            if (!waitforViewByResName(resName, index, WAIT_INTERVAL, scroll)) {
                 return true;
             }
         }
@@ -737,6 +742,8 @@ public class LocalLib extends SoloEx {
      * @param upDelay
      *            the delay before sending up event
      */
+    @SuppressLint("Recycle")
+    @SuppressWarnings("deprecation")
     public void sendMultiTouchMotionEvent(int pointerNumber, int[] start, int[] end, int step,
             int downDelay, int moveDelay, int upDelay) {
 
@@ -857,9 +864,7 @@ public class LocalLib extends SoloEx {
         TabWidget tab = null;
         try {
             tab = getTab(index);
-            if (tab == null) {
-                Assert.assertTrue("Tab is null", false);
-            }
+            Assert.assertTrue("Tab is null", tab != null);
             clickOnView(tab.getChildAt(item));
         } catch (IndexOutOfBoundsException e) {
             Assert.assertTrue("Index is not valid", false);
@@ -941,51 +946,48 @@ public class LocalLib extends SoloEx {
     /**
      * wait for a specified view
      * 
-     * @param resId
+     * @param resName
      *            the id you see in hierarchy. for example in Launcher
      *            "id/workspace" timeout is default 3000 scroll is default true
      *            onlyVisible is default true
      * @return true we get it
      */
-    public boolean waitforViewById(String resId) {
-        return waitforViewById(resId, 3000, true, true);
+    public boolean waitforViewByResName(String resName) {
+        return waitforViewByResName(resName, 0, SMALL_WAIT_TIMEOUT, true);
     }
 
     /**
      * wait for a specified view
      * 
-     * @param resId
-     *            the id you see in hierarchy. for example in Launcher
+     * @param resName
+     *            the name you see in hierarchy. for example in Launcher
+     *            "id/workspace" timeout is default 3000 scroll is default true
+     *            onlyVisible is default true
+     * @return true we get it
+     */
+    public boolean waitforViewByResName(String resName, int index) {
+        return waitforViewByResName(resName, index, SMALL_WAIT_TIMEOUT, true);
+    }
+
+    /**
+     * wait for a specified view
+     * 
+     * @param resName
+     *            the name you see in hierarchy. for example in Launcher
      *            "id/workspace"
      * @param timeout
      *            the delay millisecond scroll is default true onlyVisible is
      *            default true
      * @return true we get it
      */
-    public boolean waitforViewById(String resId, long timeout) {
-        return waitforViewById(resId, timeout, true, true);
+    public boolean waitforViewByResName(String resName, int index, long timeout) {
+        return waitforViewByResName(resName, index, timeout, true);
     }
 
     /**
      * wait for a specified view
      * 
-     * @param resId
-     *            the id you see in hierarchy. for example in Launcher
-     *            "id/workspace"
-     * @param timeout
-     *            the delay millisecond
-     * @param scroll
-     *            true you want to scroll onlyVisible is default true
-     * @return true we get it
-     */
-    public boolean waitforViewById(String resId, long timeout, boolean scroll) {
-        return waitforViewById(resId, timeout, scroll, true);
-    }
-
-    /**
-     * wait for a specified view
-     * 
-     * @param resId
+     * @param resName
      *            the id you see in hierarchy. for example in Launcher
      *            "id/workspace"
      * @param timeout
@@ -996,18 +998,13 @@ public class LocalLib extends SoloEx {
      *            true we only deal with the view visible
      * @return true we get it
      */
-    public boolean waitforViewById(String resId, long timeout, boolean scroll, boolean onlyVisible) {
+    public boolean waitforViewByResName(String resName, int index, long timeout, boolean scroll) {
         final long endTime = System.currentTimeMillis() + timeout;
 
-        while (true) {
-            final boolean timedOut = System.currentTimeMillis() > endTime;
-            if (timedOut) {
-                return false;
-            }
+        while (System.currentTimeMillis() < endTime) {
+            View view = getViewByResName(resName, 0);
 
-            final boolean isResIdShow = isResIdShow(resId, onlyVisible);
-
-            if (isResIdShow) {
+            if (view != null) {
                 return true;
             }
 
@@ -1018,78 +1015,63 @@ public class LocalLib extends SoloEx {
             }
             invoke(mSleeper, "sleep"); // mSleeper.sleep();
         }
+        return false;
     }
 
     /**
-     * click a specified view
+     * Click the first specified view by resource name.
      * 
-     * @param resId
+     * @param resName
      *            the id you see in hierarchy. for example in Launcher
      *            "id/workspace"
      * @return true we got it
      */
-    public boolean clickViewById(String resId) {
-        return clickViewById(resId, 0);
+    public void clickViewByResName(String resName) {
+        clickViewByResName(resName, 0);
     }
 
     /**
-     * @param resId
+     * Click a specified view by resource name.
+     * 
+     * @param resName
      *            the id you see in hierarchy. for example in Launcher
      *            "id/workspace"
      * @param index
      *            Clicks on an resId with a given index.
-     * @return true we got it
      */
-    public boolean clickViewById(String resId, int index) {
-        final View view = getViewById(resId, index);
-
-        if (null == view) {
-            return false;
-        }
-
+    public void clickViewByResName(String resName, int index) {
+        final View view = getViewByResName(resName, index);
+        Assert.assertTrue("null == view at" + Log.getThreadInfo(), null != view);
         clickOnView(view);
-        return true;
     }
 
     /**
-     * Get view by ID
+     * Get the first view by resource name
      * 
-     * @param resId
-     *            resource ID
+     * @param resName
+     *            resource name
      * @return null means not found
      */
-    public View getViewById(String resId) {
-        return getViewById(resId, 0);
+    public View getViewByResName(String resName) {
+        return getViewByResName(resName, 0);
     }
 
     /**
-     * Get View By Id
-     * 
      * @param resId
      * @param index
-     *            the index of views
      * @return null means not found
      */
-    public View getViewById(String resId, int index) {
-        ArrayList<View> views = getViews();
-        int number = 0;
-
+    public View getViewByResName(String resId, int index) {
+        ArrayList<View> views = getCurrentViews();
+        int count = 0;
         for (View view : views) {
-            String strid = getResId(view);
-            if ("".equals(strid)) {
-                continue;
+            if (getResName(view).equals(resId)) {
+                count++;
             }
-
-            if (strid.equals(resId)) {
-                print("complete mode; strid is " + strid);
-                number++;
-            }
-
-            if (number - 1 == index) {
+            if (count - 1 == index) {
                 return view;
             }
         }
-
         return null;
     }
 
@@ -1097,7 +1079,7 @@ public class LocalLib extends SoloEx {
      * @param view
      * @return empty string means no id
      */
-    private String getResId(View view) {
+    private String getResName(View view) {
         int resid = view.getId();
         if (View.NO_ID == resid) {
             return "";
@@ -1106,7 +1088,6 @@ public class LocalLib extends SoloEx {
         try {
             // view.getResources().getResourceName(resid); sometimes throws java.lang.NullPointerException
             String resIdString = getCurrentActivity().getResources().getResourceName(resid);
-            //print("resIdString:" + resIdString);
             return resIdString.split(":")[1].trim();
         } catch (Exception e) {
             return "";
@@ -1121,12 +1102,12 @@ public class LocalLib extends SoloEx {
      */
     public int getResIdIndex(View targetView) {
         int index = -1;
-        String resId = getResId(targetView);
+        String resId = getResName(targetView);
         if ("".equals(resId)) {
             return index;
         }
         for (View view : getCurrentViews()) {
-            if (getResId(view).equals(resId)) {
+            if (getResName(view).equals(resId)) {
                 index++;
             }
             if (view.equals(targetView)) {
@@ -1134,37 +1115,6 @@ public class LocalLib extends SoloEx {
             }
         }
         return -1;
-    }
-
-    private boolean isResIdShow(String resId, boolean isVisiable) {
-        boolean flag = false;
-        ArrayList<View> viewArray = getViews();
-        for (View view : viewArray) {
-            if (isVisiable
-                    && ((view.getVisibility() == View.GONE) || (view.getVisibility() == View.INVISIBLE))) {
-                continue;
-            }
-            int resid = view.getId();
-            // we only concern the shown view
-            if (!view.isShown() || View.NO_ID == resid) {
-                continue;
-            }
-            String strid;
-            try {
-                strid = view.getResources().getResourceName(resid);
-                // print(strid +
-                // "  viewArray.get(i).getResources().getResourceName(resid) is "
-                // + strid);
-            } catch (Resources.NotFoundException e) {
-                // print("resid num " + resid + " dose not have id");
-                continue;
-            }
-            if (strid.contains(resId)) {
-                flag = true;
-                break;
-            }
-        }
-        return flag;
     }
 
     /**
@@ -1199,8 +1149,7 @@ public class LocalLib extends SoloEx {
                 }
                 break;
             default:
-                print("Unknown searchMode!");
-                return false;
+                Assert.assertTrue("Unknown searchMode!" + Log.getThreadInfo(), false);
             }
         }
 
@@ -1298,7 +1247,7 @@ public class LocalLib extends SoloEx {
      * get all class names from a package via its dex file
      * 
      * @param packageName
-     *            e.g. "com.baidu.chunlei.exercise.test"
+     *            e.g. "com.baidu.cafe"
      * @return names of classes
      */
     public ArrayList<String> getAllClassNamesFromPackage(String packageName) {
@@ -1339,14 +1288,6 @@ public class LocalLib extends SoloEx {
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInputFromWindow(editText.getWindowToken(),
                 InputMethodManager.SHOW_FORCED, 0);
-    }
-
-    public void isInputMethodShown() {
-        InputMethodManager inputMethodManager = (InputMethodManager) mContext
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        print("isAcceptingText:" + inputMethodManager.isAcceptingText());
-        print("isActive:" + inputMethodManager.isActive());
-        print("isFullscreenMode:" + inputMethodManager.isFullscreenMode());
     }
 
     public ActivityInfo[] getActivitiesFromPackage(String packageName) {
@@ -1433,22 +1374,6 @@ public class LocalLib extends SoloEx {
         return dm.heightPixels;
     }
 
-    public float toScreenX(float persent) {
-        return getDisplayX() * persent;
-    }
-
-    public float toScreenY(float persent) {
-        return getDisplayY() * persent;
-    }
-
-    public float toPercentX(float x) {
-        return x / getDisplayX();
-    }
-
-    public float toPercentY(float y) {
-        return y / getDisplayY();
-    }
-
     public <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> viewList) {
         ArrayList<T> tmpViewList = new ArrayList<T>(viewList.size());
         for (T view : viewList) {
@@ -1461,6 +1386,12 @@ public class LocalLib extends SoloEx {
 
     boolean hasFocus = false;
 
+    /**
+     * set focus on a view
+     * 
+     * @param view
+     * @return
+     */
     public boolean requestFocus(final View view) {
         if (null == view) {
             return false;
@@ -1484,6 +1415,12 @@ public class LocalLib extends SoloEx {
     final static String[] MENU_INTERFACES = new String[] { "android.view.MenuItem",
             "com.android.internal.view.menu.MenuView" };
 
+    /**
+     * judge a view wether is a menu.
+     * 
+     * @param view
+     * @return true means it is a menu, otherwise return fasle
+     */
     public boolean isMenu(View view) {
         return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
     }
@@ -1493,30 +1430,7 @@ public class LocalLib extends SoloEx {
         return visible ? removeInvisibleViews(views) : views;
     }
 
-    /**
-     * This api is only for ViewRecorder not for user. Clicks on a {@code View}
-     * of a specific class with a certain familyString or a specific resource id
-     * with a index.
-     * 
-     * This method is protected by assert.
-     * 
-     * @param arg1
-     *            it could be className or resid
-     * @param arg2
-     *            it could be familyString or index
-     * @param longClick
-     *            true means long click
-     */
-    public void clickOn(String arg1, String arg2, boolean longClick) {
-        try {
-            View view = waitForView(arg1, arg2);
-            clickOnViewWithoutScroll(view, longClick);
-            // clickOnView();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    @SuppressWarnings("unchecked")
     public <T extends View> ArrayList<T> getViews(Class<T> classToFilterBy,
             boolean onlySufficientlyVisible) {
         ArrayList<T> targetViews = new ArrayList<T>();
@@ -1532,10 +1446,7 @@ public class LocalLib extends SoloEx {
     }
 
     public void clickViaPerformClick(final View view, final boolean longClick) {
-        if (null == view) {
-            print("null == view at" + Log.getThreadInfo());
-            return;
-        }
+        Assert.assertTrue("null == view at" + Log.getThreadInfo(), null != view);
 
         view.post(new Runnable() {
             public void run() {
@@ -1554,24 +1465,6 @@ public class LocalLib extends SoloEx {
         });
     }
 
-    private final int SMALLTIMEOUT = 10000;
-
-    public void clickOnViewWithoutScroll(View view, boolean longClick) {
-        if (null == view) {
-            print("null == view at" + Log.getThreadInfo());
-            return;
-        }
-        clickViaPerformClick(view, longClick);
-        //        mTheLastClick = getViewCenter(view);
-        //        int[] center = mTheLastClick;
-        //        print("click on " + center[0] + ", " + center[1]);
-        //        if (longClick) {
-        //            clickLongOnScreen(center[0], center[1]);
-        //        } else {
-        //            clickOnScreen(center[0], center[1]);
-        //        }
-    }
-
     public static int[] getViewCenter(View view) {
         if (null == view) {
             return new int[] { -1, -1 };
@@ -1582,116 +1475,6 @@ public class LocalLib extends SoloEx {
         float y = xy[1] + (view.getHeight() / 2.0f);
 
         return new int[] { (int) x, (int) y };
-    }
-
-    private final int TIMEOUT = 20000;
-
-    /**
-     * This method is protected by assert. If arg1 contains "id/", arg1 will be
-     * judged to resid otherwise it will be judged to className.
-     * 
-     * @param arg1
-     *            it could be className or resid
-     * @param arg2
-     *            it could be familyString or index
-     * @return the view picked
-     */
-    private View waitForView(String arg1, String arg2) {
-        boolean useResId = arg1.contains("id/") ? true : false;
-        long endTime = System.currentTimeMillis() + TIMEOUT;
-        while (System.currentTimeMillis() < endTime) {
-            View targetView = null;
-            // it must be the same as ViewRecorder.getTargetViews()
-            if (useResId) {
-                targetView = pickViewByResId(arg1, Integer.valueOf(arg2));
-            } else {
-                targetView = pickViewByFamilyString(arg1, arg2);
-            }
-
-            if (targetView != null) {
-                return targetView;
-            }
-
-            sleep(500);
-        }
-
-        if (useResId) {
-            printViews(arg1);
-        } else {
-            printViews(arg2);
-        }
-        Assert.assertTrue(String.format("waitForView failed! arg1[%s] arg2[%s]", arg1, arg2), false);
-        return null;
-    }
-
-    private View pickViewByResId(String resId, int index) {
-        ArrayList<View> views = getCurrentViews();
-        int count = 0;
-        for (View view : views) {
-            if (getResId(view).equals(resId)) {
-                count++;
-            }
-            if (count - 1 == index) {
-                return view;
-            }
-        }
-        return null;
-    }
-
-    private View pickViewByFamilyString(String className, String familyString) {
-        ArrayList<View> views = getCurrentViews();
-        for (View view : views) {
-            if (getFamilyString(view).equals(familyString)) {
-                if (null == className) {
-                    return view;
-                }
-                String viewClassName = view.getClass().getName();
-                try {
-                    if (viewClassName.equals(className)
-                            || Class.forName(className).isAssignableFrom(view.getClass())) {
-                        return view;
-                    }
-                } catch (ClassNotFoundException e) {
-                    // ignore it
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * for debug when get view failed
-     */
-    private void printViews(String characteristic) {
-        ArrayList<View> invisibleViews = getCurrentViews();
-        for (View view : invisibleViews) {
-            String familyString = getFamilyString(view);
-            String resId = getResId(view);
-            String star = "";
-            if (familyString.equals(characteristic) || resId.equals(characteristic)) {
-                star = "*";
-                int[] xy = new int[2];
-                view.getLocationOnScreen(xy);
-                print(xy[0] + "," + xy[1]);
-                print("isSize0:" + isSize0(view));
-                print("isShown:" + view.isShown());
-            }
-            print(String.format("%s[%s][%s][%s][%s]", star, familyString, resId, view,
-                    getViewText(view)));
-        }
-    }
-
-    /**
-     * This method is protected by assert.
-     * 
-     * @param familyString
-     * @param text
-     */
-    public void waitForTextByFamilyString(String familyString, String text) {
-        View view = waitForView(null, familyString);
-        String actual = getViewText(view);
-        Assert.assertTrue(String.format("Except text [%s], Actual text [%s]", text, actual),
-                actual.equals(text));
     }
 
     /**
@@ -1706,10 +1489,8 @@ public class LocalLib extends SoloEx {
      */
     public void enterText(int index, final String text, final boolean keepPreviousText) {
         final EditText editText = (EditText) getView(EditText.class, index);
+        Assert.assertTrue("null == editText [" + index + "]", null != editText);
 
-        if (null == editText) {
-            Assert.assertTrue("null == editText [" + index + "]", false);
-        }
         if (!editText.isEnabled()) {
             Assert.assertTrue("Edit text is not enabled [" + index + "]", false);
         }
@@ -1729,29 +1510,6 @@ public class LocalLib extends SoloEx {
         });
         sleep(500);
         // showInputMethod(editText);
-    }
-
-    boolean isClicked = false;
-
-    public boolean clickOnExpandableListView(final String familyString, final int flatListPosition) {
-        final ExpandableListView expandableListView = (ExpandableListView) waitForView(
-                "android.widget.ExpandableListView", familyString);
-        if (null == expandableListView) {
-            print("null == adapterView");
-            return false;
-        }
-
-        runOnMainSync(new Runnable() {
-
-            @Override
-            public void run() {
-                View v = expandableListView.getChildAt(flatListPosition);
-                mTheLastClick = getViewCenter(v);
-                long id = expandableListView.getItemIdAtPosition(flatListPosition);
-                isClicked = expandableListView.performItemClick(v, flatListPosition, id);
-            }
-        });
-        return isClicked;
     }
 
     public void runOnMainSync(Runnable r) {
@@ -1827,31 +1585,9 @@ public class LocalLib extends SoloEx {
         return views;
     }
 
-    public void scrollListToLineWithFamilyString(final int line, final String familyString) {
-        AbsListView absListView = null;
-        absListView = (AbsListView) waitForView("android.widget.AbsListView", familyString);
-
-        if (null == absListView) {
-            print("null == absListView");
-            return;
-        }
-
-        invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
-                new Object[] { absListView, line });
-    }
-
-    public void scrollScrollViewToWithFamilyString(final String familyString, final int x,
-            final int y) {
-        final ScrollView scrollView = (ScrollView) waitForView("android.widget.ScrollView",
-                familyString);
-        runOnMainSync(new Runnable() {
-            public void run() {
-                scrollView.scrollBy(x, y);
-            }
-        });
-    }
-
     /**
+     * judge a view wether be covered
+     * 
      * @param view
      * @return
      */
@@ -1906,7 +1642,7 @@ public class LocalLib extends SoloEx {
      * This method will cost 100ms to judge whether scrollview stoped.
      * 
      * @param scrollView
-     * @return
+     * @return true means scrolling is stop, otherwise return fasle
      */
     public boolean isScrollStoped(final ScrollView scrollView) {
         int x1 = scrollView.getScrollX();
@@ -1921,132 +1657,417 @@ public class LocalLib extends SoloEx {
         return view.getHeight() == 0 || view.getWidth() == 0;
     }
 
-    final static String CLASSNAME_DECORVIEW = "com.android.internal.policy.impl.PhoneWindow$DecorView";
+    /**
+     * This class is only for ViewRecorder not for user.
+     */
+    public class RecordReplay {
 
-    public String getFamilyString(View v) {
-        View view = v;
-        String familyString = "";
-        while (view.getParent() instanceof ViewGroup) {
-            ViewGroup parent = (ViewGroup) view.getParent();
-            if (null == parent) {
-                print("null == parent at getFamilyString");
-                return familyString;
-            }
-            if (Build.VERSION.SDK_INT >= 14
-                    && parent.getClass().getName().equals(CLASSNAME_DECORVIEW)) {
-            } else {
-                familyString += getChildIndex(parent, view);
-            }
-            view = parent;
+        /**
+         * Simulate touching a specific location and dragging to a new location
+         * by percent.
+         * 
+         * @param fromX
+         *            X coordinate of the initial touch, in screen coordinates
+         * @param toX
+         *            Xcoordinate of the drag destination, in screen coordinates
+         * @param fromY
+         *            X coordinate of the initial touch, in screen coordinates
+         * @param toY
+         *            Y coordinate of the drag destination, in screen
+         *            coordinates
+         * @param stepCount
+         *            stepCount How many move steps to include in the drag
+         * 
+         */
+        public void dragPercent(float fromXPersent, float toXPersent, float fromYPersent,
+                float toYPersent, int stepCount) {
+            float fromX = toScreenX(fromXPersent);
+            float toX = toScreenX(toXPersent);
+            float fromY = toScreenY(fromYPersent);
+            float toY = toScreenY(toYPersent);
+            // long begin = System.currentTimeMillis();
+            drag(fromX, toX, fromY, toY, stepCount);
+            print(String.format("fromX:%s toX:%s fromY:%s toY:%s", fromX, toX, fromY, toY));
+            // print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
         }
 
-        return familyString;
-    }
+        public float toScreenX(float persent) {
+            return getDisplayX() * persent;
+        }
 
-    private int getChildIndex(ViewGroup parent, View child) {
-        int countInvisible = 0;
-        for (int i = 0; i < parent.getChildCount(); i++) {
-            if (parent.getChildAt(i).equals(child)) {
-                return i - countInvisible;
+        public float toScreenY(float persent) {
+            return getDisplayY() * persent;
+        }
+
+        public float toPercentX(float x) {
+            return x / getDisplayX();
+        }
+
+        public float toPercentY(float y) {
+            return y / getDisplayY();
+        }
+
+        private final static String CLASSNAME_DECORVIEW = "com.android.internal.policy.impl.PhoneWindow$DecorView";
+
+        public String getFamilyString(View v) {
+            View view = v;
+            String familyString = "";
+            while (view.getParent() instanceof ViewGroup) {
+                ViewGroup parent = (ViewGroup) view.getParent();
+                if (null == parent) {
+                    print("null == parent at getFamilyString");
+                    return familyString;
+                }
+                if (Build.VERSION.SDK_INT >= 14
+                        && parent.getClass().getName().equals(CLASSNAME_DECORVIEW)) {
+                } else {
+                    familyString += getChildIndex(parent, view);
+                }
+                view = parent;
             }
-            if (parent.getChildAt(i).getVisibility() != View.VISIBLE) {
-                countInvisible++;
+
+            return familyString;
+        }
+
+        private int getChildIndex(ViewGroup parent, View child) {
+            int countInvisible = 0;
+            for (int i = 0; i < parent.getChildCount(); i++) {
+                if (parent.getChildAt(i).equals(child)) {
+                    return i - countInvisible;
+                }
+                if (parent.getChildAt(i).getVisibility() != View.VISIBLE) {
+                    countInvisible++;
+                }
+            }
+            return -1;
+        }
+
+        /**
+         * only for getting selected view from AdapterView at clickInList(final
+         * int position, String... args)
+         */
+        private View targetViewInList = null;
+
+        /**
+         * @param position
+         * @param args
+         *            it could be familyString or (resid, index)
+         */
+        public void clickInList(final int position, String... args) {
+            try {
+                AdapterView<?> targetView = null;
+                if (args.length == 1) {
+                    targetView = (AdapterView<?>) waitForView("android.widget.AdapterView", args[0]);
+                } else if (args.length == 2) {
+                    targetView = (AdapterView<?>) waitForView(args[0], args[1]);
+                } else {
+                    print("invalid parameters at clickInList");
+                }
+
+                final AdapterView<?> adapterView = targetView;
+                Assert.assertTrue("null == adapterView at" + Log.getThreadInfo(),
+                        null != adapterView);
+
+                targetViewInList = null;
+                final long end = System.currentTimeMillis() + 1000;
+                runOnMainSync(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        while (null == targetViewInList && System.currentTimeMillis() < end) {
+                            print("get targetViewInList");
+                            adapterView.setSelection(position);
+                            adapterView.requestFocusFromTouch();
+                            // adapterView.setSelection(position);
+                            sleep(300);// wait setSelection is done
+                            targetViewInList = adapterView.getSelectedView();
+                        }
+                    }
+                });
+
+                if (null == targetViewInList) {
+                    print("change to single column mode at " + adapterView);
+                    print("getLastVisiblePosition:" + adapterView.getLastVisiblePosition());
+                    int index = position - adapterView.getFirstVisiblePosition();
+                    targetViewInList = adapterView.getChildAt(index);
+                }
+                mTheLastClick = getViewCenter(targetViewInList);
+                int[] center = getViewCenter(targetViewInList);
+                print("click on " + center[0] + ", " + center[1]);
+                clickOnScreen(center[0], center[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        return -1;
-    }
 
-    /**
-     * only for getting selected view from AdapterView at clickInList(final int
-     * position, String... args)
-     */
-    private View targetViewInList = null;
+        /**
+         * Waits for a WebElement by family string.
+         * 
+         * @param familyString
+         *            timeout how long the function waits if there is no
+         *            satisfied web element scroll true if need to scroll the
+         *            screen, false otherwise
+         * @return WebElement wait for
+         */
+        @SuppressWarnings("unchecked")
+        public WebElement waitForWebElementByFamilyString(String familyString, int timeout,
+                boolean scroll) {
+            final long endTime = SystemClock.uptimeMillis() + timeout;
+            while (true) {
+                final boolean timedOut = SystemClock.uptimeMillis() > endTime;
 
-    /**
-     * @param position
-     * @param args
-     *            it could be familyString or (resid, index)
-     */
-    public void clickInList(final int position, String... args) {
-        try {
-            AdapterView<?> targetView = null;
-            if (args.length == 1) {
-                targetView = (AdapterView<?>) waitForView("android.widget.AdapterView", args[0]);
-            } else if (args.length == 2) {
-                targetView = (AdapterView<?>) waitForView(args[0], args[1]);
+                if (timedOut) {
+                    // searcher.logMatchesFound(familyString);
+                    invoke(mSearcher, "logMatchesFound", new Class[] { String.class },
+                            new Object[] { familyString });
+                    return null;
+                }
+                invoke(mSleeper, "sleep");
+                String js = "function familyString(s) {var e=document.body;var a=s.split('-');"
+                        + "for(var i in a) {e=e.childNodes[parseInt(a[i])];}"
+                        + "if(e != null){var id=e.id;var text=e.textContent;"
+                        + "var name=e.getAttribute('name');var className=e.className;"
+                        + "var tagName=e.tagName;var rect=e.getBoundingClientRect();"
+                        + "prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';"
+                        + ",'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
+                        + "familyString('" + familyString + "');";
+                // executeJavaScriptFunction(js);
+                boolean javaScriptWasExecuted = (Boolean) invoke(mWebUtils,
+                        "executeJavaScriptFunction", new Class[] { String.class },
+                        new Object[] { js });
+                // getSufficientlyShownWebElements(javaScriptWasExecuted);
+                ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) invoke(mWebUtils,
+                        "getSufficientlyShownWebElements", new Class[] { boolean.class },
+                        new Object[] { javaScriptWasExecuted });
+
+                try {
+                    List<WebElement> webElements = (List<WebElement>) ReflectHelper
+                            .getObjectProperty(mSearcher, 0, "webElements");
+                    // searcher.addViewsToList(webElements, viewsFromScreen);
+                    invoke(mSearcher, "addViewsToList", new Class[] { List.class, List.class },
+                            new Object[] { webElements, viewsFromScreen });
+
+                    // searcher.getViewFromList(webElements, 1);
+                    WebElement webElementToReturn = (WebElement) invoke(mSearcher,
+                            "getViewFromList", new Class[] { List.class, int.class }, new Object[] {
+                                    webElements, 1 });
+
+                    if (webElementToReturn != null) {
+                        return webElementToReturn;
+                    }
+
+                    if (scroll) {
+                        // mScroller.scroll(mScroller.DOWN)
+                        invoke(mScroller, "scroll", new Class[] { int.class },
+                                new Object[] { getField(mScroller, "DOWN") });
+                    }
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        /**
+         * Clicks on the WebElement by the given family string.
+         * 
+         * @param webElement
+         *            the WebElement to click
+         * 
+         */
+        public void clickOnWebElementByFamilyString(String familyString) {
+            WebElement webElement = waitForWebElementByFamilyString(familyString, WAIT_TIMEOUT,
+                    true);
+            Assert.assertTrue("There is no web element with familyString : " + familyString,
+                    webElement != null);
+            clickOnWebElement(webElement);
+        }
+
+        /**
+         * Enters text in a WebElement by family string
+         * 
+         * @param familyString
+         *            the String object, used to locates an identified element
+         * @param text
+         *            the text to enter
+         * 
+         */
+        public void enterTextInWebElementByFamilyString(String familyString, String text) {
+            if (waitForWebElementByFamilyString(familyString, WAIT_TIMEOUT, false) == null) {
+                Assert.assertTrue("There is no web element with familyString : " + familyString,
+                        false);
+            }
+            String js = "function enterTextByFamilyString(s,t) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){e.value=t}finished();}"
+                    + "enterTextByFamilyString('" + familyString + "','" + text + "');";
+            // executeJavaScriptFunction(js);
+            invoke(mWebUtils, "executeJavaScriptFunction", new Class[] { String.class },
+                    new Object[] { js });
+        }
+
+        private View pickViewByFamilyString(String className, String familyString) {
+            ArrayList<View> views = getCurrentViews();
+            for (View view : views) {
+                if (getFamilyString(view).equals(familyString)) {
+                    if (null == className) {
+                        return view;
+                    }
+                    String viewClassName = view.getClass().getName();
+                    try {
+                        if (viewClassName.equals(className)
+                                || Class.forName(className).isAssignableFrom(view.getClass())) {
+                            return view;
+                        }
+                    } catch (ClassNotFoundException e) {
+                        // ignore it
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * for debug when get view failed
+         */
+        private void printViews(String characteristic) {
+            ArrayList<View> invisibleViews = getCurrentViews();
+            for (View view : invisibleViews) {
+                String familyString = getFamilyString(view);
+                String resId = getResName(view);
+                String star = "";
+                if (familyString.equals(characteristic) || resId.equals(characteristic)) {
+                    star = "*";
+                    int[] xy = new int[2];
+                    view.getLocationOnScreen(xy);
+                    print(xy[0] + "," + xy[1]);
+                    print("isSize0:" + isSize0(view));
+                    print("isShown:" + view.isShown());
+                }
+                print(String.format("%s[%s][%s][%s][%s]", star, familyString, resId, view,
+                        getViewText(view)));
+            }
+        }
+
+        /**
+         * This method is protected by assert.
+         * 
+         * @param familyString
+         * @param text
+         */
+        public void waitForTextByFamilyString(String familyString, String text) {
+            View view = waitForView(null, familyString);
+            String actual = getViewText(view);
+            Assert.assertTrue(String.format("Except text [%s], Actual text [%s]", text, actual),
+                    actual.equals(text));
+        }
+
+        private final static int WAIT_TIMEOUT = 20000;
+
+        /**
+         * This method is protected by assert. If arg1 contains "id/", arg1 will
+         * be judged to resid otherwise it will be judged to className.
+         * 
+         * @param arg1
+         *            it could be className or resid
+         * @param arg2
+         *            it could be familyString or index
+         * @return the view picked
+         */
+        public View waitForView(String arg1, String arg2) {
+            boolean useResId = arg1 != null && arg1.contains("id/") ? true : false;
+            long endTime = System.currentTimeMillis() + WAIT_TIMEOUT;
+            while (System.currentTimeMillis() < endTime) {
+                View targetView = null;
+                // it must be the same as ViewRecorder.getTargetViews()
+                if (useResId) {
+                    targetView = getViewByResName(arg1, Integer.valueOf(arg2));
+                } else {
+                    targetView = pickViewByFamilyString(arg1, arg2);
+                }
+
+                if (targetView != null) {
+                    return targetView;
+                }
+
+                sleep(500);
+            }
+
+            if (useResId) {
+                printViews(arg1);
             } else {
-                print("invalid parameters at clickInList");
+                printViews(arg2);
             }
+            Assert.assertTrue(String.format("waitForView failed! arg1[%s] arg2[%s]", arg1, arg2),
+                    false);
+            return null;
+        }
 
-            final AdapterView<?> adapterView = targetView;
-            if (null == adapterView) {
-                print("null == adapterView");
-                return;
+        /**
+         * Clicks on a {@code View} of a specific class with a certain
+         * familyString or a specific resource id with a index.
+         * 
+         * This method is protected by assert.
+         * 
+         * @param arg1
+         *            it could be className or resid
+         * @param arg2
+         *            it could be familyString or index
+         * @param longClick
+         *            true means long click
+         */
+        public void clickOn(String arg1, String arg2, boolean longClick) {
+            try {
+                View view = waitForView(arg1, arg2);
+                clickViaPerformClick(view, longClick);
+                // clickOnView();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
 
-            targetViewInList = null;
-            final long end = System.currentTimeMillis() + 1000;
+        public void clickOnExpandableListView(final String familyString, final int flatListPosition) {
+            final ExpandableListView expandableListView = (ExpandableListView) waitForView(
+                    "android.widget.ExpandableListView", familyString);
+            Assert.assertTrue("null == adapterView at" + Log.getThreadInfo(),
+                    null != expandableListView);
+
             runOnMainSync(new Runnable() {
 
                 @Override
                 public void run() {
-                    while (null == targetViewInList && System.currentTimeMillis() < end) {
-                        print("get targetViewInList");
-                        adapterView.setSelection(position);
-                        adapterView.requestFocusFromTouch();
-                        //adapterView.setSelection(position);
-                        sleep(300);// wait setSelection is done
-                        targetViewInList = adapterView.getSelectedView();
-                    }
+                    View v = expandableListView.getChildAt(flatListPosition);
+                    mTheLastClick = getViewCenter(v);
+                    long id = expandableListView.getItemIdAtPosition(flatListPosition);
+                    expandableListView.performItemClick(v, flatListPosition, id);
                 }
             });
+        }
 
-            if (null == targetViewInList) {
-                print("change to single column mode at " + adapterView);
-                print("getLastVisiblePosition:" + adapterView.getLastVisiblePosition());
-                int index = position - adapterView.getFirstVisiblePosition();
-                targetViewInList = adapterView.getChildAt(index);
-            }
-            mTheLastClick = getViewCenter(targetViewInList);
-            int[] center = getViewCenter(targetViewInList);
-            print("click on " + center[0] + ", " + center[1]);
-            clickOnScreen(center[0], center[1]);
-        } catch (Exception e) {
-            e.printStackTrace();
+        public void scrollListToLine(final int line, final String familyString) {
+            AbsListView absListView = null;
+            absListView = (AbsListView) waitForView("android.widget.AbsListView", familyString);
+            Assert.assertTrue("null == absListView at" + Log.getThreadInfo(), null != absListView);
+
+            invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
+                    new Object[] { absListView, line });
+        }
+
+        public void scrollScrollViewTo(final String familyString, final int x, final int y) {
+            final ScrollView scrollView = (ScrollView) waitForView("android.widget.ScrollView",
+                    familyString);
+            runOnMainSync(new Runnable() {
+                public void run() {
+                    scrollView.scrollBy(x, y);
+                }
+            });
         }
     }
 
-    /**
-     * Simulate touching a specific location and dragging to a new location.
-     * 
-     * This method was copied from {@code TouchUtils.java} in the Android Open
-     * Source Project, and modified here.
-     * 
-     * @param fromX
-     *            X coordinate of the initial touch, in screen coordinates
-     * @param toX
-     *            Xcoordinate of the drag destination, in screen coordinates
-     * @param fromY
-     *            X coordinate of the initial touch, in screen coordinates
-     * @param toY
-     *            Y coordinate of the drag destination, in screen coordinates
-     * @param stepCount
-     *            stepCount How many move steps to include in the drag
-     * 
-     */
-    public void dragPercent(float fromXPersent, float toXPersent, float fromYPersent,
-            float toYPersent, int stepCount) {
-        float fromX = toScreenX(fromXPersent);
-        float toX = toScreenX(toXPersent);
-        float fromY = toScreenY(fromYPersent);
-        float toY = toScreenY(toYPersent);
-        // long begin = System.currentTimeMillis();
-        drag(fromX, toX, fromY, toY, stepCount);
-        print(String.format("fromX:%s toX:%s fromY:%s toY:%s", fromX, toX, fromY, toY));
-        // print("duration:" + (System.currentTimeMillis() - begin) + " step:" + stepCount);
-    }
-
-    public static double getDistance(float x1, float y1, float x2, float y2) {
+    public static double countDistance(float x1, float y1, float x2, float y2) {
         return Math.sqrt(Math.abs(x1 - x2) * Math.abs(x1 - x2) + Math.abs(y1 - y2)
                 * Math.abs(y1 - y2));
     }
@@ -2068,105 +2089,6 @@ public class LocalLib extends SoloEx {
             }
         }
         return -1;
-    }
-
-    /**
-     * Waits for a WebElement by family string.
-     * 
-     * @param familyString
-     *            timeout how long the function waits if there is no satisfied
-     *            web element scroll true if need to scroll the screen, false
-     *            otherwise
-     * @return WebElement wait for
-     */
-    public WebElement waitForWebElementByFamilyString(String familyString, int timeout,
-            boolean scroll) {
-        final long endTime = SystemClock.uptimeMillis() + timeout;
-        while (true) {
-            final boolean timedOut = SystemClock.uptimeMillis() > endTime;
-
-            if (timedOut) {
-                // searcher.logMatchesFound(familyString);
-                invoke(mSearcher, "logMatchesFound", new Class[] { String.class },
-                        new Object[] { familyString });
-                return null;
-            }
-            invoke(this.mSleeper, "sleep");
-            String js = "function familyString(s) {var e=document.body;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){var id=e.id;var text=e.textContent;var name=e.getAttribute('name');var className=e.className;var tagName=e.tagName;var rect=e.getBoundingClientRect();prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';,'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
-                    + "familyString('" + familyString + "');";
-            // executeJavaScriptFunction(js);
-            boolean javaScriptWasExecuted = (Boolean) invoke(mWebUtils,
-                    "executeJavaScriptFunction", new Class[] { String.class }, new Object[] { js });
-            // getSufficientlyShownWebElements(javaScriptWasExecuted);
-            ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) invoke(mWebUtils,
-                    "getSufficientlyShownWebElements", new Class[] { boolean.class },
-                    new Object[] { javaScriptWasExecuted });
-
-            try {
-                List<WebElement> webElements = (List<WebElement>) ReflectHelper.getObjectProperty(
-                        mSearcher, 0, "webElements");
-                // searcher.addViewsToList(webElements, viewsFromScreen);
-                invoke(mSearcher, "addViewsToList", new Class[] { List.class, List.class },
-                        new Object[] { webElements, viewsFromScreen });
-
-                // searcher.getViewFromList(webElements, 1);
-                WebElement webElementToReturn = (WebElement) invoke(mSearcher, "getViewFromList",
-                        new Class[] { List.class, int.class }, new Object[] { webElements, 1 });
-
-                if (webElementToReturn != null) {
-                    return webElementToReturn;
-                }
-
-                if (scroll) {
-                    // mScroller.scroll(mScroller.DOWN)
-                    invoke(mScroller, "scroll", new Class[] { int.class },
-                            new Object[] { getField(mScroller, "DOWN") });
-                }
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Clicks on the WebElement by the given family string.
-     * 
-     * @param webElement
-     *            the WebElement to click
-     * 
-     */
-    public void clickOnWebElementByFamilyString(String familyString) {
-        WebElement webElement = waitForWebElementByFamilyString(familyString, TIMEOUT, true);
-        if (webElement == null) {
-            Assert.assertTrue("There is no web element with familyString : " + familyString, false);
-        }
-        clickOnWebElement(webElement);
-    }
-
-    /**
-     * Enters text in a WebElement by family string
-     * 
-     * @param familyString
-     *            the String object, used to locates an identified element
-     * @param text
-     *            the text to enter
-     * 
-     */
-    public void enterTextInWebElementByFamilyString(String familyString, String text) {
-        if (waitForWebElementByFamilyString(familyString, TIMEOUT, false) == null) {
-            Assert.assertTrue("There is no web element with familyString : " + familyString, false);
-        }
-        String js = "function enterTextByFamilyString(s,t) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){e.value=t}finished();}"
-                + "enterTextByFamilyString('" + familyString + "','" + text + "');";
-        // executeJavaScriptFunction(js);
-        invoke(mWebUtils, "executeJavaScriptFunction", new Class[] { String.class },
-                new Object[] { js });
     }
 
     public void dumpPage() {
@@ -2255,6 +2177,7 @@ public class LocalLib extends SoloEx {
         return false;
     }
 
+    @SuppressLint("Recycle")
     public void clickViewWithoutAssert(View view) {
         if (null == view) {
             Logger.println("null == view at clickViewWithoutAssert");
@@ -2285,7 +2208,7 @@ public class LocalLib extends SoloEx {
             sleep(MINISLEEP);
         } catch (SecurityException e) {
             e.printStackTrace();
-            //            Assert.assertTrue("Click can not be completed!", false);
+            // Assert.assertTrue("Click can not be completed!", false);
         }
     }
 
@@ -2307,6 +2230,6 @@ public class LocalLib extends SoloEx {
     }
 
     public String getStringFromArguments(String key) {
-        return JUnitReportTestRunner.mArguments.getString(key);
+        return CafeTestRunner.mArguments.getString(key);
     }
 }
