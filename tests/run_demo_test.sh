@@ -78,8 +78,8 @@ run()
     $ADB logcat -c
     $ADB logcat  > $serial.locat &
     logcat_pid=$!
-    echo "$ADB shell am instrument -e custom \"$QUERY\" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner"
-    $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.zutubi.android.junitreport.JUnitReportTestRunner 
+    echo "$ADB shell am instrument -e custom \"$QUERY\" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.baidu.cafe.CafeTestRunner"
+    $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.baidu.cafe.CafeTestRunner
     kill -9 $logcat_pid
     $ADB pull /data/data/$package_name/files/$package_name.jpg .
 }

@@ -1,13 +1,14 @@
-package com.zutubi.android.junitreport;
-
-import com.baidu.cafe.utils.ReflectHelper;
+package com.baidu.cafe;
 
 import android.os.Bundle;
 import android.test.AndroidTestRunner;
 
+import com.baidu.cafe.utils.ReflectHelper;
+import com.zutubi.android.junitreport.JUnitReportTestRunner;
+
 /**
  * @author luxiaoyu01@baidu.com
- * @date 2013-6-25
+ * @date 2012-6-25
  * @version
  * @todo
  */

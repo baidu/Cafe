@@ -1,19 +1,19 @@
-package com.zutubi.android.junitreport;
+package com.baidu.cafe;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestCase;
-
-import com.baidu.cafe.local.LocalLib;
-import com.baidu.cafe.utils.ReflectHelper;
-
 import android.app.Instrumentation;
 import android.content.Context;
 import android.util.Log;
 
+import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.utils.ReflectHelper;
+import com.zutubi.android.junitreport.JUnitReportListener;
+
 /**
  * @author luxiaoyu01@baidu.com
- * @date 2013-6-25
+ * @date 2012-6-25
  * @version
  * @todo
  */

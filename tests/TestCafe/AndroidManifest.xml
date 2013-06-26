@@ -11,7 +11,7 @@
         android:targetPackage="com.example.demo" />
 
     <instrumentation
-        android:name="com.zutubi.android.junitreport.JUnitReportTestRunner"
+        android:name="com.baidu.cafe.CafeTestRunner"
         android:targetPackage="com.example.demo" />
 
     <application

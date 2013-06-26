@@ -56,6 +56,7 @@ import android.widget.TabWidget;
 import android.widget.TextView;
 
 import com.baidu.cafe.CafeTestCase;
+import com.baidu.cafe.CafeTestRunner;
 import com.baidu.cafe.local.record.ViewRecorder;
 import com.baidu.cafe.local.traveler.APPTraveler;
 import com.baidu.cafe.local.traveler.Logger;
@@ -64,8 +65,6 @@ import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CommandResult;
 import com.baidu.cafe.utils.Strings;
 import com.jayway.android.robotium.solo.WebElement;
-import com.zutubi.android.junitreport.CafeTestRunner;
-import com.zutubi.android.junitreport.JUnitReportTestRunner;
 
 import dalvik.system.DexFile;
 
