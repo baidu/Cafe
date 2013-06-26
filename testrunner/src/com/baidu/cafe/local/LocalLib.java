@@ -825,7 +825,7 @@ public class LocalLib extends SoloEx {
      */
     public ArrayList<TabWidget> getCurrentTabs() {
         ArrayList<TabWidget> tabList = new ArrayList<TabWidget>();
-        ArrayList<View> viewList = getViews();
+        ArrayList<View> viewList = getCurrentViews();
         for (View view : viewList) {
             if (view instanceof android.widget.TabWidget) {
                 tabList.add((TabWidget) view);
@@ -1487,12 +1487,13 @@ public class LocalLib extends SoloEx {
      *            true means append text after old text
      */
     public void enterText(int index, final String text, final boolean keepPreviousText) {
-        final EditText editText = (EditText) getView(EditText.class, index);
+        ArrayList<EditText> editTexts = removeInvisibleViews(getCurrentViews(EditText.class));
+        Assert.assertTrue(
+                String.format("editTexts.size()[%s] < index[%s]", editTexts.size(), index)
+                        + Log.getThreadInfo(), editTexts.size() > index);
+        final EditText editText = editTexts.get(index);
         Assert.assertTrue("null == editText [" + index + "]", null != editText);
-
-        if (!editText.isEnabled()) {
-            Assert.assertTrue("Edit text is not enabled [" + index + "]", false);
-        }
+        Assert.assertTrue("EditText is not enabled [" + index + "]", editText.isEnabled());
 
         final String previousText = editText.getText().toString();
         runOnMainSync(new Runnable() {
@@ -2081,6 +2082,7 @@ public class LocalLib extends SoloEx {
         if (null == view) {
             return -1;
         }
+
         ArrayList<? extends View> views = removeInvisibleViews(getCurrentViews(view.getClass()));
         for (int i = 0; i < views.size(); i++) {
             if (views.get(i).equals(view)) {

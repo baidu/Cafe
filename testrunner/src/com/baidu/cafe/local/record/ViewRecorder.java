@@ -1261,11 +1261,12 @@ public class ViewRecorder {
                 String text = s.toString().replace("\\", "\\\\").replace("\"", "\\\"")
                         .replace("\r\n", "\\n").replace("\n", "\\n");
                 String lastText = mEditTextLastText.get(getViewID(editText));
-                if ("".equals(s.toString()) || text.equals(lastText) || !editText.isShown()) {
+                if ("".equals(s.toString()) || text.equals(lastText) || !editText.isShown()
+                        || !editText.isFocused()) {
                     return;
                 }
-                printLog("onTextChanged: " + getFamilyString(editText) + " getVisibility:"
-                        + editText + " " + editText.getVisibility());
+                printLog("onTextChanged: " + text + " getVisibility:" + editText + " "
+                        + editText.getVisibility());
                 mTheLastTextChangedTime = System.currentTimeMillis();
                 mCurrentEditTextIndex = local.getCurrentViewIndex(editText);
                 mEditTextLastText.put(getViewID(editText), text);
