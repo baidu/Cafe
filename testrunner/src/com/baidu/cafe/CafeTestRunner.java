@@ -25,14 +25,17 @@ public class CafeTestRunner extends JUnitReportTestRunner {
     protected AndroidTestRunner getAndroidTestRunner() {
         AndroidTestRunner runner = makeAndroidTestRunner();
         try {
-            String mReportFile = (String) ReflectHelper.getObjectProperty(this, 1, "mReportFile");
-            String mReportDir = (String) ReflectHelper.getObjectProperty(this, 1, "mReportDir");
-            boolean mFilterTraces = (Boolean) ReflectHelper.getObjectProperty(this, 1,
+            String superClassName = "com.zutubi.android.junitreport.JUnitReportTestRunner";
+            String mReportFile = (String) ReflectHelper.getField(this, superClassName,
+                    "mReportFile");
+            String mReportDir = (String) ReflectHelper.getField(this, superClassName, "mReportDir");
+            boolean mFilterTraces = (Boolean) ReflectHelper.getField(this, superClassName,
                     "mFilterTraces");
-            boolean mMultiFile = (Boolean) ReflectHelper.getObjectProperty(this, 1, "mMultiFile");
+            boolean mMultiFile = (Boolean) ReflectHelper.getField(this, superClassName,
+                    "mMultiFile");
             CafeListener listener = new CafeListener(getContext(), getTargetContext(), mReportFile,
                     mReportDir, mFilterTraces, mMultiFile, this);
-            ReflectHelper.setObjectProperty(this, 1, "mListener", listener);
+            ReflectHelper.setField(this, superClassName, "mListener", listener);
             runner.addTestListener(listener);
         } catch (SecurityException e) {
             e.printStackTrace();

@@ -59,7 +59,8 @@ public class CafeListener extends JUnitReportListener {
     public void endTest(Test test) {
         long mTestStartTime = 0;
         try {
-            mTestStartTime = (Long) ReflectHelper.getObjectProperty(this, 1, "mTestStartTime");
+            mTestStartTime = (Long) ReflectHelper.getField(this,
+                    "com.zutubi.android.junitreport.JUnitReportListener", "mTestStartTime");
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {

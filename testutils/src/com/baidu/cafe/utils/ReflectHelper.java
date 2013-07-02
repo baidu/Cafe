@@ -52,14 +52,11 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static Object invoke(Object owner, int classLevel, String methodName,
+    public static Object invoke(Object owner, String targetClass, String methodName,
             Class<?>[] parameterTypes, Object[] parameters) throws SecurityException,
             NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
-        // get class
-        Class<?> ownerclass = getOwnerclass(owner, classLevel);
-
-        // get property
+        Class<?> ownerclass = getTargetclass(owner, targetClass);
         Method method = ownerclass.getDeclaredMethod(methodName, parameterTypes);
         if (!method.isAccessible()) {
             method.setAccessible(true);
@@ -68,9 +65,14 @@ public class ReflectHelper {
         return result;
     }
 
-    public static void listObject(Object owner, int classLevel) {
-        // get class
-        Class<?> ownerclass = getOwnerclass(owner, classLevel);
+    /**
+     * Debug method for print object's fields and methods.
+     * 
+     * @param owner
+     * @param classLevel
+     */
+    public static void listObject(Object owner, String targetClass) {
+        Class<?> ownerclass = getTargetclass(owner, targetClass);
         System.err.println(ownerclass + " field:");
         for (Field field : ownerclass.getDeclaredFields()) {
             System.err.println(field.getName());
@@ -82,7 +84,7 @@ public class ReflectHelper {
     }
 
     /**
-     * invoke function of object
+     * Invoke function of object by String.
      * 
      * @param object
      *            object invoked
@@ -122,7 +124,7 @@ public class ReflectHelper {
             }
         }
 
-        return invoke(object, 0, function, types, values);
+        return invoke(object, null, function, types, values);
     }
 
     private static void getParameters(String parameterString) {
@@ -152,7 +154,7 @@ public class ReflectHelper {
     }
 
     /**
-     * set object's private property with custom value
+     * Set object's field with custom value even it's private.
      * 
      * @param owner
      *            : target object
@@ -167,13 +169,10 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static void setObjectProperty(Object owner, int classLevel, String fieldName,
-            Object value) throws SecurityException, NoSuchFieldException, IllegalArgumentException,
+    public static void setField(Object owner, String targetClass, String fieldName, Object value)
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
-        // get class
-        Class<?> ownerclass = getOwnerclass(owner, classLevel);
-
-        // get property
+        Class<?> ownerclass = getTargetclass(owner, targetClass);
         Field field = ownerclass.getDeclaredField(fieldName);
         if (!field.isAccessible()) {
             field.setAccessible(true);
@@ -182,7 +181,7 @@ public class ReflectHelper {
     }
 
     /**
-     * get object's private property
+     * Get object's field even it's private.
      * 
      * @param owner
      *            : target object
@@ -191,18 +190,16 @@ public class ReflectHelper {
      * @param fieldName
      *            : name of the target field
      * @return value of the target field
+     * 
      * @throws NoSuchFieldException
      * @throws SecurityException
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static Object getObjectProperty(Object owner, int classLevel, String fieldName)
+    public static Object getField(Object owner, String targetClass, String fieldName)
             throws SecurityException, NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
-        // get class
-        Class<?> ownerclass = getOwnerclass(owner, classLevel);
-
-        // get property
+        Class<?> ownerclass = getTargetclass(owner, targetClass);
         Field field = ownerclass.getDeclaredField(fieldName);
         if (!field.isAccessible()) {
             field.setAccessible(true);
@@ -211,12 +208,13 @@ public class ReflectHelper {
         return property;
     }
 
-    private static Class<?> getOwnerclass(Object owner, int classLevel) {
-        Class<?> ownerclass = owner.getClass();
-        for (int i = 0; i < classLevel; i++) {
-            ownerclass = ownerclass.getSuperclass();
+    private static Class<?> getTargetclass(Object owner, String targetClass) {
+        try {
+            return null == targetClass ? owner.getClass() : Class.forName(targetClass);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
-        return ownerclass;
+        return null;
     }
 
     /**
@@ -228,13 +226,10 @@ public class ReflectHelper {
      *            e.g. String.class
      * @return ArrayList<String> of property's name
      */
-    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel,
+    public static ArrayList<String> getFieldNameByType(Object owner, String targetClass,
             Class<?> type) {
         ArrayList<String> names = new ArrayList<String>();
-        // get class
-        Class<?> ownerclass = getOwnerclass(owner, classLevel);
-
-        // get type
+        Class<?> ownerclass = getTargetclass(owner, targetClass);
         for (Field field : ownerclass.getDeclaredFields()) {
             if (!field.isAccessible()) {
                 field.setAccessible(true);
@@ -269,13 +264,11 @@ public class ReflectHelper {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel,
+    public static ArrayList<String> getFieldNameByValue(Object owner, String targetClass,
             Class<?> valueType, Object value) throws IllegalArgumentException,
             IllegalAccessException {
         ArrayList<String> names = new ArrayList<String>();
-        Class<?> ownerclass = getOwnerclass(owner, classLevel);
-
-        // get type
+        Class<?> ownerclass = getTargetclass(owner, targetClass);
         for (Field field : ownerclass.getDeclaredFields()) {
             if (!field.isAccessible()) {
                 field.setAccessible(true);
@@ -290,13 +283,15 @@ public class ReflectHelper {
     }
 
     /**
+     * get interface classes which the object implemented
+     * 
      * @param owner
      *            target object
      * @param interfaceStrings
      *            target interface strings
      * @return target interface classes
      */
-    public static ArrayList<Class<?>> getObjectInterfaces(Object owner, String[] interfaceStrings) {
+    public static ArrayList<Class<?>> getInterfaces(Object owner, String[] interfaceStrings) {
         ArrayList<Class<?>> targetInterfaces = new ArrayList<Class<?>>();
         Class<?>[] interfaceClasses = owner.getClass().getInterfaces();
         for (Class<?> interfaceClass : interfaceClasses) {

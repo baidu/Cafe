@@ -24,6 +24,7 @@ import android.graphics.Bitmap;
 import android.view.View;
 
 import com.baidu.cafe.local.LocalLib;
+import com.baidu.cafe.utils.ReflectHelper;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -93,8 +94,8 @@ public class Util {
 
     public static String getReturnValueName(Class<?> targetClass, int ret) {
         try {
-            ArrayList<String> names = LocalLib.getPropertyNameByValue(targetClass.newInstance(), 0,
-                    int.class, ret);
+            ArrayList<String> names = ReflectHelper.getFieldNameByValue(targetClass.newInstance(),
+                    null, int.class, ret);
             for (String str : names) {
                 if (str.startsWith("RET")) {
                     return str;

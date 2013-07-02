@@ -441,18 +441,7 @@ public class ViewRecorder {
         DESEncryption.setKey("com.baidu.cafe.local");
         mPackageName = local.getCurrentActivity().getPackageName();
         initKeyTable();
-
-        // init cafe dir
-        String path = local.getInstrumentation().getTargetContext().getFilesDir().getPath();
-
-        mPath = "/data/data/" + mPackageName + "/cafe";
-        printLog("mPath:" + mPath);
-        printLog("getPath:" + path);
-        File cafe = new File(mPath);
-        if (!cafe.exists()) {
-            cafe.mkdir();
-            LocalLib.executeOnDevice("chmod 777 " + mPath, "/", 200);
-        }
+        mPath = CafeTestCase.mTargetFilesDir;
 
         // init template
         mRecord = new File(mPath + "/" + REPLAY_FILE_NAME);
@@ -2090,11 +2079,11 @@ public class ViewRecorder {
 
     private void initKeyTable() {
         KeyEvent keyEvent = new KeyEvent(0, 0);
-        ArrayList<String> names = LocalLib.getPropertyNameByType(keyEvent, 0, int.class);
+        ArrayList<String> names = local.getFieldNameByType(keyEvent, null, int.class);
         try {
             for (String name : names) {
                 if (name.startsWith("KEYCODE_")) {
-                    Integer keyCode = (Integer) LocalLib.getObjectProperty(keyEvent, 0, name);
+                    Integer keyCode = (Integer) local.getField(keyEvent, null, name);
                     mKeyCodeMap.put(keyCode, name);
                 }
             }

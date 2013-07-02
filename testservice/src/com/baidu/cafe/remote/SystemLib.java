@@ -2646,7 +2646,8 @@ public class SystemLib {
 
     public void expandStatusBar() {
         try {
-            ReflectHelper.invoke(mStatusBarManager, 0, "expand", new Class[] {}, new Object[] {});
+            ReflectHelper
+                    .invoke(mStatusBarManager, null, "expand", new Class[] {}, new Object[] {});
         } catch (Exception e) {
             e.printStackTrace();
         }

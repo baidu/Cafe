@@ -145,15 +145,15 @@ public class LocalLib extends Solo {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public Object invokeObjectMethod(Object owner, int classLevel, String methodName,
+    public Object invoke(Object owner, String targetClass, String methodName,
             Class<?>[] parameterTypes, Object[] parameters) throws SecurityException,
             NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
-        return ReflectHelper.invoke(owner, classLevel, methodName, parameterTypes, parameters);
+        return ReflectHelper.invoke(owner, targetClass, methodName, parameterTypes, parameters);
     }
 
     /**
-     * set object's private property with custom value
+     * Set object's field with custom value even it's private.
      * 
      * @param owner
      *            : target object
@@ -168,10 +168,10 @@ public class LocalLib extends Solo {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public void setObjectProperty(Object owner, int classLevel, String fieldName, Object value)
+    public void setField(Object owner, String targetClass, String fieldName, Object value)
             throws SecurityException, NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
-        ReflectHelper.setObjectProperty(owner, classLevel, fieldName, value);
+        ReflectHelper.setField(owner, targetClass, fieldName, value);
     }
 
     /**
@@ -189,10 +189,10 @@ public class LocalLib extends Solo {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static Object getObjectProperty(Object owner, int classLevel, String fieldName)
+    public Object getField(Object owner, String targetClass, String fieldName)
             throws SecurityException, NoSuchFieldException, IllegalArgumentException,
             IllegalAccessException {
-        return ReflectHelper.getObjectProperty(owner, classLevel, fieldName);
+        return ReflectHelper.getField(owner, targetClass, fieldName);
     }
 
     /**
@@ -206,9 +206,8 @@ public class LocalLib extends Solo {
      *            e.g. java.lang.String
      * @return ArrayList<String> of property's name
      */
-    public static ArrayList<String> getPropertyNameByType(Object owner, int classLevel,
-            Class<?> type) {
-        return ReflectHelper.getPropertyNameByType(owner, classLevel, type);
+    public ArrayList<String> getFieldNameByType(Object owner, String targetClass, Class<?> type) {
+        return ReflectHelper.getFieldNameByType(owner, targetClass, type);
     }
 
     /**
@@ -224,10 +223,10 @@ public class LocalLib extends Solo {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public static ArrayList<String> getPropertyNameByValue(Object owner, int classLevel,
+    public ArrayList<String> getFieldNameByValue(Object owner, String targetClass,
             Class<?> valueType, Object value) throws IllegalArgumentException,
             IllegalAccessException {
-        return ReflectHelper.getPropertyNameByValue(owner, classLevel, valueType, value);
+        return ReflectHelper.getFieldNameByValue(owner, targetClass, valueType, value);
     }
 
     /**
@@ -259,12 +258,12 @@ public class LocalLib extends Solo {
 
         try {
             if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API Level 14: Android 4.0
-                Object mListenerInfo = ReflectHelper
-                        .getObjectProperty(view, level, "mListenerInfo");
-                return null == mListenerInfo ? null : ReflectHelper.getObjectProperty(
-                        mListenerInfo, 0, fieldName);
+                Object mListenerInfo = ReflectHelper.getField(view, targetClass.getName(),
+                        "mListenerInfo");
+                return null == mListenerInfo ? null : ReflectHelper.getField(mListenerInfo, null,
+                        fieldName);
             } else {
-                return ReflectHelper.getObjectProperty(view, level, fieldName);
+                return ReflectHelper.getField(view, targetClass.getName(), fieldName);
             }
         } catch (SecurityException e) {
             e.printStackTrace();
@@ -300,14 +299,14 @@ public class LocalLib extends Solo {
                 // 14.
                 // Android
                 // 4.0
-                Object mListenerInfo = ReflectHelper
-                        .getObjectProperty(view, level, "mListenerInfo");
+                Object mListenerInfo = ReflectHelper.getField(view, targetClass.getName(),
+                        "mListenerInfo");
                 if (null == mListenerInfo) {
                     return;
                 }
-                ReflectHelper.setObjectProperty(mListenerInfo, 0, fieldName, value);
+                ReflectHelper.setField(mListenerInfo, null, fieldName, value);
             } else {
-                ReflectHelper.setObjectProperty(view, level, fieldName, value);
+                ReflectHelper.setField(view, targetClass.getName(), fieldName, value);
             }
         } catch (SecurityException e) {
             e.printStackTrace();
@@ -1009,14 +1008,14 @@ public class LocalLib extends Solo {
             }
 
             try {
-                Object down = ReflectHelper.getObjectProperty(scroller, 0, "DOWN");
+                Object down = ReflectHelper.getField(scroller, null, "DOWN");
                 // mScroller.scroll(mScroller.DOWN)
                 if (scroll
-                        && !(Boolean) ReflectHelper.invoke(scroller, 0, "scroll",
+                        && !(Boolean) ReflectHelper.invoke(scroller, null, "scroll",
                                 new Class[] { int.class }, new Object[] { down })) {
                     continue;
                 }
-                ReflectHelper.invoke(sleeper, 0, "sleep", new Class[] {}, new Object[] {});// mSleeper.sleep();
+                ReflectHelper.invoke(sleeper, null, "sleep", new Class[] {}, new Object[] {});// mSleeper.sleep();
             } catch (SecurityException e) {
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
@@ -1149,7 +1148,7 @@ public class LocalLib extends Solo {
     public boolean searchTextFromParent(View parent, String text, int searchMode) {
         try {
             ArrayList<TextView> textViews = (ArrayList<TextView>) ReflectHelper.invoke(viewFetcher,
-                    0, "getCurrentViews", new Class[] { Class.class, View.class }, new Object[] {
+                    null, "getCurrentViews", new Class[] { Class.class, View.class }, new Object[] {
                             TextView.class, parent });// mViewFetcher.getCurrentViews(TextView.class, parent);
             for (TextView textView : textViews) {
                 switch (searchMode) {
@@ -1206,9 +1205,9 @@ public class LocalLib extends Solo {
 
     public void screenShot(final String fileName) {
         String packagePath = CafeTestCase.mTargetFilesDir;
-        File cafe = new File(packagePath);
-        if (!cafe.exists()) {
-            cafe.mkdir();
+        File targetFilesDir = new File(packagePath);
+        if (!targetFilesDir.exists()) {
+            targetFilesDir.mkdir();
         }
 
         // chmod for adb pull /data/data/<package_name>/files .
@@ -1335,7 +1334,7 @@ public class LocalLib extends Solo {
      */
     public View[] getWindowDecorViews() {
         try {
-            return (View[]) ReflectHelper.invoke(viewFetcher, 0, "getWindowDecorViews",
+            return (View[]) ReflectHelper.invoke(viewFetcher, null, "getWindowDecorViews",
                     new Class[] {}, new Object[] {});// mViewFetcher.getActiveDecorView();
         } catch (SecurityException e) {
             e.printStackTrace();
@@ -1360,7 +1359,7 @@ public class LocalLib extends Solo {
      */
     public View getRecentDecorView(View[] views) {
         try {
-            return (View) ReflectHelper.invoke(viewFetcher, 0, "getRecentDecorView",
+            return (View) ReflectHelper.invoke(viewFetcher, null, "getRecentDecorView",
                     new Class[] { View[].class }, new Object[] { views });
         } catch (SecurityException e) {
             e.printStackTrace();
@@ -1475,7 +1474,7 @@ public class LocalLib extends Solo {
      * @return true means it is a menu, otherwise return fasle
      */
     public boolean isMenu(View view) {
-        return ReflectHelper.getObjectInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
+        return ReflectHelper.getInterfaces(view, MENU_INTERFACES).size() > 0 ? true : false;
     }
 
     public <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, boolean visible) {
@@ -1488,7 +1487,7 @@ public class LocalLib extends Solo {
             boolean onlySufficientlyVisible) {
         ArrayList<T> targetViews = new ArrayList<T>();
         try {
-            ArrayList<View> views = (ArrayList<View>) ReflectHelper.invoke(viewFetcher, 0,
+            ArrayList<View> views = (ArrayList<View>) ReflectHelper.invoke(viewFetcher, null,
                     "getViews", new Class[] { View.class, boolean.class }, new Object[] { null,
                             onlySufficientlyVisible });// viewFetcher.getViews(null, false);
             for (View view : views) {
@@ -1897,11 +1896,11 @@ public class LocalLib extends Solo {
                 try {
                     if (timedOut) {
                         // searcher.logMatchesFound(familyString);
-                        ReflectHelper.invoke(searcher, 0, "logMatchesFound",
+                        ReflectHelper.invoke(searcher, null, "logMatchesFound",
                                 new Class[] { String.class }, new Object[] { familyString });
                         return null;
                     }
-                    ReflectHelper.invoke(sleeper, 0, "sleep", new Class[] {}, new Object[] {});
+                    ReflectHelper.invoke(sleeper, null, "sleep", new Class[] {}, new Object[] {});
                     String js = "function familyString(s) {var e=document.body;var a=s.split('-');"
                             + "for(var i in a) {e=e.childNodes[parseInt(a[i])];}"
                             + "if(e != null){var id=e.id;var text=e.textContent;"
@@ -1911,33 +1910,34 @@ public class LocalLib extends Solo {
                             + ",'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
                             + "familyString('" + familyString + "');";
                     // executeJavaScriptFunction(js);
-                    boolean javaScriptWasExecuted = (Boolean) ReflectHelper.invoke(webUtils, 0,
+                    boolean javaScriptWasExecuted = (Boolean) ReflectHelper.invoke(webUtils, null,
                             "executeJavaScriptFunction", new Class[] { String.class },
                             new Object[] { js });
                     // getSufficientlyShownWebElements(javaScriptWasExecuted);
                     ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) ReflectHelper
-                            .invoke(webUtils, 0, "getSufficientlyShownWebElements",
+                            .invoke(webUtils, null, "getSufficientlyShownWebElements",
                                     new Class[] { boolean.class },
                                     new Object[] { javaScriptWasExecuted });
-                    List<WebElement> webElements = (List<WebElement>) ReflectHelper
-                            .getObjectProperty(searcher, 0, "webElements");
+                    List<WebElement> webElements = (List<WebElement>) ReflectHelper.getField(
+                            searcher, null, "webElements");
                     // searcher.addViewsToList(webElements, viewsFromScreen);
-                    ReflectHelper.invoke(searcher, 0, "addViewsToList", new Class[] { List.class,
-                            List.class }, new Object[] { webElements, viewsFromScreen });
+                    ReflectHelper
+                            .invoke(searcher, null, "addViewsToList", new Class[] { List.class,
+                                    List.class }, new Object[] { webElements, viewsFromScreen });
 
                     // searcher.getViewFromList(webElements, 1);
-                    WebElement webElementToReturn = (WebElement) ReflectHelper.invoke(searcher, 0,
-                            "getViewFromList", new Class[] { List.class, int.class }, new Object[] {
-                                    webElements, 1 });
+                    WebElement webElementToReturn = (WebElement) ReflectHelper.invoke(searcher,
+                            null, "getViewFromList", new Class[] { List.class, int.class },
+                            new Object[] { webElements, 1 });
 
                     if (webElementToReturn != null) {
                         return webElementToReturn;
                     }
 
-                    Object down = ReflectHelper.getObjectProperty(scroller, 0, "DOWN");
+                    Object down = ReflectHelper.getField(scroller, null, "DOWN");
                     if (scroll) {
                         // mScroller.scroll(mScroller.DOWN)
-                        ReflectHelper.invoke(scroller, 0, "scroll", new Class[] { int.class },
+                        ReflectHelper.invoke(scroller, null, "scroll", new Class[] { int.class },
                                 new Object[] { down });
                     }
                 } catch (SecurityException e) {
@@ -1989,7 +1989,7 @@ public class LocalLib extends Solo {
                     + "enterTextByFamilyString('" + familyString + "','" + text + "');";
 
             try {
-                ReflectHelper.invoke(webUtils, 0, "executeJavaScriptFunction",
+                ReflectHelper.invoke(webUtils, null, "executeJavaScriptFunction",
                         new Class[] { String.class }, new Object[] { js });// executeJavaScriptFunction(js);
             } catch (SecurityException e) {
                 e.printStackTrace();
@@ -2154,7 +2154,7 @@ public class LocalLib extends Solo {
             Assert.assertTrue("null == absListView at" + Log.getThreadInfo(), null != targetView);
 
             try {
-                ReflectHelper.invoke(scroller, 0, "scrollListToLine", new Class[] {
+                ReflectHelper.invoke(scroller, null, "scrollListToLine", new Class[] {
                         AbsListView.class, int.class }, new Object[] { targetView, line });
             } catch (SecurityException e) {
                 e.printStackTrace();
