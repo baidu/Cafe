@@ -35,6 +35,15 @@
 -keep public class com.baidu.cafe.local.LocalLib$RecordReplay{
     public protected *;
 }
+-keep public class com.baidu.cafe.CafeTestRunner{
+     *;
+}
+-keep public class com.baidu.cafe.CafeListener{
+     *;
+}
+-keep public class com.zutubi.android.junitreport.*{
+     *;
+}
 -keep public class  android.view.WindowManagerImpl{
     private android.view.View[] mViews;
 }

@@ -1451,12 +1451,13 @@ public class LocalLib extends SoloEx {
             public void run() {
                 int[] xy = getViewCenter(view);
                 try {
+                    boolean ret = false;
                     if (longClick) {
-                        view.performLongClick();
+                        ret = view.performLongClick();
                     } else {
-                        view.performClick();
+                        ret = view.performClick();
                     }
-                    print("clickViaPerformClick:" + xy[0] + "," + xy[1] + " " + view);
+                    print("clickViaPerformClick:" + ret + " " + xy[0] + "," + xy[1] + " " + view);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1775,24 +1776,36 @@ public class LocalLib extends SoloEx {
                     @Override
                     public void run() {
                         while (null == targetViewInList && System.currentTimeMillis() < end) {
-                            print("get targetViewInList");
+                            // solution A
                             adapterView.setSelection(position);
                             adapterView.requestFocusFromTouch();
-                            // adapterView.setSelection(position);
+                            adapterView.setSelection(position);
                             sleep(300);// wait setSelection is done
                             targetViewInList = adapterView.getSelectedView();
+                            print("getPositionForView:"
+                                    + adapterView.getPositionForView(targetViewInList));
+
+                            // solution B
+                            if (adapterView.getPositionForView(targetViewInList) != position) {
+                                for (int i = 0; i < adapterView.getChildCount(); i++) {
+                                    View child = adapterView.getChildAt(i);
+                                    if (adapterView.getPositionForView(child) == position) {
+                                        print("child index: " + i);
+                                        print("getLastVisiblePosition:"
+                                                + adapterView.getLastVisiblePosition());
+                                        targetViewInList = child;
+                                    }
+                                }
+                            }
                         }
                     }
                 });
 
-                if (null == targetViewInList) {
-                    print("change to single column mode at " + adapterView);
-                    print("getLastVisiblePosition:" + adapterView.getLastVisiblePosition());
-                    int index = position - adapterView.getFirstVisiblePosition();
-                    targetViewInList = adapterView.getChildAt(index);
-                }
+                // this sleep is necessary
+                sleep(1000);
                 mTheLastClick = getViewCenter(targetViewInList);
-                int[] center = getViewCenter(targetViewInList);
+                sleep(1000);
+                int[] center = mTheLastClick;
                 print("click on " + center[0] + ", " + center[1]);
                 clickOnScreen(center[0], center[1]);
             } catch (Exception e) {
@@ -2047,13 +2060,19 @@ public class LocalLib extends SoloEx {
             });
         }
 
-        public void scrollListToLine(final int line, final String familyString) {
-            AbsListView absListView = null;
-            absListView = (AbsListView) waitForView("android.widget.AbsListView", familyString);
-            Assert.assertTrue("null == absListView at" + Log.getThreadInfo(), null != absListView);
+        public void scrollListToLine(final int line, String... args) {
+            AbsListView targetView = null;
+            if (args.length == 1) {
+                targetView = (AbsListView) waitForView("android.widget.AbsListView", args[0]);
+            } else if (args.length == 2) {
+                targetView = (AbsListView) waitForView(args[0], args[1]);
+            } else {
+                print("invalid parameters at clickInList");
+            }
+            Assert.assertTrue("null == absListView at" + Log.getThreadInfo(), null != targetView);
 
             invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
-                    new Object[] { absListView, line });
+                    new Object[] { targetView, line });
         }
 
         public void scrollScrollViewTo(final String familyString, final int x, final int y) {

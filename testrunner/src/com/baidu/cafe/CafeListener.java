@@ -36,6 +36,7 @@ public class CafeListener extends JUnitReportListener {
     @Override
     public void startTest(Test test) {
         mName = ((TestCase) test).getName();
+        System.out.println("mTestCaseName:" + mName);
         LocalLib.mTestCaseName = mName;
         mPackageRcv = LocalLib.getPackageRcv(mTargetContext.getPackageName());
         mPackageSnd = LocalLib.getPackageSnd(mTargetContext.getPackageName());

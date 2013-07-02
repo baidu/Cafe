@@ -443,7 +443,11 @@ public class ViewRecorder {
         initKeyTable();
 
         // init cafe dir
+        String path = local.getInstrumentation().getTargetContext().getFilesDir().getPath();
+
         mPath = "/data/data/" + mPackageName + "/cafe";
+        printLog("mPath:" + mPath);
+        printLog("getPath:" + path);
         File cafe = new File(mPath);
         if (!cafe.exists()) {
             cafe.mkdir();
@@ -524,8 +528,18 @@ public class ViewRecorder {
         handleOutputEventQueue();
 
         mLastEventTime = System.currentTimeMillis();
-        local.sleep(2000);
+        local.sleep(2000);// waiting for monitor working
         printLog("ViewRecorder is ready to work.");
+    }
+
+    private ArrayList<View> getCurrentViewsFromAllDecorViews() {
+        ArrayList<View> views = new ArrayList<View>();
+        for (View decorView : local.getWindowDecorViews()) {
+            for (View view : local.getCurrentViews(View.class, decorView)) {
+                views.add(view);
+            }
+        }
+        return views;
     }
 
     private void monitorCurrentActivity() {
@@ -580,8 +594,7 @@ public class ViewRecorder {
     }
 
     private ArrayList<View> getTargetViews() {
-        ArrayList<View> views = local
-                .removeInvisibleViews(local.getCurrentViews()/*onlySufficientlyVisible == true*/);
+        ArrayList<View> views = local.removeInvisibleViews(local.getViews(View.class, false));
         // ArrayList<View> views = local.getViews();
         ArrayList<View> targetViews = new ArrayList<View>();
 
@@ -878,9 +891,21 @@ public class ViewRecorder {
         printLog("getFirstVisiblePosition:" + view.getFirstVisiblePosition());
         absListViewState.lastFirstVisibleItem = absListViewState.firstVisibleItem;
         ScrollEvent scrollEvent = new ScrollEvent(view);
-        String familyString = getFamilyString(view);
-        String scroll = String.format("local.recordReplay.scrollListToLine(%s, \"%s\");",
-                absListViewState.firstVisibleItem, familyString);
+
+        String r = getRString(view);
+        String rString = r.equals("") ? "" : "[" + r + "]";
+        String scroll = "";
+        if ("".equals(rString)) {
+            String familyString = getFamilyString(view);
+            scroll = String.format("local.recordReplay.scrollListToLine(%s, \"%s\");",
+                    absListViewState.firstVisibleItem, familyString);
+        } else {
+            String rStringSuffix = getRStringSuffix(view);
+            int index = local.getResIdIndex(view);
+            scroll = String.format("local.recordReplay.scrollListToLine(%s, \"id/%s\", \"%s\");",
+                    absListViewState.firstVisibleItem, rStringSuffix, index);
+        }
+
         scrollEvent.setCode(scroll);
         scrollEvent.setLog("scroll " + view + " to " + absListViewState.firstVisibleItem);
         offerOutputEventQueue(scrollEvent);
@@ -1175,7 +1200,6 @@ public class ViewRecorder {
         }
         clickEvent.setCode(click);
 
-        // clickEvent.setLog();
         offerOutputEventQueue(clickEvent);
         invokeOriginOnClickListener(v);
     }
@@ -1350,7 +1374,7 @@ public class ViewRecorder {
     }
 
     private void addEvent(View v, MotionEvent event) {
-        //        printLog(v + " " + event);
+        //printLog(v + " " + event);
         if (!offerMotionEventQueue(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
                 event.getRawY(), SystemClock.currentThreadTimeMillis()))) {
             printLog("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
@@ -2093,6 +2117,6 @@ public class ViewRecorder {
             }
             view = parent;
         }
-        return null == view.getParent() ? true : false;
+        return null == view.getParent() ? false : true;
     }
 }
