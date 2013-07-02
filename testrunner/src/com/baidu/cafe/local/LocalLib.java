@@ -64,6 +64,7 @@ import com.baidu.cafe.utils.ReflectHelper;
 import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CommandResult;
 import com.baidu.cafe.utils.Strings;
+import com.jayway.android.robotium.solo.Solo;
 import com.jayway.android.robotium.solo.WebElement;
 
 import dalvik.system.DexFile;
@@ -86,7 +87,7 @@ import dalvik.system.DexFile;
  * @todo
  */
 
-public class LocalLib extends SoloEx {
+public class LocalLib extends Solo {
     public final static int       SEARCHMODE_COMPLETE_MATCHING = 1;
     public final static int       SEARCHMODE_DEFAULT           = 1;
     public final static int       SEARCHMODE_INCLUDE_MATCHING  = 2;
@@ -1007,12 +1008,28 @@ public class LocalLib extends SoloEx {
                 return true;
             }
 
-            if (scroll
-                    && !(Boolean) invoke(mScroller, "scroll", new Class[] { int.class },
-                            new Object[] { getField(mScroller, "DOWN") })) { // mScroller.scroll(mScroller.DOWN)
-                continue;
+            try {
+                Object down = ReflectHelper.getObjectProperty(scroller, 0, "DOWN");
+                // mScroller.scroll(mScroller.DOWN)
+                if (scroll
+                        && !(Boolean) ReflectHelper.invoke(scroller, 0, "scroll",
+                                new Class[] { int.class }, new Object[] { down })) {
+                    continue;
+                }
+                ReflectHelper.invoke(sleeper, 0, "sleep", new Class[] {}, new Object[] {});// mSleeper.sleep();
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
             }
-            invoke(mSleeper, "sleep"); // mSleeper.sleep();
         }
         return false;
     }
@@ -1130,26 +1147,36 @@ public class LocalLib extends SoloEx {
      */
     @SuppressWarnings("unchecked")
     public boolean searchTextFromParent(View parent, String text, int searchMode) {
-        ArrayList<TextView> textViews = (ArrayList<TextView>) invoke(mViewFetcher,
-                "getCurrentViews", new Class[] { Class.class, View.class }, new Object[] {
-                        TextView.class, parent }); // mViewFetcher.getCurrentViews(TextView.class,
-        // parent);
-
-        for (TextView textView : textViews) {
-            switch (searchMode) {
-            case SEARCHMODE_COMPLETE_MATCHING:
-                if (textView.getText().equals(text)) {
-                    return true;
+        try {
+            ArrayList<TextView> textViews = (ArrayList<TextView>) ReflectHelper.invoke(viewFetcher,
+                    0, "getCurrentViews", new Class[] { Class.class, View.class }, new Object[] {
+                            TextView.class, parent });// mViewFetcher.getCurrentViews(TextView.class, parent);
+            for (TextView textView : textViews) {
+                switch (searchMode) {
+                case SEARCHMODE_COMPLETE_MATCHING:
+                    if (textView.getText().equals(text)) {
+                        return true;
+                    }
+                    break;
+                case SEARCHMODE_INCLUDE_MATCHING:
+                    if (textView.getText().toString().contains(text)) {
+                        return true;
+                    }
+                    break;
+                default:
+                    Assert.assertTrue("Unknown searchMode!" + Log.getThreadInfo(), false);
                 }
-                break;
-            case SEARCHMODE_INCLUDE_MATCHING:
-                if (textView.getText().toString().contains(text)) {
-                    return true;
-                }
-                break;
-            default:
-                Assert.assertTrue("Unknown searchMode!" + Log.getThreadInfo(), false);
             }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
 
         return false;
@@ -1306,8 +1333,22 @@ public class LocalLib extends SoloEx {
      * 
      * @return the WindorDecorViews shown on the screen
      */
-    public static View[] getWindowDecorViews() {
-        return (View[]) invoke(mViewFetcher, "getWindowDecorViews"); // mViewFetcher.getActiveDecorView();
+    public View[] getWindowDecorViews() {
+        try {
+            return (View[]) ReflectHelper.invoke(viewFetcher, 0, "getWindowDecorViews",
+                    new Class[] {}, new Object[] {});// mViewFetcher.getActiveDecorView();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -1317,9 +1358,22 @@ public class LocalLib extends SoloEx {
      *            the views to check
      * @return the most recent DecorView
      */
-    public static View getRecentDecorView(View[] views) {
-        return (View) invoke(mViewFetcher, "getRecentDecorView", new Class[] { View[].class },
-                new Object[] { views });
+    public View getRecentDecorView(View[] views) {
+        try {
+            return (View) ReflectHelper.invoke(viewFetcher, 0, "getRecentDecorView",
+                    new Class[] { View[].class }, new Object[] { views });
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -1433,13 +1487,25 @@ public class LocalLib extends SoloEx {
     public <T extends View> ArrayList<T> getViews(Class<T> classToFilterBy,
             boolean onlySufficientlyVisible) {
         ArrayList<T> targetViews = new ArrayList<T>();
-        ArrayList<View> views = (ArrayList<View>) invoke(mViewFetcher, "getViews", new Class[] {
-                View.class, boolean.class }, new Object[] { null, onlySufficientlyVisible });// viewFetcher.getViews(null,
-        // false);
-        for (View view : views) {
-            if (view != null && classToFilterBy.isAssignableFrom(view.getClass())) {
-                targetViews.add(classToFilterBy.cast(view));
+        try {
+            ArrayList<View> views = (ArrayList<View>) ReflectHelper.invoke(viewFetcher, 0,
+                    "getViews", new Class[] { View.class, boolean.class }, new Object[] { null,
+                            onlySufficientlyVisible });// viewFetcher.getViews(null, false);
+            for (View view : views) {
+                if (view != null && classToFilterBy.isAssignableFrom(view.getClass())) {
+                    targetViews.add(classToFilterBy.cast(view));
+                }
             }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
         return targetViews;
     }
@@ -1828,40 +1894,39 @@ public class LocalLib extends SoloEx {
             final long endTime = SystemClock.uptimeMillis() + timeout;
             while (true) {
                 final boolean timedOut = SystemClock.uptimeMillis() > endTime;
-
-                if (timedOut) {
-                    // searcher.logMatchesFound(familyString);
-                    invoke(mSearcher, "logMatchesFound", new Class[] { String.class },
-                            new Object[] { familyString });
-                    return null;
-                }
-                invoke(mSleeper, "sleep");
-                String js = "function familyString(s) {var e=document.body;var a=s.split('-');"
-                        + "for(var i in a) {e=e.childNodes[parseInt(a[i])];}"
-                        + "if(e != null){var id=e.id;var text=e.textContent;"
-                        + "var name=e.getAttribute('name');var className=e.className;"
-                        + "var tagName=e.tagName;var rect=e.getBoundingClientRect();"
-                        + "prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';"
-                        + ",'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
-                        + "familyString('" + familyString + "');";
-                // executeJavaScriptFunction(js);
-                boolean javaScriptWasExecuted = (Boolean) invoke(mWebUtils,
-                        "executeJavaScriptFunction", new Class[] { String.class },
-                        new Object[] { js });
-                // getSufficientlyShownWebElements(javaScriptWasExecuted);
-                ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) invoke(mWebUtils,
-                        "getSufficientlyShownWebElements", new Class[] { boolean.class },
-                        new Object[] { javaScriptWasExecuted });
-
                 try {
+                    if (timedOut) {
+                        // searcher.logMatchesFound(familyString);
+                        ReflectHelper.invoke(searcher, 0, "logMatchesFound",
+                                new Class[] { String.class }, new Object[] { familyString });
+                        return null;
+                    }
+                    ReflectHelper.invoke(sleeper, 0, "sleep", new Class[] {}, new Object[] {});
+                    String js = "function familyString(s) {var e=document.body;var a=s.split('-');"
+                            + "for(var i in a) {e=e.childNodes[parseInt(a[i])];}"
+                            + "if(e != null){var id=e.id;var text=e.textContent;"
+                            + "var name=e.getAttribute('name');var className=e.className;"
+                            + "var tagName=e.tagName;var rect=e.getBoundingClientRect();"
+                            + "prompt(id+';,'+text+';,'+name+';,'+className+';,'+tagName+';"
+                            + ",'+rect.left+';,'+rect.top+';,'+rect.width+';,'+rect.height);}finished();}"
+                            + "familyString('" + familyString + "');";
+                    // executeJavaScriptFunction(js);
+                    boolean javaScriptWasExecuted = (Boolean) ReflectHelper.invoke(webUtils, 0,
+                            "executeJavaScriptFunction", new Class[] { String.class },
+                            new Object[] { js });
+                    // getSufficientlyShownWebElements(javaScriptWasExecuted);
+                    ArrayList<WebElement> viewsFromScreen = (ArrayList<WebElement>) ReflectHelper
+                            .invoke(webUtils, 0, "getSufficientlyShownWebElements",
+                                    new Class[] { boolean.class },
+                                    new Object[] { javaScriptWasExecuted });
                     List<WebElement> webElements = (List<WebElement>) ReflectHelper
-                            .getObjectProperty(mSearcher, 0, "webElements");
+                            .getObjectProperty(searcher, 0, "webElements");
                     // searcher.addViewsToList(webElements, viewsFromScreen);
-                    invoke(mSearcher, "addViewsToList", new Class[] { List.class, List.class },
-                            new Object[] { webElements, viewsFromScreen });
+                    ReflectHelper.invoke(searcher, 0, "addViewsToList", new Class[] { List.class,
+                            List.class }, new Object[] { webElements, viewsFromScreen });
 
                     // searcher.getViewFromList(webElements, 1);
-                    WebElement webElementToReturn = (WebElement) invoke(mSearcher,
+                    WebElement webElementToReturn = (WebElement) ReflectHelper.invoke(searcher, 0,
                             "getViewFromList", new Class[] { List.class, int.class }, new Object[] {
                                     webElements, 1 });
 
@@ -1869,10 +1934,11 @@ public class LocalLib extends SoloEx {
                         return webElementToReturn;
                     }
 
+                    Object down = ReflectHelper.getObjectProperty(scroller, 0, "DOWN");
                     if (scroll) {
                         // mScroller.scroll(mScroller.DOWN)
-                        invoke(mScroller, "scroll", new Class[] { int.class },
-                                new Object[] { getField(mScroller, "DOWN") });
+                        ReflectHelper.invoke(scroller, 0, "scroll", new Class[] { int.class },
+                                new Object[] { down });
                     }
                 } catch (SecurityException e) {
                     e.printStackTrace();
@@ -1881,6 +1947,10 @@ public class LocalLib extends SoloEx {
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }
             }
@@ -1917,9 +1987,21 @@ public class LocalLib extends SoloEx {
             }
             String js = "function enterTextByFamilyString(s,t) {var e=document;var a=s.split('-');for(var i in a) {e=e.childNodes[parseInt(a[i])];}if(e != null){e.value=t}finished();}"
                     + "enterTextByFamilyString('" + familyString + "','" + text + "');";
-            // executeJavaScriptFunction(js);
-            invoke(mWebUtils, "executeJavaScriptFunction", new Class[] { String.class },
-                    new Object[] { js });
+
+            try {
+                ReflectHelper.invoke(webUtils, 0, "executeJavaScriptFunction",
+                        new Class[] { String.class }, new Object[] { js });// executeJavaScriptFunction(js);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
 
         private View pickViewByFamilyString(String className, String familyString) {
@@ -2071,8 +2153,20 @@ public class LocalLib extends SoloEx {
             }
             Assert.assertTrue("null == absListView at" + Log.getThreadInfo(), null != targetView);
 
-            invoke(mScroller, "scrollListToLine", new Class[] { AbsListView.class, int.class },
-                    new Object[] { targetView, line });
+            try {
+                ReflectHelper.invoke(scroller, 0, "scrollListToLine", new Class[] {
+                        AbsListView.class, int.class }, new Object[] { targetView, line });
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
 
         public void scrollScrollViewTo(final String familyString, final int x, final int y) {

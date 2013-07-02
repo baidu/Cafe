@@ -570,7 +570,7 @@ public class ViewRecorder {
      * views including decorView.
      */
     private void setOnTouchListenerOnDecorView(final Activity activity) {
-        View[] views = LocalLib.getWindowDecorViews();
+        View[] views = local.getWindowDecorViews();
         for (View view : views) {
             handleOnTouchListener(view);
             /*
