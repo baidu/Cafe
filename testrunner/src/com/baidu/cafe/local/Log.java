@@ -21,8 +21,6 @@ import java.io.StringWriter;
 
 import android.test.ActivityInstrumentationTestCase2;
 
-import com.baidu.cafe.remote.Armser;
-
 /**
  * @author luxiaoyu01@baidu.com
  * @date 2011-6-13

@@ -1,13 +1,9 @@
 package com.example.demo.test;
 
-import java.util.ArrayList;
-
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.Button;
 
 import com.baidu.cafe.CafeTestCase;
-import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
 
 /**

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+adb shell service call window 2
 adb shell service call window 1 i32 4939
 monkey=`adb shell ps | grep monkey`
 pid=`echo $monkey | awk -F " " '{print $2}'`

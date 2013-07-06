@@ -34,6 +34,13 @@ import android.view.WindowManager;
 
 import com.baidu.cafe.local.LocalLib;
 
+/**
+ * This is a interface-class to invoke functions of
+ * com.baidu.cafe.remote.ArmsBinder.
+ * 
+ * @author chengzhenyu@baidu.com
+ * @date 2011-06-20
+ */
 public class Armser {
 
     private IRemoteArms         iArms                            = null;

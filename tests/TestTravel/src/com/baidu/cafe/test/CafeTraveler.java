@@ -1,4 +1,4 @@
-package com.example.demo.test;
+package com.baidu.cafe.test;
 
 import com.baidu.cafe.CafeTestCase;
 
@@ -8,7 +8,7 @@ import com.baidu.cafe.CafeTestCase;
  * @version
  * @todo
  */
-public class CafeReplay extends CafeTestCase {
+public class CafeTraveler extends CafeTestCase {
     private static final String LAUNCHER_ACTIVITY_FULL_CLASSNAME = "{launcher_class}";
     private static Class<?>     launcherActivityClass;
     private static final String TARGET_PACKAGE                   = "{target_package}";
@@ -20,7 +20,7 @@ public class CafeReplay extends CafeTestCase {
         }
     }
 
-    public CafeReplay() {
+    public CafeTraveler() {
         super(TARGET_PACKAGE, launcherActivityClass);
     }
 
@@ -34,10 +34,9 @@ public class CafeReplay extends CafeTestCase {
         super.tearDown();
     }
 
-    public void testRecorded() {
+    public void test_travel() {
         local.sleep(2000);
-        local.beginRecordCode();
-        local.sleep(2000000);
+        local.travel();
     }
 
 }

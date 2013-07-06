@@ -53,37 +53,38 @@ import com.baidu.cafe.utils.TreeNode.NodeCallBack;
  * @todo
  */
 public class APPTraveler {
-    public final static int           MODE_PREORDER                = 0;
-    public final static int           MODE_BREADTH_FIRST           = 1;
-    public final static int           MODE_ACTIVITY                = 2;
-    public final static int           MODE_GRID                    = 3;
-    public final static int           TRAVEL_MODE                  = MODE_PREORDER;
+    public final static int           MODE_PREORDER                     = 0;
+    public final static int           MODE_BREADTH_FIRST                = 1;
+    public final static int           MODE_ACTIVITY                     = 2;
+    public final static int           MODE_GRID                         = 3;
+    public final static int           TRAVEL_MODE                       = MODE_PREORDER;
 
-    public static TreeNode<Operation> mRoot                        = null;
-    public static boolean             mCrashBeforeTravel           = true;
-    public static boolean             mIsEnd                       = false;
-    public static int                 mDisplayX                    = 0;
-    public static int                 mDisplayY                    = 0;
-    public static Armser              remote                       = null;
-    public static LocalLib            local                        = null;
-    public static String              mUsername                    = null;
-    public static String              mPassword                    = null;
+    public static TreeNode<Operation> mRoot                             = null;
+    public static boolean             mCrashBeforeTravel                = true;
+    public static boolean             mIsEnd                            = false;
+    public static int                 mDisplayX                         = 0;
+    public static int                 mDisplayY                         = 0;
+    public static Armser              remote                            = null;
+    public static LocalLib            local                             = null;
+    public static String              mUsername                         = null;
+    public static String              mPassword                         = null;
 
-    private final static int          LOOP_MAX_LENGTH              = 100;
-    private final static int          LOOP_MIN_LENGTH              = 4;
-    private final static int          TIMEOUT_WAIT_FOR_SCREEN_SHOT = 1000 * 5;
-    private final static int          TRAVEL_TIME_OUT              = 1000 * 60 * 30;
-    private final static int          MAX_TRAVEL_DEPTH             = 3;
-    private final static int          RET_PASS                     = 0;
-    private final static int          RET_NOT_ENABLE               = 1;
-    private final static int          RET_SHOULD_NOT_REPEAT        = 2;
-    private final static int          RET_NOT_UNDOEN               = 3;
-    private final static int          RET_NOT_AVAILABLE            = 4;
+    private final static int          LOOP_MAX_LENGTH                   = 100;
+    private final static int          LOOP_MIN_LENGTH                   = 4;
+    private final static int          TIMEOUT_WAIT_FOR_SCREEN_SHOT      = 1000 * 5;
+    private final static int          TIMEOUT_WAIT_FOR_LAUNCH_COMPLETED = 1000 * 10;
+    private final static int          TRAVEL_TIME_OUT                   = 1000 * 60 * 30;
+    private final static int          MAX_TRAVEL_DEPTH                  = 3;
+    private final static int          RET_PASS                          = 0;
+    private final static int          RET_NOT_ENABLE                    = 1;
+    private final static int          RET_SHOULD_NOT_REPEAT             = 2;
+    private final static int          RET_NOT_UNDOEN                    = 3;
+    private final static int          RET_NOT_AVAILABLE                 = 4;
 
-    private static int                mScreenShotCounter           = 1;
-    private long                      mEnd                         = 0;
-    private ArrayList<Operation>      mAllOperations               = new ArrayList<Operation>();
-    private ArrayList<Operation>      mOldOperations               = new ArrayList<Operation>();
+    private static int                mScreenShotCounter                = 1;
+    private long                      mEnd                              = 0;
+    private ArrayList<Operation>      mAllOperations                    = new ArrayList<Operation>();
+    private ArrayList<Operation>      mOldOperations                    = new ArrayList<Operation>();
 
     public APPTraveler(Armser r, LocalLib l, String username, String password) {
         local = l;
@@ -111,9 +112,14 @@ public class APPTraveler {
     }
 
     public void travel(int depth) {
+        long end = System.currentTimeMillis() + TIMEOUT_WAIT_FOR_LAUNCH_COMPLETED;
         while (remote.getTopActivity().indexOf(CafeTestCase.mActivityClass.getName()) == -1) {
             local.sleep(1000);
             Logger.println("wait for " + CafeTestCase.mActivityClass.getName());
+            if (System.currentTimeMillis() > end) {
+                Logger.println("TIMEOUT_WAIT_FOR_LAUNCH_COMPLETED");
+                break;
+            }
         }
 
         mCrashBeforeTravel = false;

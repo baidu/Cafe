@@ -803,5 +803,24 @@ rm_svn()
     rm -rf `find . -type d -name .svn`
 }
 
+#
+# start monkey server at port 4938
+#
+start_monkey_server() # $serial_number
+{
+    ADB="adb -s $1"
 
+    kill_android_process_by_name "$1" monkey
+    $ADB shell monkey --port 4938 --ignore-crashes --ignore-security-exceptions\
+        --ignore-native-crashes -v -v > /dev/null 2>&1 &
+    PID_MONKEY=$!
+    end_with_script "$PID_MONKEY"
+    echo ""
+}
 
+assert() # $value
+{
+    if [ ! 0 -eq $1 ]; then
+        exit 1
+    fi
+}

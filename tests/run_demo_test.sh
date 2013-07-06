@@ -6,16 +6,6 @@ ANDROID_TOP=$_PWD/../..
 APK=""
 QUERY="100"
 
-start_monkey_server()
-{
-	kill_android_process_by_name "$serial" monkey
-	$ADB shell monkey --port 4938 --ignore-crashes --ignore-security-exceptions\
-        --ignore-native-crashes -v -v > /dev/null 2>&1 &
-	PID_MONKEY=$!
-	end_with_script "$PID_MONKEY"
-	echo ""
-}
-
 compile()
 {
     cd $ANDROID_TOP
@@ -73,10 +63,11 @@ make_project()
 run()
 {
 	ADB="adb -s $serial"
-	start_monkey_server
+	start_monkey_server "$serial"
+    $ADB shell service call window 2
     $ADB shell service call window 1 i32 4939
     $ADB logcat -c
-    $ADB logcat  > $serial.locat &
+    $ADB logcat  > $serial.logcat &
     logcat_pid=$!
     echo "$ADB shell am instrument -e custom \"$QUERY\" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.baidu.cafe.CafeTestRunner"
     $ADB shell am instrument -e custom "$QUERY" -e class com.example.demo.test.CafeReplay#testRecorded  -w $test_package/com.baidu.cafe.CafeTestRunner
