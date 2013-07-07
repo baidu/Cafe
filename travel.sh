@@ -10,6 +10,12 @@ SERIAL_NUMBER="$1"
 ADB="adb -s $SERIAL_NUMBER"
 TARGET="$2"
 
+usage()
+{
+	echo "usage: $0"
+	echo "		 For example, ./travel.sh [serial_number] [target_apk]"
+}
+
 resign_apk()
 {       
     echo "resign apk [$1] ..."
@@ -92,6 +98,11 @@ run()
     cd $_BUILD
     $ADB pull /data/data/$target_package/files/ .
 }
+
+if [ -z "$1" -o -z "$2" ];then
+    usage
+    exit 1
+fi
 
 rm -rf build
 mkdir -p build
