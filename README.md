@@ -9,7 +9,10 @@ http://baiduqa.github.com/Cafe/
 
 How to make Cafe
 ====
-cd $ANDROID_TOP
+cd $ANDROID_TOP 
+
 git clone https://github.com/BaiduQA/Cafe.git
+
 cd Cafe
+
 ./make.sh
