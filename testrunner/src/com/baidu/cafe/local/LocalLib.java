@@ -1782,17 +1782,21 @@ public class LocalLib extends Solo {
                 ViewGroup parent = (ViewGroup) view.getParent();
                 if (null == parent) {
                     print("null == parent at getFamilyString");
-                    return familyString;
+                    return rmTheLastChar(familyString);
                 }
                 if (Build.VERSION.SDK_INT >= 14
                         && parent.getClass().getName().equals(CLASSNAME_DECORVIEW)) {
                 } else {
-                    familyString += getChildIndex(parent, view);
+                    familyString += getChildIndex(parent, view) + "-";
                 }
                 view = parent;
             }
 
-            return familyString;
+            return rmTheLastChar(familyString);
+        }
+
+        private String rmTheLastChar(String str) {
+            return str.length() == 0 ? str : str.substring(0, str.length() - 1);
         }
 
         private int getChildIndex(ViewGroup parent, View child) {
@@ -1847,11 +1851,10 @@ public class LocalLib extends Solo {
                             adapterView.setSelection(position);
                             sleep(300);// wait setSelection is done
                             targetViewInList = adapterView.getSelectedView();
-                            print("getPositionForView:"
-                                    + adapterView.getPositionForView(targetViewInList));
 
                             // solution B
-                            if (adapterView.getPositionForView(targetViewInList) != position) {
+                            if (null == targetViewInList
+                                    || adapterView.getPositionForView(targetViewInList) != position) {
                                 for (int i = 0; i < adapterView.getChildCount(); i++) {
                                     View child = adapterView.getChildAt(i);
                                     if (adapterView.getPositionForView(child) == position) {
