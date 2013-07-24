@@ -7,10 +7,6 @@
     <uses-sdk android:minSdkVersion="8" />
 
     <instrumentation
-        android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="com.example.demo" />
-
-    <instrumentation
         android:name="com.baidu.cafe.CafeTestRunner"
         android:targetPackage="com.example.demo" />
 
