@@ -824,3 +824,43 @@ assert() # $value
         exit 1
     fi
 }
+
+#
+# get apk certificate infomation from its classes.dex
+#
+# ret == 1 means failed 
+# ret == 0 means success
+#
+get_apk_certs() # $apk
+{
+    apk=$1
+    if [ -z "$apk" ];then
+cat << !HELP
+格式举例：X.509, CN=Jane Smith, OU=Java Software, O=Sun, L=cup, S=ca, C=us (jane)
+CN 名字
+OU 单位
+O  组织
+L  城市
+S  州（省）
+C  国家
+
+注意：这些列有可能在生成签名的时候没有填写，所以可能为空。
+
+s = signature was verified
+m = entry is listed in manifest
+k = at least one certificate was found in keystore
+!HELP
+        return 1
+    fi
+    info=`jarsigner -verify -verbose -certs $apk`
+    ret_get_apk_certs=$?
+    if [ $ret_get_apk_certs -ne 0 ];then
+        echo "$info"
+    else
+        echo "$info" | grep classes.dex -A 3
+    fi
+
+    return $ret_get_apk_certs
+}
+
+

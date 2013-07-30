@@ -1835,7 +1835,8 @@ public class ViewRecorder {
                     while (true) {
                         if ((e = pollMotionEventQueue()) != null) {
                             events.add(e);
-                            if (MotionEvent.ACTION_UP == e.action) {
+                            if (MotionEvent.ACTION_UP == e.action
+                                    || MotionEvent.ACTION_CANCEL == e.action) {
                                 isUp = true;
                                 isDown = false;
                                 break;
