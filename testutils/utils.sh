@@ -863,4 +863,42 @@ k = at least one certificate was found in keystore
     return $ret_get_apk_certs
 }
 
+#
+# convert all pngs to gif in current dir
+#
+# NEEDED: which convert
+#
+# NOTICE: gif_name must be short name without directory name 
+#
+png2gif() # $gif_name
+{
+    convert -delay 100 -loop 0 *.png $1.gif
+}
+
+#
+# convert gif to pngs under dir "pngs"
+#
+# NEEDED: which gif2png
+#
+# NOTICE: gif_name must be short name without directory name 
+#
+my_gif2png() # $gif_name
+{
+    gif_name=$1
+    gif_name_prefix=${gif_name%.gif*}
+
+    gif2png $gif_name
+
+    # change name
+    rm -rf pngs
+    mkdir -p pngs
+    mv $gif_name_prefix.p* pngs
+    cd pngs
+    ls *.p* | grep -v png | while read line
+do
+    new_name="$gif_name_prefix-${line##*p}.png"
+    echo "mv $line to $new_name"
+    mv $line "$new_name"
+done
+}
 
