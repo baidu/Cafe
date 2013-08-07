@@ -902,3 +902,27 @@ do
 done
 }
 
+#
+# $python_code must have a root dictionary named result
+#
+generate_json() # $filename $python_code
+{
+file_name=/tmp/`date +%s%N`.py
+cat>$file_name<<EOF
+#!/usr/bin/env python
+import json
+### json code ###
+$2
+### json code over ###
+interjson = json.dumps(result)
+rjson = None
+try:
+    rjson = open("$1",'w')
+    rjson.write("%s" % interjson)
+except IOError,e:
+    pass
+EOF
+echo "python $file_name"
+python $file_name
+}
+
