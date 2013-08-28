@@ -169,7 +169,7 @@ do
 			if [ ! -z "$HAS_DEVICE" ];then
                 cd $SRC/tests
                 cp ../out/Cafe.apk .
-                ./run_demo_test.sh $2 
+                ./run_demo_test.sh $2 "$3"
 			else
 				echo "There is no device to run testcase!"
 			fi

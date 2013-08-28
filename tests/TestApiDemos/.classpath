@@ -5,11 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ApiDemos"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry kind="lib" path="D:/adt-bundle-windows-x86-20130522/workspace/TestApiDemos/libs/cafe.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/D:/adt-bundle-windows-x86-20130522/workspace/TestApiDemos/libs/cafe_doc.jar!/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

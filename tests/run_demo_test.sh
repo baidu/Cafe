@@ -6,8 +6,9 @@ ANDROID_TOP=$_PWD/../..
 APK=""
 QUERY="100"
 
-compile()
+compile() # $keystore
 {
+    keystore="$1"
     cd $ANDROID_TOP
     . build/envsetup.sh
     cd $_PWD/$target
@@ -21,6 +22,14 @@ compile()
     fi
     apk=`cat .install | grep "Install:" | awk '{print $2}'`
     APK="$ANDROID_TOP/$apk"
+
+    if [ ! -z "$keystore" ];then
+        echo "jarsigner -verbose -keystore $keystore -signedjar $APK+_resigned $APK ${keystore##*/}"
+        jarsigner -verbose -keystore $keystore -signedjar $APK"_resigned" $APK ${keystore##*/}
+        echo "############# resign $APK with $keystore to $APK"_resigned
+        APK=$APK"_resigned"
+    fi
+
     rm -f .install
     mkdir -p $_PWD/out
     echo "$_PWD"
@@ -120,11 +129,13 @@ esac
 done
 
 target="$1"
-compile
+compile "$2"
 serial=`adb devices | grep -v List | grep device | awk -F " " '{print $1}'`
 ADB="adb -s $serial"
 $ADB install -r $_PWD/Cafe.apk
-$ADB install -r $APK
+get_package_name "$APK"
+$ADB uninstall $ret_get_package_name
+$ADB install $APK
 test_package=`aapt dump badging $APK | grep "package:" | awk -F "'" '{print $2}'`
 echo "$test_package"
 test_case="test_dump"
