@@ -24,9 +24,9 @@ compile() # $keystore
     APK="$ANDROID_TOP/$apk"
 
     if [ ! -z "$keystore" ];then
+        zip -d $APK META-INF/*
         echo "jarsigner -verbose -keystore $keystore -signedjar $APK+_resigned $APK ${keystore##*/}"
         jarsigner -verbose -keystore $keystore -signedjar $APK"_resigned" $APK ${keystore##*/}
-        echo "############# resign $APK with $keystore to $APK"_resigned
         APK=$APK"_resigned"
     fi
 
@@ -54,6 +54,7 @@ make_project()
 	# install
 	ADB="adb -s $serial"
 	$ADB uninstall $target_package
+    echo "$ADB install $target_apk"
 	$ADB install $target_apk&
 
 	# modify template project
