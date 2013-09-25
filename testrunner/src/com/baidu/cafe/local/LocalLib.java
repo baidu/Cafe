@@ -1874,8 +1874,10 @@ public class LocalLib extends Solo {
                 mTheLastClick = getViewCenter(targetViewInList);
                 sleep(1000);
                 int[] center = mTheLastClick;
-                print("click on " + center[0] + ", " + center[1]);
+                print("click list[" + adapterView + "] on " + center[0] + ", " + center[1]);
+                print("targetViewInList:" + targetViewInList);
                 clickOnScreen(center[0], center[1]);
+                targetViewInList.performClick();
             } catch (Exception e) {
                 e.printStackTrace();
             }

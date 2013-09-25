@@ -774,10 +774,16 @@ public class ViewRecorder {
             // adapterView.setOnItemSelectedListener(listener);
             // MenuItem.OnMenuItemClickListener
         }
-
-        if (view.isLongClickable()) {
-            handleOnLongClickListener(view);
-        }
+//        if (view.getClass().toString().equals("class com.uc.widget.EditText")) {
+//            View tmpView = view;
+//            while (!tmpView.getParent().getClass().equals("android.view.View")) {
+//                printLog("!!!" + tmpView.getClass());
+//                tmpView = (ViewGroup) tmpView.getParent();
+//            }
+//            printLog("#####");
+//        } else {
+//            printLog(view.getClass().toString());
+//        }
 
         if (view instanceof EditText) {
             hookEditText((EditText) view);
@@ -785,6 +791,9 @@ public class ViewRecorder {
             // handleOnClickListener can not replace handleOnTouchListener because reason below.
             // There are some views which have click listener and touch listener but only use touch listener.
             handleOnClickListener(view);
+            if (view.isLongClickable()) {
+                handleOnLongClickListener(view);
+            }
         }
 
         handleOnTouchListener(view);
@@ -884,13 +893,14 @@ public class ViewRecorder {
         String r = getRString(view);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String scroll = "";
-        if ("".equals(rString)) {
+        int index = local.getResIdIndex(view);
+
+        if ("".equals(rString) || -1 == index) {
             String familyString = getFamilyString(view);
             scroll = String.format("local.recordReplay.scrollListToLine(%s, \"%s\");",
                     absListViewState.firstVisibleItem, familyString);
         } else {
             String rStringSuffix = getRStringSuffix(view);
-            int index = local.getResIdIndex(view);
             scroll = String.format("local.recordReplay.scrollListToLine(%s, \"id/%s\", \"%s\");",
                     absListViewState.firstVisibleItem, rStringSuffix, index);
         }
@@ -1178,12 +1188,13 @@ public class ViewRecorder {
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String click = "";
-        if ("".equals(rString)) {
+        int index = local.getResIdIndex(v);
+
+        if ("".equals(rString) || -1 == index) {
             click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", false);//%s%s",
                     viewClass, familyString, "Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
-            int index = local.getResIdIndex(v);
             click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", false);//%s%s",
                     rStringSuffix, index, "Click On ", getFirstLine(comments));
         }
@@ -1424,15 +1435,15 @@ public class ViewRecorder {
         ClickEvent clickEvent = new ClickEvent(parent);
 
         String r = getRString(parent);
+        int index = local.getResIdIndex(parent);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String click = "";
-        if ("".equals(rString)) {
+        if ("".equals(rString) || -1 == index) {
             String familyString = getFamilyString(parent);
             click = String.format("local.recordReplay.clickInList(%s, \"%s\");", position,
                     familyString);
         } else {
             String rStringSuffix = getRStringSuffix(parent);
-            int index = local.getResIdIndex(parent);
             click = String.format("local.recordReplay.clickInList(%s, \"id/%s\", \"%s\");",
                     position, rStringSuffix, index);
         }
@@ -1586,13 +1597,13 @@ public class ViewRecorder {
         String rString = r.equals("") ? "" : "[" + r + "]";
         String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
         String click = "";
+        int index = local.getResIdIndex(v);
 
-        if ("".equals(rString)) {
+        if ("".equals(rString) || -1 == index) {
             click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", true);//%s%s",
                     viewClass, familyString, "Long Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
-            int index = local.getResIdIndex(v);
             click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", true);//%s%s",
                     rStringSuffix, index, "Long Click On ", getFirstLine(comments));
         }
@@ -1753,10 +1764,10 @@ public class ViewRecorder {
                 i += 2;
                 // printLog("" + event.proity + " " + nextEvent.proity);
                 if (event.priority > nextEvent.priority) {
-                    //printLog("event.proity > nextEvent.proity");
+                    printLog("priority ignore " + nextEvent);
                     newEvents.add(event);
                 } else if (event.priority < nextEvent.priority) {
-                    //printLog("event.proity < nextEvent.proity");
+                    printLog("priority ignore " + event);
                     newEvents.add(nextEvent);
                 } else {
                     printLog("event.proity == nextEvent.proity");
@@ -1834,6 +1845,9 @@ public class ViewRecorder {
                     long timeout = 0;
                     while (true) {
                         if ((e = pollMotionEventQueue()) != null) {
+                            if (MotionEvent.ACTION_CANCEL == e.action) {
+                                continue;
+                            }
                             events.add(e);
                             if (MotionEvent.ACTION_UP == e.action
                                     || MotionEvent.ACTION_CANCEL == e.action) {

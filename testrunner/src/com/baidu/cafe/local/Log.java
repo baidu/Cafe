@@ -127,7 +127,7 @@ public class Log {
     }
 
     public static String getThreadInfo() {
-        return getThreadInfo(3);
+        return getThreadInfo(4);
     }
 
     /**
