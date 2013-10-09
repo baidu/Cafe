@@ -16,38 +16,40 @@
 
 package com.baidu.cafe.local.record;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
@@ -55,27 +57,33 @@ import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 
-import com.baidu.cafe.CafeTestCase;
-import com.baidu.cafe.local.DESEncryption;
-import com.baidu.cafe.local.LocalLib;
-import com.baidu.cafe.local.Log;
+import com.baidu.cafe.utils.ReflectHelper;
 
 /**
+ * A single class transplaned from com.baidu.cafe.local.record.ViewRecorder
+ * which is not depended on com.baidu.cafe.local.Locallib.
+ * 
+ * Usage:
+ * 
+ * {
+ * 
+ * super.onCreate();
+ * 
+ * new ViewRecorderSDK(this).beginRecordCode();
+ * 
+ * }
+ * 
  * @author luxiaoyu01@baidu.com
- * @date 2012-11-8
+ * @date 2013-10-8
  * @version
  * @todo
  */
-public class ViewRecorder {
-    public final static boolean                      DEBUG                         = false;
-
+public class ViewRecorderSDK {
     private final static int                         MAX_SLEEP_TIME                = 20000;
     private final static int                         MIN_SLEEP_TIME                = 1000;
     private final static int                         MIN_STEP_COUNT                = 4;
     private final static boolean                     DEBUG_WEBVIEW                 = true;
-    private final static String                      REPLAY_CLASS_NAME             = "CafeReplay";
-    private final static String                      REPLAY_FILE_NAME              = REPLAY_CLASS_NAME
-                                                                                           + ".java";
+
     /**
      * For judging whether a view is an old one.
      * 
@@ -110,11 +118,6 @@ public class ViewRecorder {
      * For mapping keycode to keyname
      */
     private HashMap<Integer, String>                 mKeyCodeMap                   = new HashMap<Integer, String>();
-
-    /**
-     * For judging whether UI is static.
-     */
-    private ArrayList<View>                          mLastViews                    = new ArrayList<View>();
 
     /**
      * lock for OutputEventQueue
@@ -177,7 +180,10 @@ public class ViewRecorder {
 
     private HashMap<OnClickListener, Integer>        mOnClickListenerInvokeCounter = new HashMap<OnClickListener, Integer>();
     private HashMap<OnTouchListener, Integer>        mOnTouchListenerInvokeCounter = new HashMap<OnTouchListener, Integer>();
-
+    private HashMap<OnKeyListener, Integer>          mOnKeyListenerCounters        = new HashMap<OnKeyListener, Integer>();
+    private HashMap<OnScrollListener, Integer>       mOnScrollListenerCounters     = new HashMap<OnScrollListener, Integer>();
+    private HashMap<OnGroupClickListener, Integer>   mOnGroupClickListenerCounters = new HashMap<OnGroupClickListener, Integer>();
+    private HashMap<OnChildClickListener, Integer>   mOnChildClickListenerCounters = new HashMap<OnChildClickListener, Integer>();
     /**
      * Saving old listener for invoking when needed
      */
@@ -190,8 +196,6 @@ public class ViewRecorder {
     private HashMap<String, OnChildClickListener>    mOnChildClickListeners        = new HashMap<String, OnChildClickListener>();
     private HashMap<String, OnScrollListener>        mOnScrollListeners            = new HashMap<String, OnScrollListener>();
     private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners     = new HashMap<String, OnItemLongClickListener>();
-    private HashMap<String, OnItemSelectedListener>  mOnItemSelectedListeners      = new HashMap<String, OnItemSelectedListener>();
-    private LocalLib                                 local                         = null;
     private File                                     mRecord                       = null;
     private String                                   mPackageName                  = null;
     private String                                   mPath                         = null;
@@ -200,10 +204,60 @@ public class ViewRecorder {
     private boolean                                  mHasTextChange                = false;
     private long                                     mTheLastTextChangedTime       = System.currentTimeMillis();
     private int                                      mCurrentScrollState           = 0;
+    private Context                                  context                       = null;
 
-    public ViewRecorder(LocalLib local) {
-        this.local = local;
+    public ViewRecorderSDK(Context context) {
+        this.context = context;
         init();
+    }
+
+    public class OutputEvent {
+        final static int PRIORITY_DRAG              = 1;
+        final static int PRIORITY_KEY               = 2;
+        final static int PRIORITY_SCROLL            = 3;
+        final static int PRIORITY_CLICK             = 4;
+
+        final static int PRIORITY_WEBELEMENT_CLICK  = 10;
+        final static int PRIORITY_WEBELEMENT_CHANGE = 10;
+
+        /**
+         * NOTICE: This field can not be null!
+         */
+        public View      view                       = null;
+        public int       priority                   = 0;
+        protected String code                       = "";
+        protected String log                        = "";
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getLog() {
+            return log;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public void setLog(String log) {
+            this.log = log;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%s] %s", view, priority);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (null == o) {
+                return false;
+            }
+            OutputEvent target = (OutputEvent) o;
+            return this.view.equals(target.view) && this.priority == target.priority ? true : false;
+        }
+
     }
 
     class RecordMotionEvent {
@@ -322,173 +376,83 @@ public class ViewRecorder {
         }
     }
 
-    private String getFamilyString(View view) {
-        return local.recordReplay.getFamilyString(view);
+    private final static String CLASSNAME_DECORVIEW = "com.android.internal.policy.impl.PhoneWindow$DecorView";
+
+    private String getFamilyString(View v) {
+        View view = v;
+        String familyString = "";
+        while (view.getParent() instanceof ViewGroup) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            if (null == parent) {
+                printLog("null == parent at getFamilyString");
+                return rmTheLastChar(familyString);
+            }
+            if (Build.VERSION.SDK_INT >= 14
+                    && parent.getClass().getName().equals(CLASSNAME_DECORVIEW)) {
+            } else {
+                familyString += getChildIndex(parent, view) + "-";
+            }
+            view = parent;
+        }
+
+        return rmTheLastChar(familyString);
+    }
+
+    private int getChildIndex(ViewGroup parent, View child) {
+        int countInvisible = 0;
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            if (parent.getChildAt(i).equals(child)) {
+                return i - countInvisible;
+            }
+            if (parent.getChildAt(i).getVisibility() != View.VISIBLE) {
+                countInvisible++;
+            }
+        }
+        return -1;
+    }
+
+    private String rmTheLastChar(String str) {
+        return str.length() == 0 ? str : str.substring(0, str.length() - 1);
+    }
+
+    private String getViewText(View view) {
+        try {
+            Method method = view.getClass().getMethod("getText");
+            return (String) (method.invoke(view));
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // eat it
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (ClassCastException e) {
+            // eat it
+        }
+        return "";
     }
 
     private void print(String tag, String message) {
-        if (DEBUG) {
-            Log.i(tag, message);
-        } else {
-            Log.i(tag, DESEncryption.encryptStr(message));
-        }
+        Log.i(tag, message);
     }
 
     private void printLog(String message) {
         print("ViewRecorder", message);
     }
 
-    private void printLayout(View view) {
-        int[] xy = new int[2];
-        view.getLocationOnScreen(xy);
-        // local.getRIdNameByValue(packageName, value)
-        String msg = String.format("[][%s][%s][%s][%s,%s,%s,%s]", getFamilyString(view),
-                getViewString(view), local.getViewText(view), xy[0], xy[1], view.getWidth(),
-                view.getHeight());
-        print("ViewLayout", msg);
-    }
-
     private void printCode(String message) {
         print("RecorderCode", message);
-
-        String[] lines = message.split("\n");
-        String importLine = "";
-        String codeLine = "";
-        for (String line : lines) {
-            if (line.startsWith("import ")) {
-                importLine = line;
-            } else {
-                codeLine += line + "\n";
-            }
-        }
-        BufferedReader reader = null;
-        StringBuilder sb = new StringBuilder();
-        ArrayList<String> linesBeforNextImport = new ArrayList<String>();
-        try {
-            String line = null;
-            reader = new BufferedReader(new FileReader(mRecord));
-            while ((line = reader.readLine()) != null) {
-                linesBeforNextImport.add(line);
-                // add import line
-                if (!importLine.equals("") && line.contains("next import")
-                        && !linesBeforNextImport.contains(importLine)) {
-                    // sb.append(importLine + "\n");
-                    // sb.append("// next import" + "\n");
-                } else if (line.contains("next line")) {// add code line
-                    sb.append(formatCode(codeLine));
-                    sb.append(formatCode("// next line"));
-                } else {
-                    sb.append(line + "\n");
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                writeToFile(sb.toString());
-            } else {
-                printLog(String.format("read [%s] failed", mRecord.getPath()));
-            }
-        }
-    }
-
-    private void writeToFile(String line) {
-        if (null == line) {
-            return;
-        }
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(mRecord));
-            writer.write(line);
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    /**
-     * For indent code line
-     */
-    private String formatCode(String code) {
-        String[] lines = code.split("\n");
-        String formatString = "";
-        String prefix = "        ";
-        for (String line : lines) {
-            formatString += prefix + line + "\n";
-        }
-        return formatString;
-    }
-
-    private void sleep(long time) {
-        try {
-            Thread.sleep(time);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void init() {
-        DESEncryption.setKey("com.baidu.cafe.local");
-        mPackageName = local.getCurrentActivity().getPackageName();
+        setWindowManagerString();
+        mPackageName = context.getPackageName();
+        //((Activity)context).getWindowManager();
         initKeyTable();
-        mPath = CafeTestCase.mTargetFilesDir;
-
-        // init template
-        mRecord = new File(mPath + "/" + REPLAY_FILE_NAME);
-        if (mRecord.exists()) {
-            mRecord.delete();
-        }
-        String code = String.format(template, CafeTestCase.mActivityClass.getName(), mPackageName);
-        writeToFile(code);
-        LocalLib.executeOnDevice("chmod 777 " + mPath + "/" + REPLAY_FILE_NAME, "/", 200);
     }
-
-    final String template = "package com.example.demo.test;\n" + "\n"
-                                  + "import android.view.KeyEvent;\n"
-                                  + "import com.baidu.cafe.CafeTestCase;\n" + "// next import\n"
-                                  + "\n" + "public class "
-                                  + REPLAY_CLASS_NAME
-                                  + " extends CafeTestCase {\n"
-                                  + "    private static Class<?>     launcherActivityClass;\n"
-                                  + "    static {\n"
-                                  + "        try {\n"
-                                  + "            launcherActivityClass = Class.forName(\"%s\");\n"
-                                  + "        } catch (ClassNotFoundException e) {\n"
-                                  + "        }\n"
-                                  + "    }\n"
-                                  + "\n"
-                                  + "    public "
-                                  + REPLAY_CLASS_NAME
-                                  + "() {\n"
-                                  + "        super(\"%s\", launcherActivityClass);\n"
-                                  + "    }\n"
-                                  + "\n"
-                                  + "    @Override\n"
-                                  + "    protected void setUp() throws Exception{\n"
-                                  + "        super.setUp();\n"
-                                  + "    }\n"
-                                  + "\n"
-                                  + "    @Override\n"
-                                  + "    protected void tearDown() throws Exception{\n"
-                                  + "        super.tearDown();\n"
-                                  + "    }\n"
-                                  + "\n"
-                                  + "    public void testRecorded() {\n"
-                                  + "        // next line\n"
-                                  + "        local.sleep(3000);\n" + "    }\n" + "\n" + "}\n";
 
     /**
      * Add listeners on all views for generating cafe code automatically
@@ -520,18 +484,14 @@ public class ViewRecorder {
         handleOutputEventQueue();
 
         mLastEventTime = System.currentTimeMillis();
-        local.sleep(2000);// waiting for monitor working
         printLog("ViewRecorder is ready to work.");
     }
 
-    private ArrayList<View> getCurrentViewsFromAllDecorViews() {
-        ArrayList<View> views = new ArrayList<View>();
-        for (View decorView : local.getWindowDecorViews()) {
-            for (View view : local.getCurrentViews(View.class, decorView)) {
-                views.add(view);
-            }
+    private void sleep(int time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException ignored) {
         }
-        return views;
     }
 
     private void monitorCurrentActivity() {
@@ -551,8 +511,317 @@ public class ViewRecorder {
      * @return new activity class
      */
     private void updateCurrentActivity() {
-        Activity activity = local.getCurrentActivity();
-        setOnTouchListenerOnDecorView(activity);
+        // Activity activity = local.getCurrentActivity();
+        setOnTouchListenerOnDecorView();
+    }
+
+    private static Class<?> windowManager;
+    static {
+        try {
+            String windowManagerClassName;
+            if (android.os.Build.VERSION.SDK_INT >= 17) {
+                windowManagerClassName = "android.view.WindowManagerGlobal";
+            } else {
+                windowManagerClassName = "android.view.WindowManagerImpl";
+            }
+            windowManager = Class.forName(windowManagerClassName);
+
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String          windowManagerString;
+
+    /**
+     * Sets the window manager string.
+     */
+    private void setWindowManagerString() {
+
+        if (android.os.Build.VERSION.SDK_INT >= 17) {
+            windowManagerString = "sDefaultWindowManager";
+
+        } else if (android.os.Build.VERSION.SDK_INT >= 13) {
+            windowManagerString = "sWindowManager";
+
+        } else {
+            windowManagerString = "mWindowManager";
+        }
+    }
+
+    private View[] getWindowDecorViews() {
+        Field viewsField;
+        Field instanceField;
+        try {
+            viewsField = windowManager.getDeclaredField("mViews");
+            instanceField = windowManager.getDeclaredField(windowManagerString);
+            viewsField.setAccessible(true);
+            instanceField.setAccessible(true);
+            Object instance = instanceField.get(null);
+            return (View[]) viewsField.get(instance);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private ArrayList<View> getViews() {
+        try {
+            return getViews(null, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Extracts all {@code View}s located in the currently active
+     * {@code Activity}, recursively.
+     * 
+     * @param parent
+     *            the {@code View} whose children should be returned, or
+     *            {@code null} for all
+     * @param onlySufficientlyVisible
+     *            if only sufficiently visible views should be returned
+     * @return all {@code View}s located in the currently active
+     *         {@code Activity}, never {@code null}
+     */
+
+    private ArrayList<View> getViews(View parent, boolean onlySufficientlyVisible) {
+        final ArrayList<View> views = new ArrayList<View>();
+        final View parentToUse;
+
+        if (parent == null) {
+            return getAllViews(onlySufficientlyVisible);
+        } else {
+            parentToUse = parent;
+
+            views.add(parentToUse);
+
+            if (parentToUse instanceof ViewGroup) {
+                addChildren(views, (ViewGroup) parentToUse, onlySufficientlyVisible);
+            }
+        }
+        return views;
+    }
+
+    /**
+     * Adds all children of {@code viewGroup} (recursively) into {@code views}.
+     * 
+     * @param views
+     *            an {@code ArrayList} of {@code View}s
+     * @param viewGroup
+     *            the {@code ViewGroup} to extract children from
+     * @param onlySufficientlyVisible
+     *            if only sufficiently visible views should be returned
+     */
+
+    private void addChildren(ArrayList<View> views, ViewGroup viewGroup,
+            boolean onlySufficientlyVisible) {
+        if (viewGroup != null) {
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                final View child = viewGroup.getChildAt(i);
+
+                if (onlySufficientlyVisible && isViewSufficientlyShown(child))
+                    views.add(child);
+
+                else if (!onlySufficientlyVisible)
+                    views.add(child);
+
+                if (child instanceof ViewGroup) {
+                    addChildren(views, (ViewGroup) child, onlySufficientlyVisible);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns true if the view is sufficiently shown
+     * 
+     * @param view
+     *            the view to check
+     * @return true if the view is sufficiently shown
+     */
+
+    private final boolean isViewSufficientlyShown(View view) {
+        final int[] xyView = new int[2];
+        final int[] xyParent = new int[2];
+
+        if (view == null)
+            return false;
+
+        final float viewHeight = view.getHeight();
+        final View parent = getScrollOrListParent(view, 1);
+        view.getLocationOnScreen(xyView);
+
+        if (parent == null) {
+            xyParent[1] = 0;
+        } else {
+            parent.getLocationOnScreen(xyParent);
+        }
+
+        if (xyView[1] + (viewHeight / 2.0f) > getScrollListWindowHeight(view))
+            return false;
+
+        else if (xyView[1] + (viewHeight / 2.0f) < xyParent[1])
+            return false;
+
+        return true;
+    }
+
+    /**
+     * Returns the height of the scroll or list view parent
+     * 
+     * @param view
+     *            the view who's parents height should be returned
+     * @return the height of the scroll or list view parent
+     */
+    @SuppressWarnings("deprecation")
+    private float getScrollListWindowHeight(View view) {
+        final int[] xyParent = new int[2];
+        View parent = getScrollOrListParent(view, 1);
+        final float windowHeight;
+        if (parent == null) {
+            windowHeight = ((Activity) context).getWindowManager().getDefaultDisplay().getHeight();
+        } else {
+            parent.getLocationOnScreen(xyParent);
+            windowHeight = xyParent[1] + parent.getHeight();
+        }
+        parent = null;
+        return windowHeight;
+    }
+
+    /**
+     * Returns the scroll or list parent view
+     * 
+     * @param view
+     *            the view who's parent should be returned
+     * @return the parent scroll view, list view or null
+     */
+
+    private View getScrollOrListParent(View view, int depth) {
+        depth++;
+        if (!(view instanceof android.widget.AbsListView)
+                && !(view instanceof android.widget.ScrollView) && !(view instanceof WebView)) {
+            try {
+                return getScrollOrListParent((View) view.getParent(), depth);
+            } catch (Exception e) {
+                return null;
+            }
+        } else {
+            return view;
+        }
+    }
+
+    private final View[] getNonDecorViews(View[] views) {
+        View[] decorViews = null;
+
+        if (views != null) {
+            decorViews = new View[views.length];
+
+            int i = 0;
+            View view;
+
+            for (int j = 0; j < views.length; j++) {
+                view = views[j];
+                if (view != null
+                        && !(view.getClass().getName()
+                                .equals("com.android.internal.policy.impl.PhoneWindow$DecorView"))) {
+                    decorViews[i] = view;
+                    i++;
+                }
+            }
+        }
+        return decorViews;
+    }
+
+    private ArrayList<View> getAllViews(boolean onlySufficientlyVisible) {
+        final View[] views = getWindowDecorViews();
+        final ArrayList<View> allViews = new ArrayList<View>();
+        final View[] nonDecorViews = getNonDecorViews(views);
+        View view = null;
+
+        if (nonDecorViews != null) {
+            for (int i = 0; i < nonDecorViews.length; i++) {
+                view = nonDecorViews[i];
+                try {
+                    addChildren(allViews, (ViewGroup) view, onlySufficientlyVisible);
+                } catch (Exception ignored) {
+                }
+                if (view != null)
+                    allViews.add(view);
+            }
+        }
+
+        if (views != null && views.length > 0) {
+            view = getRecentDecorView(views);
+            try {
+                addChildren(allViews, (ViewGroup) view, onlySufficientlyVisible);
+            } catch (Exception ignored) {
+            }
+
+            if (view != null)
+                allViews.add(view);
+        }
+
+        return allViews;
+    }
+
+    /**
+     * Returns the most recent DecorView
+     * 
+     * @param views
+     *            the views to check
+     * @return the most recent DecorView
+     */
+
+    private final View getRecentDecorView(View[] views) {
+        final View[] decorViews = new View[views.length];
+        int i = 0;
+        View view;
+
+        for (int j = 0; j < views.length; j++) {
+            view = views[j];
+            if (view != null
+                    && view.getClass().getName()
+                            .equals("com.android.internal.policy.impl.PhoneWindow$DecorView")) {
+                decorViews[i] = view;
+                i++;
+            }
+        }
+        return getRecentContainer(decorViews);
+    }
+
+    /**
+     * Returns the most recent view container
+     * 
+     * @param views
+     *            the views to check
+     * @return the most recent view container
+     */
+
+    private final View getRecentContainer(View[] views) {
+        View container = null;
+        long drawingTime = 0;
+        View view;
+
+        for (int i = 0; i < views.length; i++) {
+            view = views[i];
+            if (view != null && view.isShown() && view.hasWindowFocus()
+                    && view.getDrawingTime() > drawingTime) {
+                container = view;
+                drawingTime = view.getDrawingTime();
+            }
+        }
+        return container;
     }
 
     /**
@@ -561,36 +830,59 @@ public class ViewRecorder {
      * touch event by return true, events follow-up will not be dispatched to
      * views including decorView.
      */
-    private void setOnTouchListenerOnDecorView(final Activity activity) {
-        View[] views = local.getWindowDecorViews();
-        if (null == views) {
-            return;
-        }
-
-        for (View view : views) {
-            handleOnTouchListener(view);
-            /*
-            OnTouchListener onTouchListener = (OnTouchListener) getListener(view,
-                    "mOnTouchListener");
-            if (null == onTouchListener) {
-                view.setOnTouchListener(new OnTouchListener() {
-
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        printLog("onTouch:" + event);
-                        addEvent(v, event);
-                        // return activity.onTouchEvent(event);
-                        return false;
-                    }
-                });
+    private void setOnTouchListenerOnDecorView() {
+        View[] views = getWindowDecorViews();
+        if (views != null) {
+            for (View view : views) {
+                handleOnTouchListener(view);
             }
-            */
+        } else {
+            printLog("setOnTouchListenerOnDecorView NULL pointer.");
         }
         // View decorView = activity.getWindow().getDecorView();
     }
 
+    private float getDisplayX() {
+        DisplayMetrics dm = new DisplayMetrics();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
+        //mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+        return dm.widthPixels;
+    }
+
+    private float getDisplayY() {
+        DisplayMetrics dm = new DisplayMetrics();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
+        return dm.heightPixels;
+    }
+
+    private boolean isInScreen(View view) {
+        int[] location = new int[2];
+        view.getLocationOnScreen(location);
+        int leftX = location[0];
+        int righX = location[0] + view.getWidth();
+        int leftY = location[1];
+        int righY = location[1] + view.getHeight();
+        return righX < 0 || leftX > getDisplayX() || righY < 0 || leftY > getDisplayY() ? false
+                : true;
+    }
+
+    private boolean isSize0(final View view) {
+        return view.getHeight() == 0 || view.getWidth() == 0;
+    }
+
+    private <T extends View> ArrayList<T> removeInvisibleViews(ArrayList<T> viewList) {
+        ArrayList<T> tmpViewList = new ArrayList<T>(viewList.size());
+        for (T view : viewList) {
+            if (view != null && view.isShown() && isInScreen(view) && !isSize0(view)) {
+                tmpViewList.add(view);
+            }
+        }
+        return tmpViewList;
+    }
+
     private ArrayList<View> getTargetViews() {
-        ArrayList<View> views = local.removeInvisibleViews(local.getViews(View.class, false));
+        // View
+        ArrayList<View> views = removeInvisibleViews(getViews(null, false));// 获得可见区域的views
         // ArrayList<View> views = local.getViews();
         ArrayList<View> targetViews = new ArrayList<View>();
 
@@ -601,11 +893,10 @@ public class ViewRecorder {
             }
             boolean isOld = mAllViewPosition.containsKey(getViewID(view));
             // refresh view layout
-            if (hasChange(view)) {
-                saveView(view);
+            if (hasChange(view)) {// 如果views有所改变，保存修�?                saveView(view);
             }
 
-            if (!isOld) {
+            if (!isOld) {// 新增的view�?��保存
                 // save new view
                 saveView(view);
                 targetViews.add(view);
@@ -618,50 +909,12 @@ public class ViewRecorder {
             }
         }
 
-        flushWhenStatic(local.removeInvisibleViews(views));
-
         return targetViews;
-    }
-
-    private void flushWhenStatic(final ArrayList<View> views) {
-        if (mLastViews.size() == views.size() && !hasChangedView(views)) {
-            return;
-        }
-
-        // It's too slow to be at main thread.
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                flushViewLayout(views);
-            }
-        }, "flushViewLayout").start();
-        mLastViews.clear();
-        mLastViews.addAll(views);
-    }
-
-    private boolean hasChangedView(ArrayList<View> views) {
-        for (View view : views) {
-            if (hasChange(view)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * For mtc client
-     */
-    private void flushViewLayout(ArrayList<View> views) {
-        print("ViewLayout", String.format("[]ViewLayout refreshed."));
-        for (View view : views) {
-            printLayout(view);
-        }
     }
 
     private void saveView(View view) {
         if (null == view) {
-            printLog("null == view " + Log.getThreadInfo());
+            printLog("null == view ");
             return;
         }
         String viewID = getViewID(view);
@@ -684,25 +937,50 @@ public class ViewRecorder {
         return xy[0] != oldXy[0] || xy[1] != oldXy[1] ? true : false;
     }
 
+    private View getFocusView(ArrayList<View> views) {
+        for (View view : views) {
+            if (view.isFocused()) {
+                return view;
+            }
+        }
+        return null;
+    }
+
     private View getCurrentFocusView() {
-        ArrayList<View> views = local.getViews();/*onlySufficientlyVisible == false*/
-        return local.getFocusView(views);
+        ArrayList<View> views = getViews();
+        return getFocusView(views);
+    }
+
+    private View getRecentDecorView() {
+        View[] views = getWindowDecorViews();
+
+        if (null == views || 0 == views.length) {
+            printLog("0 == views.length at getRecentDecorView");
+            return null;
+        }
+
+        View recentDecorview = getRecentDecorView(views);
+        if (null == recentDecorview) {
+            // print("null == rview; use views[0]: " + views[0]);
+            recentDecorview = views[0];
+        }
+        return recentDecorview;
     }
 
     private void setDefaultFocusView() {
         // It's too slow..
         // if (local.getCurrentActivity().getCurrentFocus() != null) {
-        //     return;
+        // return;
         // }
         if (getCurrentFocusView() != null) {
             return;
         }
-        View view = local.getRecentDecorView();
+        View view = getRecentDecorView();
         if (null == view) {
             printLog("null == view of setDefaultFocusView");
             return;
         }
-        boolean hasFocus = local.requestFocus(view);
+        // boolean hasFocus = local.requestFocus(view);
         // printLog(view + " hasFocus: " + hasFocus);
         String viewID = getViewID(view);
         if (!mAllViewPosition.containsKey(viewID)) {
@@ -740,16 +1018,124 @@ public class ViewRecorder {
         return viewClass;
     }
 
-    private Object getListener(View view, String listenerName) {
-        return local.getListener(view, getClassByListenerName(listenerName), listenerName);
+    /**
+     * Get listener from view. e.g. (OnClickListener) getListener(view,
+     * "mOnClickListener"); means get click listener. Listener is a private
+     * property of a view, that's why this function is written.
+     * 
+     * @param view
+     *            target view
+     * @param targetClass
+     *            the class which fieldName belong to
+     * @param fieldName
+     *            target listener. e.g. mOnClickListener, mOnLongClickListener,
+     *            mOnTouchListener, mOnKeyListener
+     * @return listener object; null means no listeners has been found
+     */
+    private Object getListener(View view, Class<?> targetClass, String fieldName) {
+        int level = countLevelFromViewToFather(view, targetClass);
+        if (-1 == level) {
+            return null;
+        }
+
+        try {
+            if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API Level 14: Android 4.0
+                Object mListenerInfo = ReflectHelper.getField(view, targetClass.getName(),
+                        "mListenerInfo");
+                return null == mListenerInfo ? null : ReflectHelper.getField(mListenerInfo, null,
+                        fieldName);
+            } else {
+                return ReflectHelper.getField(view, targetClass.getName(), fieldName);
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            // eat it
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public LocalLib getLocalLib() {
-        return local;
+    /**
+     * find parent until parent is father or java.lang.Object(to the end)
+     * 
+     * @param view
+     *            target view
+     * @param father
+     *            target father
+     * @return positive means level from father; -1 means not found
+     */
+    private int countLevelFromViewToFather(View view, Class<?> father) {
+        if (null == view) {
+            return -1;
+        }
+        int level = 0;
+        Class<?> originalClass = view.getClass();
+        // find its parent
+        while (true) {
+            if (originalClass.equals(Object.class)) {
+                return -1;
+            } else if (originalClass.equals(father)) {
+                return level;
+            } else {
+                level++;
+                originalClass = originalClass.getSuperclass();
+            }
+        }
+    }
+
+    private Object getListener(View view, String listenerName) {
+        return getListener(view, getClassByListenerName(listenerName), listenerName);
     }
 
     private void setListener(View view, String listenerName, Object value) {
-        local.setListener(view, getClassByListenerName(listenerName), listenerName, value);
+        setListener(view, getClassByListenerName(listenerName), listenerName, value);
+    }
+
+    /**
+     * This method is used to replace listener.setOnListener().
+     * listener.setOnListener() is probably overrided by application, so its
+     * behavior can not be expected.
+     * 
+     * @param view
+     * @param targetClass
+     * @param fieldName
+     * @param value
+     */
+    private void setListener(View view, Class<?> targetClass, String fieldName, Object value) {
+        int level = countLevelFromViewToFather(view, targetClass);
+        if (-1 == level) {
+            return;
+        }
+
+        try {
+            if (!(view instanceof AdapterView) && Build.VERSION.SDK_INT > 14) {// API
+                // Level:
+                // 14.
+                // Android
+                // 4.0
+                Object mListenerInfo = ReflectHelper.getField(view, targetClass.getName(),
+                        "mListenerInfo");
+                if (null == mListenerInfo) {
+                    return;
+                }
+                ReflectHelper.setField(mListenerInfo, null, fieldName, value);
+            } else {
+                ReflectHelper.setField(view, targetClass.getName(), fieldName, value);
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            // eat it
+            // e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -762,9 +1148,10 @@ public class ViewRecorder {
             return;
         }
 
-        if (view instanceof WebView && DEBUG_WEBVIEW) {
-            new WebElementRecorder(this).handleWebView((WebView) view);
-        }
+        /*
+         * if (view instanceof WebView && DEBUG_WEBVIEW) { new
+         * WebElementRecorder(this).handleWebView((WebView) view); }
+         */
 
         // handle list
         if (view instanceof AdapterView) {
@@ -776,31 +1163,24 @@ public class ViewRecorder {
             if (view instanceof AbsListView) {
                 handleOnScrollListener((AbsListView) view);
             }
-            //            view.isLongClickable()
+            // view.isLongClickable()
             handleOnItemLongClickListener((AdapterView<?>) view);
             // adapterView.setOnItemSelectedListener(listener);
             // MenuItem.OnMenuItemClickListener
         }
-        //        if (view.getClass().toString().equals("class com.uc.widget.EditText")) {
-        //            View tmpView = view;
-        //            while (!tmpView.getParent().getClass().equals("android.view.View")) {
-        //                printLog("!!!" + tmpView.getClass());
-        //                tmpView = (ViewGroup) tmpView.getParent();
-        //            }
-        //            printLog("#####");
-        //        } else {
-        //            printLog(view.getClass().toString());
-        //        }
+
+        if (view.isLongClickable()) {
+            handleOnLongClickListener(view);
+        }
 
         if (view instanceof EditText) {
             hookEditText((EditText) view);
         } else {
-            // handleOnClickListener can not replace handleOnTouchListener because reason below.
-            // There are some views which have click listener and touch listener but only use touch listener.
+            // handleOnClickListener can not replace handleOnTouchListener
+            // because reason below.
+            // There are some views which have click listener and touch listener
+            // but only use touch listener.
             handleOnClickListener(view);
-            if (view.isLongClickable()) {
-                handleOnLongClickListener(view);
-            }
         }
 
         handleOnTouchListener(view);
@@ -877,9 +1257,9 @@ public class ViewRecorder {
         absListViewState.totalItemCount = totalItemCount;
 
         if (firstVisibleItem + visibleItemCount == totalItemCount && firstVisibleItem != 0) {
-            //printLog("firstVisibleItem:" + firstVisibleItem);
-            //printLog("visibleItemCount:" + visibleItemCount);
-            //printLog("totalItemCount:" + totalItemCount);
+            // printLog("firstVisibleItem:" + firstVisibleItem);
+            // printLog("visibleItemCount:" + visibleItemCount);
+            // printLog("totalItemCount:" + totalItemCount);
             outputAScroll(view);
         }
     }
@@ -900,14 +1280,14 @@ public class ViewRecorder {
         String r = getRString(view);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String scroll = "";
-        int index = local.getResIdIndex(view);
-
-        if ("".equals(rString) || -1 == index) {
+        if ("".equals(rString)) {
             String familyString = getFamilyString(view);
             scroll = String.format("local.recordReplay.scrollListToLine(%s, \"%s\");",
                     absListViewState.firstVisibleItem, familyString);
         } else {
             String rStringSuffix = getRStringSuffix(view);
+            //int index = getResIdIndex(view);
+            int index = 0;
             scroll = String.format("local.recordReplay.scrollListToLine(%s, \"id/%s\", \"%s\");",
                     absListViewState.firstVisibleItem, rStringSuffix, index);
         }
@@ -923,7 +1303,8 @@ public class ViewRecorder {
 
         // save old listener
         mOnScrollListeners.put(getViewID(absListView), onScrollListener);
-        //        mOnScrollListeners.put(String.valueOf(absListView.hashCode()), onScrollListener);
+        // mOnScrollListeners.put(String.valueOf(absListView.hashCode()),
+        // onScrollListener);
 
         // set hook listener
         final OnScrollListener onScrollListenernew = new OnScrollListener() {
@@ -942,7 +1323,7 @@ public class ViewRecorder {
                     }
                     onScrollListener.onScrollStateChanged(view, scrollState);
                 } else {
-                    printLog("onScrollListener == null " + Log.getThreadInfo());
+                    printLog("onScrollListener == null ");
                 }
             }
 
@@ -963,14 +1344,12 @@ public class ViewRecorder {
                     onScrollListener.onScroll(view, firstVisibleItem, visibleItemCount,
                             totalItemCount);
                 } else {
-                    printLog("onScrollListener == null " + Log.getThreadInfo());
+                    printLog("onScrollListener == null ");
                 }
             }
         };
 
-        local.runOnMainSync(new Runnable() {
-
-            @Override
+        absListView.post(new Runnable() {
             public void run() {
                 absListView.setOnScrollListener(onScrollListenernew);
             }
@@ -1155,9 +1534,11 @@ public class ViewRecorder {
         // printLog(String.format("hookClickListener [%s(%s)]", view, local.getViewText(view)));
 
         // save old listener
-        mOnClickListeners.put(getViewID(view), onClickListener);
+        OnClickListener originListener = onClickListener;
+        //should use originListener = kryo.copy(onClickListener);
+        mOnClickListeners.put(getViewID(view), originListener);
 
-        local.runOnMainSync(new Runnable() {
+        view.post(new Runnable() {
 
             @Override
             public void run() {
@@ -1171,7 +1552,6 @@ public class ViewRecorder {
                         boolean shouldInvokeOrigin = false;
                         int counter = mOnClickListenerInvokeCounter.get(onClickListener);
                         mOnClickListenerInvokeCounter.put(onClickListener, ++counter);
-
                         if (counter < 1) {
                             setOnClick(v);
                         } else {
@@ -1207,8 +1587,8 @@ public class ViewRecorder {
     }
 
     private void setOnClick(View v) {
-        if (local.isSize0(v)) {
-            printLog(v + " is size 0 " + Log.getThreadInfo());
+        if (isSize0(v)) {
+            printLog(v + " is size 0 ");
             invokeOriginOnClickListener(v);
             return;
         }
@@ -1219,15 +1599,15 @@ public class ViewRecorder {
         String familyString = getFamilyString(v);
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
-        String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
+        String comments = String.format("[%s]%s[%s] ", v, rString, getViewText(v));
         String click = "";
-        int index = local.getResIdIndex(v);
-
-        if ("".equals(rString) || -1 == index) {
+        if ("".equals(rString)) {
             click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", false);//%s%s",
                     viewClass, familyString, "Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
+            //int index = local.getResIdIndex(v);
+            int index = 0;
             click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", false);//%s%s",
                     rStringSuffix, index, "Click On ", getFirstLine(comments));
         }
@@ -1240,8 +1620,8 @@ public class ViewRecorder {
     private void invokeOriginOnClickListener(View v) {
         OnClickListener onClickListener = mOnClickListeners.get(getViewID(v));
         OnClickListener onClickListenerHooked = (OnClickListener) getListener(v, "mOnClickListener");
+
         if (onClickListener != null) {
-            // TODO It's a bug. It can not be fixed by below.
             if (onClickListener.equals(onClickListenerHooked)) {
                 printLog("onClickListener == onClickListenerHooked!!!");
                 return;
@@ -1276,8 +1656,8 @@ public class ViewRecorder {
         }
 
         try {
-            String rString = local.getCurrentActivity().getResources()
-                    .getResourceName(view.getId());
+
+            String rString = context.getResources().getResourceName(view.getId());
             return rString.substring(rString.lastIndexOf("/") + 1, rString.length());
         } catch (Exception e) {
             // eat it because some view has no res id
@@ -1292,7 +1672,7 @@ public class ViewRecorder {
 
             @Override
             public void run() {
-                local.sleep(300);
+                sleep(300);
                 mLastEventTime = System.currentTimeMillis();
             }
         }, "update mLastEventTime lately").start();
@@ -1325,7 +1705,7 @@ public class ViewRecorder {
                 printLog("onTextChanged: " + text + " getVisibility:" + editText + " "
                         + editText.getVisibility());
                 mTheLastTextChangedTime = System.currentTimeMillis();
-                mCurrentEditTextIndex = local.getCurrentViewIndex(editText);
+                mCurrentEditTextIndex = getCurrentViewIndex(editText);
                 mEditTextLastText.put(getViewID(editText), text);
                 mCurrentEditTextString = text;
                 mHasTextChange = true;
@@ -1344,6 +1724,66 @@ public class ViewRecorder {
         mAllEditTexts.add(editText);
     }
 
+    /**
+     * get view index by its class at current activity
+     * 
+     * @param view
+     * @return -1 means not found;otherwise is then index of view
+     */
+    private int getCurrentViewIndex(View view) {
+        if (null == view) {
+            return -1;
+        }
+
+        ArrayList<? extends View> views = removeInvisibleViews(getCurrentViews(view.getClass()));
+        for (int i = 0; i < views.size(); i++) {
+            if (views.get(i).equals(view)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns an {@code ArrayList} of {@code View}s of the specified
+     * {@code Class} located in the current {@code Activity}.
+     * 
+     * @param classToFilterBy
+     *            return all instances of this class, e.g. {@code Button.class}
+     *            or {@code GridView.class}
+     * @return an {@code ArrayList} of {@code View}s of the specified
+     *         {@code Class} located in the current {@code Activity}
+     */
+
+    private <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy) {
+        return getCurrentViews(classToFilterBy, null);
+    }
+
+    /**
+     * Returns an {@code ArrayList} of {@code View}s of the specified
+     * {@code Class} located under the specified {@code parent}.
+     * 
+     * @param classToFilterBy
+     *            return all instances of this class, e.g. {@code Button.class}
+     *            or {@code GridView.class}
+     * @param parent
+     *            the parent {@code View} for where to start the traversal
+     * @return an {@code ArrayList} of {@code View}s of the specified
+     *         {@code Class} located under the specified {@code parent}
+     */
+
+    private <T extends View> ArrayList<T> getCurrentViews(Class<T> classToFilterBy, View parent) {
+        ArrayList<T> filteredViews = new ArrayList<T>();
+        List<View> allViews = getViews(parent, true);
+        for (View view : allViews) {
+            if (view != null && classToFilterBy.isAssignableFrom(view.getClass())) {
+                filteredViews.add(classToFilterBy.cast(view));
+            }
+        }
+        allViews = null;
+        return filteredViews;
+    }
+
     private void handleOnTouchListener(View view) {
         OnTouchListener onTouchListener = (OnTouchListener) getListener(view, "mOnTouchListener");
 
@@ -1355,6 +1795,7 @@ public class ViewRecorder {
         if (null != onTouchListener) {
             hookOnTouchListener(view, onTouchListener);
         } else {
+            //	mOnClickListenerCounters.put(onTouchListener,0);
             // printLog("setOnTouchListener [" + view + "]");
             OnTouchListener onTouchListenerHooked = new OnTouchListener() {
 
@@ -1425,7 +1866,7 @@ public class ViewRecorder {
     }
 
     private void addEvent(View v, MotionEvent event) {
-        //printLog(v + " " + event);
+        // printLog(v + " " + event);
         if (!offerMotionEventQueue(new RecordMotionEvent(v, event.getAction(), event.getRawX(),
                 event.getRawY(), SystemClock.currentThreadTimeMillis()))) {
             printLog("Add to mMotionEventQueue Failed! view:" + v + "\t" + event.toString()
@@ -1476,25 +1917,27 @@ public class ViewRecorder {
      * @param id
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        //use center of item 
-        //        int[] center = LocalLib.getViewCenter(view);
-        //        DragEvent dragEvent = new DragEvent(view);
-        //        dragEvent.setCode(getDragCode(center[0], center[0], center[1], center[1], MIN_STEP_COUNT));
-        //        dragEvent.setLog("genernated by setOnItemClick");
-        //        offerOutputEventQueue(dragEvent);
+        // use center of item
+        // int[] center = LocalLib.getViewCenter(view);
+        // DragEvent dragEvent = new DragEvent(view);
+        // dragEvent.setCode(getDragCode(center[0], center[0], center[1],
+        // center[1], MIN_STEP_COUNT));
+        // dragEvent.setLog("genernated by setOnItemClick");
+        // offerOutputEventQueue(dragEvent);
 
         ClickEvent clickEvent = new ClickEvent(parent);
 
         String r = getRString(parent);
-        int index = local.getResIdIndex(parent);
         String rString = r.equals("") ? "" : "[" + r + "]";
         String click = "";
-        if ("".equals(rString) || -1 == index) {
+        if ("".equals(rString)) {
             String familyString = getFamilyString(parent);
             click = String.format("local.recordReplay.clickInList(%s, \"%s\");", position,
                     familyString);
         } else {
             String rStringSuffix = getRStringSuffix(parent);
+            //int index = local.getResIdIndex(parent);
+            int index = 0;
             click = String.format("local.recordReplay.clickInList(%s, \"id/%s\", \"%s\");",
                     position, rStringSuffix, index);
         }
@@ -1516,15 +1959,15 @@ public class ViewRecorder {
             onItemClickListener.onItemClick(parent, view, position, id);
         } else {
             printLog("onItemClickListener == null");
-            //parent.performItemClick(view, position, id);
+            // parent.performItemClick(view, position, id);
         }
     }
 
     private void handleOnItemLongClickListener(AdapterView<?> view) {
-        //        if (local.isSize0(view)) {
-        //            printLog(view + " is size 0 at handleOnItemLongClickListener");
-        //            return;
-        //        }
+        // if (local.isSize0(view)) {
+        // printLog(view + " is size 0 at handleOnItemLongClickListener");
+        // return;
+        // }
 
         OnItemLongClickListener onItemLongClickListener = (OnItemLongClickListener) getListener(
                 view, "mOnItemLongClickListener");
@@ -1536,7 +1979,7 @@ public class ViewRecorder {
         }
 
         if (null != onItemLongClickListener) {
-            printLog("hookOnItemLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
+            printLog("hookOnItemLongClickListener [" + view + "(" + getViewText(view) + ")]");
 
             // save old listener
             mOnItemLongClickListeners.put(getViewID(view), onItemLongClickListener);
@@ -1580,8 +2023,8 @@ public class ViewRecorder {
     }
 
     private void handleOnLongClickListener(View view) {
-        if (local.isSize0(view)) {
-            printLog(view + " is size 0 " + Log.getThreadInfo());
+        if (isSize0(view)) {
+            printLog(view + " is size 0 ");
             invokeOriginOnLongClickListener(view);
             return;
         }
@@ -1596,7 +2039,7 @@ public class ViewRecorder {
         }
 
         if (null != onLongClickListener) {
-            printLog("hookOnLongClickListener [" + view + "(" + local.getViewText(view) + ")]");
+            printLog("hookOnLongClickListener [" + view + "(" + getViewText(view) + ")]");
 
             // save old listener
             mOnLongClickListeners.put(getViewID(view), onLongClickListener);
@@ -1646,15 +2089,16 @@ public class ViewRecorder {
         String familyString = getFamilyString(v);
         String r = getRString(v);
         String rString = r.equals("") ? "" : "[" + r + "]";
-        String comments = String.format("[%s]%s[%s] ", v, rString, local.getViewText(v));
+        String comments = String.format("[%s]%s[%s] ", v, rString, getViewText(v));
         String click = "";
-        int index = local.getResIdIndex(v);
 
-        if ("".equals(rString) || -1 == index) {
+        if ("".equals(rString)) {
             click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", true);//%s%s",
                     viewClass, familyString, "Long Click On ", getFirstLine(comments));
         } else {
             String rStringSuffix = getRStringSuffix(v);
+            //int index = local.getResIdIndex(v);
+            int index = 0;
             click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", true);//%s%s",
                     rStringSuffix, index, "Long Click On ", getFirstLine(comments));
         }
@@ -1728,7 +2172,7 @@ public class ViewRecorder {
         }
     }
 
-    public boolean offerOutputEventQueue(OutputEvent e) {
+    private boolean offerOutputEventQueue(OutputEvent e) {
         synchronized (mSyncOutputEventQueue) {
             mTheCurrentEventOutputime = System.currentTimeMillis();
             return mOutputEventQueue.offer(e);
@@ -1815,10 +2259,10 @@ public class ViewRecorder {
                 i += 2;
                 // printLog("" + event.proity + " " + nextEvent.proity);
                 if (event.priority > nextEvent.priority) {
-                    printLog("priority ignore " + nextEvent);
+                    // printLog("event.proity > nextEvent.proity");
                     newEvents.add(event);
                 } else if (event.priority < nextEvent.priority) {
-                    printLog("priority ignore " + event);
+                    // printLog("event.proity < nextEvent.proity");
                     newEvents.add(nextEvent);
                 } else {
                     printLog("event.proity == nextEvent.proity");
@@ -1896,9 +2340,6 @@ public class ViewRecorder {
                     long timeout = 0;
                     while (true) {
                         if ((e = pollMotionEventQueue()) != null) {
-                            if (MotionEvent.ACTION_CANCEL == e.action) {
-                                continue;
-                            }
                             events.add(e);
                             if (MotionEvent.ACTION_UP == e.action
                                     || MotionEvent.ACTION_CANCEL == e.action) {
@@ -1932,7 +2373,7 @@ public class ViewRecorder {
                                 events.clear();
                                 isDown = false;
                             } else {
-                                //printLog("ignore a drag without up");
+                                // printLog("ignore a drag without up");
                             }
                         }
                         sleep(10);
@@ -1974,11 +2415,10 @@ public class ViewRecorder {
         stepCount = stepCount > MIN_STEP_COUNT ? stepCount : MIN_STEP_COUNT;
         long duration = up.time - down.time;
         /*
-        if (0 == duration) {
-            printLog("ignore drag event of [" + up.view + "] because 0 == duration");
-            printLog("x:" + up.x + " y:" + up.y);
-            return;
-        }*/
+         * if (0 == duration) { printLog("ignore drag event of [" + up.view +
+         * "] because 0 == duration"); printLog("x:" + up.x + " y:" + up.y);
+         * return; }
+         */
 
         dragEvent.setLog(String.format(
                 "Drag [%s<%s>] from (%s,%s) to (%s, %s) by duration %s step %s", up.view,
@@ -1986,7 +2426,7 @@ public class ViewRecorder {
         dragEvent.setCode(getDragCode(down.x, up.x, down.y, up.y, stepCount));
 
         if (up.view instanceof AbsListView || mIsLongClick
-        /*|| (up.view instanceof WebView && DEBUG_WEBVIEW)*/) {
+        /* || (up.view instanceof WebView && DEBUG_WEBVIEW) */) {
             printLog("ignore drag event of [" + up.view + "]");
             mIsLongClick = false;
             return;
@@ -1997,12 +2437,32 @@ public class ViewRecorder {
         offerOutputEventQueue(dragEvent);
     }
 
+    private float toPercentX(float x) {
+        return x / getDisplayX();
+    }
+
+    private float toPercentY(float y) {
+        return y / getDisplayY();
+    }
+
     private String getDragCode(float downX, float upX, float downY, float upY, int stepCount) {
-        return String
-                .format("local.recordReplay.dragPercent(%sf, %sf, %sf, %sf, %s);",
-                        local.recordReplay.toPercentX(downX), local.recordReplay.toPercentX(upX),
-                        local.recordReplay.toPercentY(downY), local.recordReplay.toPercentY(upY),
-                        stepCount);
+        return String.format("local.recordReplay.dragPercent(%sf, %sf, %sf, %sf, %s);",
+                toPercentX(downX), toPercentX(upX), toPercentY(downY), toPercentY(upY), stepCount);
+    }
+
+    /**
+     * This method will cost 100ms to judge whether scrollview stoped.
+     * 
+     * @param scrollView
+     * @return true means scrolling is stop, otherwise return fasle
+     */
+    private boolean isScrollStoped(final ScrollView scrollView) {
+        int x1 = scrollView.getScrollX();
+        int y1 = scrollView.getScrollY();
+        sleep(100);
+        int x2 = scrollView.getScrollX();
+        int y2 = scrollView.getScrollY();
+        return x1 == x2 && y1 == y2 ? true : false;
     }
 
     /**
@@ -2016,7 +2476,7 @@ public class ViewRecorder {
 
             @Override
             public void run() {
-                while (!local.isScrollStoped(scrollView)) {
+                while (!isScrollStoped(scrollView)) {
                     // wait for scroll stoping
                 }
                 if ("".equals(mFamilyStringBeforeScroll)) {
@@ -2117,7 +2577,7 @@ public class ViewRecorder {
      */
     private String getViewID(View view) {
         if (null == view) {
-            printLog("null == view " + Log.getThreadInfo());
+            printLog("null == view ");
             return "";
         }
 
@@ -2145,11 +2605,11 @@ public class ViewRecorder {
 
     private void initKeyTable() {
         KeyEvent keyEvent = new KeyEvent(0, 0);
-        ArrayList<String> names = local.getFieldNameByType(keyEvent, null, int.class);
+        ArrayList<String> names = ReflectHelper.getFieldNameByType(keyEvent, null, int.class);
         try {
             for (String name : names) {
                 if (name.startsWith("KEYCODE_")) {
-                    Integer keyCode = (Integer) local.getField(keyEvent, null, name);
+                    Integer keyCode = (Integer) ReflectHelper.getField(keyEvent, null, name);
                     mKeyCodeMap.put(keyCode, name);
                 }
             }
