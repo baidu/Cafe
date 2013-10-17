@@ -16,19 +16,21 @@
 
 package com.baidu.cafe.local.record;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemClock;
@@ -69,7 +71,11 @@ import com.baidu.cafe.utils.ReflectHelper;
  * 
  * super.onCreate();
  * 
- * new ViewRecorderSDK(this).beginRecordCode();
+ * ViewRecorderSDK vr = new ViewRecorderSDK(this);
+ * 
+ * vr.beginRecordCode();
+ * 
+ * vr.pollOutputLogQueue();
  * 
  * }
  * 
@@ -83,6 +89,10 @@ public class ViewRecorderSDK {
     private final static int                         MIN_SLEEP_TIME                = 1000;
     private final static int                         MIN_STEP_COUNT                = 4;
     private final static boolean                     DEBUG_WEBVIEW                 = true;
+    private final static SimpleDateFormat            mSimpleDateFormat             = new SimpleDateFormat(
+                                                                                           "yyyy-MM-dd HH:mm:ss.SSS");
+
+    private static boolean                           mBegin                        = false;
 
     /**
      * For judging whether a view is an old one.
@@ -96,7 +106,10 @@ public class ViewRecorderSDK {
     /**
      * For judging whether a view has been hooked.
      */
-    private ArrayList<Integer>                       mAllListenerHashcodes         = new ArrayList<Integer>();
+    private ArrayList<Integer>                       mAllListenerHashcodes         = new ArrayList<Integer>(
+                                                                                           1024);
+
+    private ArrayList<Integer>                       mAllAbsListViewHashcodes      = new ArrayList<Integer>();
 
     /**
      * For judging whether a EditText has been hooked.
@@ -113,6 +126,11 @@ public class ViewRecorderSDK {
      * keeped by their priorities.
      */
     private Queue<OutputEvent>                       mOutputEventQueue             = new LinkedList<OutputEvent>();
+
+    /**
+     * For saving output log
+     */
+    private Queue<String>                            mOutputLogQueue               = new LinkedList<String>();
 
     /**
      * For mapping keycode to keyname
@@ -136,6 +154,16 @@ public class ViewRecorderSDK {
      */
     private static String                            mSyncMotionEventQueue         = new String(
                                                                                            "mSyncMotionEventQueue");
+    /**
+     * lock for OutputLogQueue
+     */
+    private static String                            mSyncOutputLogQueue           = new String(
+                                                                                           "mSyncOutputLogQueue");
+    /**
+     * lock for AllListenerHashcodes
+     */
+    private static String                            mSyncAllListenerHashcodes     = new String(
+                                                                                           "mSyncAllListenerHashcodes");
     /**
      * Time when event was being generated.
      */
@@ -196,18 +224,18 @@ public class ViewRecorderSDK {
     private HashMap<String, OnChildClickListener>    mOnChildClickListeners        = new HashMap<String, OnChildClickListener>();
     private HashMap<String, OnScrollListener>        mOnScrollListeners            = new HashMap<String, OnScrollListener>();
     private HashMap<String, OnItemLongClickListener> mOnItemLongClickListeners     = new HashMap<String, OnItemLongClickListener>();
-    private File                                     mRecord                       = null;
     private String                                   mPackageName                  = null;
-    private String                                   mPath                         = null;
     private int                                      mCurrentEditTextIndex         = 0;
     private String                                   mCurrentEditTextString        = "";
     private boolean                                  mHasTextChange                = false;
     private long                                     mTheLastTextChangedTime       = System.currentTimeMillis();
     private int                                      mCurrentScrollState           = 0;
-    private Context                                  context                       = null;
+    private Context                                  mContext                      = null;
+    private ActivityManager                          mActivityManager              = null;
 
     public ViewRecorderSDK(Context context) {
-        this.context = context;
+        this.mContext = context;
+        mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         init();
     }
 
@@ -436,6 +464,9 @@ public class ViewRecorderSDK {
     }
 
     private void print(String tag, String message) {
+        if ("RecorderCode".equals(tag)) {
+            offerOutputLogQueue(message);
+        }
         Log.i(tag, message);
     }
 
@@ -449,7 +480,7 @@ public class ViewRecorderSDK {
 
     private void init() {
         setWindowManagerString();
-        mPackageName = context.getPackageName();
+        mPackageName = mContext.getPackageName();
         //((Activity)context).getWindowManager();
         initKeyTable();
     }
@@ -458,6 +489,11 @@ public class ViewRecorderSDK {
      * Add listeners on all views for generating cafe code automatically
      */
     public void beginRecordCode() {
+        if (mBegin) {
+            printLog("ViewRecorderSDK has already begin!");
+            return;
+        }
+        mBegin = true;
         monitorCurrentActivity();
 
         new Thread(new Runnable() {
@@ -479,7 +515,7 @@ public class ViewRecorderSDK {
                 }
             }
         }, "keep hooking new views").start();
-
+        System.out.println("ViewRecorder is ready to work.");
         handleRecordMotionEventQueue();
         handleOutputEventQueue();
 
@@ -690,7 +726,7 @@ public class ViewRecorderSDK {
         View parent = getScrollOrListParent(view, 1);
         final float windowHeight;
         if (parent == null) {
-            windowHeight = ((Activity) context).getWindowManager().getDefaultDisplay().getHeight();
+            windowHeight = ((Activity) mContext).getWindowManager().getDefaultDisplay().getHeight();
         } else {
             parent.getLocationOnScreen(xyParent);
             windowHeight = xyParent[1] + parent.getHeight();
@@ -844,14 +880,14 @@ public class ViewRecorderSDK {
 
     private float getDisplayX() {
         DisplayMetrics dm = new DisplayMetrics();
-        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
+        ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(dm);
         //mActivity.getWindowManager().getDefaultDisplay().getMetrics(dm);
         return dm.widthPixels;
     }
 
     private float getDisplayY() {
         DisplayMetrics dm = new DisplayMetrics();
-        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
+        ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(dm);
         return dm.heightPixels;
     }
 
@@ -881,8 +917,7 @@ public class ViewRecorderSDK {
     }
 
     private ArrayList<View> getTargetViews() {
-        // View
-        ArrayList<View> views = removeInvisibleViews(getViews(null, false));// 获得可见区域的views
+        ArrayList<View> views = removeInvisibleViews(getViews(null, false));
         // ArrayList<View> views = local.getViews();
         ArrayList<View> targetViews = new ArrayList<View>();
 
@@ -893,10 +928,11 @@ public class ViewRecorderSDK {
             }
             boolean isOld = mAllViewPosition.containsKey(getViewID(view));
             // refresh view layout
-            if (hasChange(view)) {// 如果views有所改变，保存修�?                saveView(view);
+            if (hasChange(view)) {
+                saveView(view);
             }
 
-            if (!isOld) {// 新增的view�?��保存
+            if (!isOld) {
                 // save new view
                 saveView(view);
                 targetViews.add(view);
@@ -1276,30 +1312,15 @@ public class ViewRecorderSDK {
         printLog("getFirstVisiblePosition:" + view.getFirstVisiblePosition());
         absListViewState.lastFirstVisibleItem = absListViewState.firstVisibleItem;
         ScrollEvent scrollEvent = new ScrollEvent(view);
-
-        String r = getRString(view);
-        String rString = r.equals("") ? "" : "[" + r + "]";
-        String scroll = "";
-        if ("".equals(rString)) {
-            String familyString = getFamilyString(view);
-            scroll = String.format("local.recordReplay.scrollListToLine(%s, \"%s\");",
-                    absListViewState.firstVisibleItem, familyString);
-        } else {
-            String rStringSuffix = getRStringSuffix(view);
-            //int index = getResIdIndex(view);
-            int index = 0;
-            scroll = String.format("local.recordReplay.scrollListToLine(%s, \"id/%s\", \"%s\");",
-                    absListViewState.firstVisibleItem, rStringSuffix, index);
-        }
-
-        scrollEvent.setCode(scroll);
+        scrollEvent.setCode(getPrefix(view) + "|scroll");
         scrollEvent.setLog("scroll " + view + " to " + absListViewState.firstVisibleItem);
         offerOutputEventQueue(scrollEvent);
     }
 
     private void hookOnScrollListener(final AbsListView absListView,
             final OnScrollListener onScrollListener) {
-        printLog("hook onScrollListener [" + absListView + "]");
+        printLog("hook onScrollListener [" + absListView + "] [" + onScrollListener.hashCode()
+                + "]");
 
         // save old listener
         mOnScrollListeners.put(getViewID(absListView), onScrollListener);
@@ -1398,10 +1419,8 @@ public class ViewRecorderSDK {
     private void setOnGroupClick(ExpandableListView parent, int groupPosition) {
         int flatListPosition = parent.getFlatListPosition(ExpandableListView
                 .getPackedPositionForGroup(groupPosition));
-        String familyString = getFamilyString(parent);
         ClickEvent clickEvent = new ClickEvent(parent);
-        String code = String.format("local.recordReplay.clickOnExpandableListView(\"%s\", %s);",
-                familyString, flatListPosition);
+        String code = String.format(getPrefix(parent) + "|click");
         clickEvent.setCode(code);
         clickEvent.setLog(String.format("click on group[%s]", groupPosition));
 
@@ -1471,10 +1490,8 @@ public class ViewRecorderSDK {
     private void setOnChildClick(ExpandableListView parent, int groupPosition, int childPosition) {
         int flatListPosition = parent.getFlatListPosition(ExpandableListView
                 .getPackedPositionForChild(groupPosition, childPosition));
-        String familyString = getFamilyString(parent);
         ClickEvent clickEvent = new ClickEvent(parent);
-        String code = String.format("local.recordReplay.clickOnExpandableListView(\"%s\", %s);",
-                familyString, flatListPosition);
+        String code = String.format(getPrefix(parent) + "|click");
         clickEvent.setCode(code);
         clickEvent.setLog(String.format("click on group[%s] child[%s]", groupPosition,
                 childPosition));
@@ -1552,7 +1569,7 @@ public class ViewRecorderSDK {
                         boolean shouldInvokeOrigin = false;
                         int counter = mOnClickListenerInvokeCounter.get(onClickListener);
                         mOnClickListenerInvokeCounter.put(onClickListener, ++counter);
-                        if (counter < 1) {
+                        if (counter < 2) {
                             setOnClick(v);
                         } else {
                             printLog("recover onClickListener counter:" + counter);
@@ -1595,23 +1612,7 @@ public class ViewRecorderSDK {
 
         // set click event output
         ClickEvent clickEvent = new ClickEvent(v);
-        String viewClass = getViewString(v);
-        String familyString = getFamilyString(v);
-        String r = getRString(v);
-        String rString = r.equals("") ? "" : "[" + r + "]";
-        String comments = String.format("[%s]%s[%s] ", v, rString, getViewText(v));
-        String click = "";
-        if ("".equals(rString)) {
-            click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", false);//%s%s",
-                    viewClass, familyString, "Click On ", getFirstLine(comments));
-        } else {
-            String rStringSuffix = getRStringSuffix(v);
-            //int index = local.getResIdIndex(v);
-            int index = 0;
-            click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", false);//%s%s",
-                    rStringSuffix, index, "Click On ", getFirstLine(comments));
-        }
-        clickEvent.setCode(click);
+        clickEvent.setCode(getPrefix(v) + "|click");
 
         offerOutputEventQueue(clickEvent);
         invokeOriginOnClickListener(v);
@@ -1632,18 +1633,6 @@ public class ViewRecorderSDK {
         }
     }
 
-    private String getFirstLine(String str) {
-        String[] lines = str.split("\r\n");
-        if (lines.length > 1) {
-            return lines[0];
-        }
-        lines = str.split("\n");
-        if (lines.length > 1) {
-            return lines[0];
-        }
-        return str;
-    }
-
     private String getRString(View view) {
         String rStringSuffix = getRStringSuffix(view);
         return "".equals(rStringSuffix) ? "" : "R.id." + rStringSuffix;
@@ -1657,29 +1646,12 @@ public class ViewRecorderSDK {
 
         try {
 
-            String rString = context.getResources().getResourceName(view.getId());
+            String rString = mContext.getResources().getResourceName(view.getId());
             return rString.substring(rString.lastIndexOf("/") + 1, rString.length());
         } catch (Exception e) {
             // eat it because some view has no res id
         }
         return "";
-    }
-
-    private long getSleepTime() {
-        long ret = System.currentTimeMillis() - mLastEventTime;
-
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                sleep(300);
-                mLastEventTime = System.currentTimeMillis();
-            }
-        }, "update mLastEventTime lately").start();
-
-        ret = ret < MIN_SLEEP_TIME ? MIN_SLEEP_TIME : ret;
-        ret = ret > MAX_SLEEP_TIME ? MAX_SLEEP_TIME : ret;
-        return ret;
     }
 
     private void hookEditText(final EditText editText) {
@@ -1834,7 +1806,7 @@ public class ViewRecorderSDK {
                 boolean shouldInvokeOrigin = false;
                 int counter = mOnTouchListenerInvokeCounter.get(onTouchListener);
                 mOnTouchListenerInvokeCounter.put(onTouchListener, ++counter);
-                if (counter < 1) {
+                if (counter < 2) {
                     OnTouchListener onTouchListenerHooked = (OnTouchListener) getListener(v,
                             "mOnTouchListener");
                     addEvent(v, event);
@@ -1849,7 +1821,7 @@ public class ViewRecorderSDK {
                     }
                 } else {
                     printLog("recover onTouchListener counter:" + counter);
-                    setListener(v, "mOnClickListener", onTouchListener);
+                    setListener(v, "mOnTouchListener", onTouchListener);
                     shouldInvokeOrigin = true;
                 }
                 if (shouldInvokeOrigin) {
@@ -1885,7 +1857,8 @@ public class ViewRecorderSDK {
         }
 
         if (null != onItemClickListener) {
-            printLog("hook AdapterView [" + adapterView + "]");
+            printLog("hook AdapterView [" + adapterView + "] [" + onItemClickListener.hashCode()
+                    + "]" + mAllListenerHashcodes.contains(onItemClickListener.hashCode()));
             // save old listener
             mOnItemClickListeners.put(getViewID(adapterView), onItemClickListener);
         } else {
@@ -1906,6 +1879,10 @@ public class ViewRecorderSDK {
                 "mOnItemClickListener");
         if (onItemClickListenerHooked != null) {
             mAllListenerHashcodes.add(onItemClickListenerHooked.hashCode());
+            printLog("save onItemClickListenerHooked " + onItemClickListenerHooked.hashCode());
+            printLog("mAllListenerHashcodes.contains "
+                    + mAllListenerHashcodes.contains(onItemClickListenerHooked.hashCode()));
+            printLog("mAllListenerHashcodes.size():" + mAllListenerHashcodes.size());
         }
     }
 
@@ -1917,32 +1894,8 @@ public class ViewRecorderSDK {
      * @param id
      */
     private void setOnItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // use center of item
-        // int[] center = LocalLib.getViewCenter(view);
-        // DragEvent dragEvent = new DragEvent(view);
-        // dragEvent.setCode(getDragCode(center[0], center[0], center[1],
-        // center[1], MIN_STEP_COUNT));
-        // dragEvent.setLog("genernated by setOnItemClick");
-        // offerOutputEventQueue(dragEvent);
-
         ClickEvent clickEvent = new ClickEvent(parent);
-
-        String r = getRString(parent);
-        String rString = r.equals("") ? "" : "[" + r + "]";
-        String click = "";
-        if ("".equals(rString)) {
-            String familyString = getFamilyString(parent);
-            click = String.format("local.recordReplay.clickInList(%s, \"%s\");", position,
-                    familyString);
-        } else {
-            String rStringSuffix = getRStringSuffix(parent);
-            //int index = local.getResIdIndex(parent);
-            int index = 0;
-            click = String.format("local.recordReplay.clickInList(%s, \"id/%s\", \"%s\");",
-                    position, rStringSuffix, index);
-        }
-
-        clickEvent.setCode(click);
+        clickEvent.setCode(getPrefix(parent) + "|click");
         clickEvent.setLog("parent: " + parent + " view: " + view + " position: " + position
                 + " click");
         offerOutputEventQueue(clickEvent);
@@ -2085,25 +2038,7 @@ public class ViewRecorderSDK {
 
     private void setOnLongClick(View v) {
         ClickEvent clickEvent = new ClickEvent(v);
-        String viewClass = getViewString(v);
-        String familyString = getFamilyString(v);
-        String r = getRString(v);
-        String rString = r.equals("") ? "" : "[" + r + "]";
-        String comments = String.format("[%s]%s[%s] ", v, rString, getViewText(v));
-        String click = "";
-
-        if ("".equals(rString)) {
-            click = String.format("local.recordReplay.clickOn(\"%s\", \"%s\", true);//%s%s",
-                    viewClass, familyString, "Long Click On ", getFirstLine(comments));
-        } else {
-            String rStringSuffix = getRStringSuffix(v);
-            //int index = local.getResIdIndex(v);
-            int index = 0;
-            click = String.format("local.recordReplay.clickOn(\"id/%s\", \"%s\", true);//%s%s",
-                    rStringSuffix, index, "Long Click On ", getFirstLine(comments));
-        }
-
-        clickEvent.setCode(click);
+        clickEvent.setCode(getPrefix(v) + "|longclick");
 
         // clickEvent.setLog();
         offerOutputEventQueue(clickEvent);
@@ -2188,6 +2123,25 @@ public class ViewRecorderSDK {
     private boolean offerMotionEventQueue(RecordMotionEvent e) {
         synchronized (mSyncMotionEventQueue) {
             return mMotionEventQueue.offer(e);
+        }
+    }
+
+    /**
+     * poll a output log from mOutputLogQueue
+     * 
+     * synchronized by mSyncOutputLogQueue
+     * 
+     * @return a line of output log
+     */
+    public String pollOutputLogQueue() {
+        synchronized (mSyncOutputLogQueue) {
+            return mOutputLogQueue.poll();
+        }
+    }
+
+    private boolean offerOutputLogQueue(String line) {
+        synchronized (mSyncOutputLogQueue) {
+            return mOutputLogQueue.offer(line);
         }
     }
 
@@ -2295,14 +2249,39 @@ public class ViewRecorderSDK {
             if (outputEditTextEvent()) {
                 printCode(event.getCode());
             } else {
-                printCode(getSleepCode() + "\n" + event.getCode());
+                printCode(event.getCode());
             }
             printLog(event.getLog());
         } else {
-            printCode(getSleepCode() + "\n" + event.getCode());
+            printCode(event.getCode());
             printLog(event.getLog());
             outputEditTextEvent();
         }
+    }
+
+    private String getPrefix(View view) {
+        String viewId = "";
+        try {
+            viewId = getRString(view);
+            viewId = viewId.equals("") ? getViewText(view) : viewId;
+            // if view has no id and no text, viewId == ""
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return String.format("%s|%s|%s", getPrefix(), getViewString(view), viewId);
+    }
+
+    private String getPrefix() {
+        String time = "";
+        String activity = "";
+        try {
+            time = mSimpleDateFormat.format(new Date());
+            // need permission GET_TASK
+            //activity = mActivityManager.getRunningTasks(1).get(0).topActivity.getClassName();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return String.format("%s", time);
     }
 
     private boolean outputEditTextEvent() {
@@ -2312,7 +2291,7 @@ public class ViewRecorderSDK {
 
         String code = String.format("local.enterText(%s, \"%s\", false);", mCurrentEditTextIndex,
                 mCurrentEditTextString);
-        printCode(getSleepCode() + "\n" + code);
+        printCode(code);
 
         // restore var
         mCurrentEditTextString = "";
@@ -2423,7 +2402,7 @@ public class ViewRecorderSDK {
         dragEvent.setLog(String.format(
                 "Drag [%s<%s>] from (%s,%s) to (%s, %s) by duration %s step %s", up.view,
                 getFamilyString(up.view), down.x, down.y, up.x, up.y, duration, stepCount));
-        dragEvent.setCode(getDragCode(down.x, up.x, down.y, up.y, stepCount));
+        dragEvent.setCode(getPrefix(up.view) + "|drag");
 
         if (up.view instanceof AbsListView || mIsLongClick
         /* || (up.view instanceof WebView && DEBUG_WEBVIEW) */) {
@@ -2443,11 +2422,6 @@ public class ViewRecorderSDK {
 
     private float toPercentY(float y) {
         return y / getDisplayY();
-    }
-
-    private String getDragCode(float downX, float upX, float downY, float upY, int stepCount) {
-        return String.format("local.recordReplay.dragPercent(%sf, %sf, %sf, %sf, %s);",
-                toPercentX(downX), toPercentX(upX), toPercentY(downY), toPercentY(upY), stepCount);
     }
 
     /**
@@ -2558,18 +2532,11 @@ public class ViewRecorderSDK {
                 return;
             }
             HardKeyEvent hardKeyEvent = new HardKeyEvent(view);
-            String sendKey = String.format("local.sendKey(KeyEvent.%s);", mKeyCodeMap.get(keyCode));
-            hardKeyEvent.setCode(sendKey);
+            hardKeyEvent.setCode(getPrefix() + "|key|" + mKeyCodeMap.get(keyCode));
             hardKeyEvent.setLog("view: " + view + " " + event);
 
             offerOutputEventQueue(hardKeyEvent);
         }
-    }
-
-    private String getSleepCode() {
-        String screenShotCode = String.format("local.screenShotNamedCaseName(\"%s\");",
-                mEventCount++);
-        return String.format("local.sleep(%s);\n%s", getSleepTime(), screenShotCode);
     }
 
     /**
