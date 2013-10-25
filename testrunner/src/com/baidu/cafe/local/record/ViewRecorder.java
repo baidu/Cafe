@@ -1172,7 +1172,7 @@ public class ViewRecorder {
                         int counter = mOnClickListenerInvokeCounter.get(onClickListener);
                         mOnClickListenerInvokeCounter.put(onClickListener, ++counter);
 
-                        if (counter < 1) {
+                        if (counter < 2) {
                             setOnClick(v);
                         } else {
                             printLog("recover onClickListener counter:" + counter);
@@ -1393,7 +1393,7 @@ public class ViewRecorder {
                 boolean shouldInvokeOrigin = false;
                 int counter = mOnTouchListenerInvokeCounter.get(onTouchListener);
                 mOnTouchListenerInvokeCounter.put(onTouchListener, ++counter);
-                if (counter < 1) {
+                if (counter < 2) {
                     OnTouchListener onTouchListenerHooked = (OnTouchListener) getListener(v,
                             "mOnTouchListener");
                     addEvent(v, event);
@@ -1408,7 +1408,7 @@ public class ViewRecorder {
                     }
                 } else {
                     printLog("recover onTouchListener counter:" + counter);
-                    setListener(v, "mOnClickListener", onTouchListener);
+                    setListener(v, "mOnTouchListener", onTouchListener);
                     shouldInvokeOrigin = true;
                 }
                 if (shouldInvokeOrigin) {
