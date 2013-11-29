@@ -268,7 +268,7 @@ public class Operation {
 
         // view.toString() is like that "android.widget.ImageButton@402f8d80"
         // so there is no need to compare this.index
-        if (!getTypeString(mViewString).equals(getTypeString(operation.mViewString))) {
+        if (!getTypeString(mView).equals(getTypeString(operation.mView))) {
             return false;
         }
 
@@ -284,8 +284,8 @@ public class Operation {
         return mViewLocation[0] == location[0] && mViewLocation[1] == location[1] ? true : false;
     }
 
-    private String getTypeString(String viewString) {
-        return viewString.substring(0, viewString.indexOf("@"));
+    private String getTypeString(View view) {
+        return view.getClass().toString().split(" ")[1];
     }
 
     /**
