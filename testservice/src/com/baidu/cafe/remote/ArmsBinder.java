@@ -878,4 +878,8 @@ public class ArmsBinder extends IRemoteArms.Stub {
         return mContext.getResources().getString(
                 Strings.getRStringId(mContext.getPackageName(), name));
     }
+
+    public boolean clickSayHiButton(){
+        return clickViewByText("\u6253\u62db\u547c");
+    }
 }

@@ -28,8 +28,8 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import com.baidu.cafe.utils.CommandResult;
 import com.baidu.cafe.utils.ShellExecute;
-import com.baidu.cafe.utils.ShellExecute.CommandResult;
 
 /**
  * Tools for managing files. It's ported from package android.os.

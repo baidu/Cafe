@@ -27,9 +27,9 @@ import com.baidu.cafe.CafeExceptionHandler.ExceptionCallBack;
 import com.baidu.cafe.local.LocalLib;
 import com.baidu.cafe.local.Log;
 import com.baidu.cafe.remote.Armser;
+import com.baidu.cafe.utils.CommandResult;
 import com.baidu.cafe.utils.ShellExecute;
 import com.baidu.cafe.utils.ShellExecute.CallBack;
-import com.baidu.cafe.utils.ShellExecute.CommandResult;
 
 /**
  * @author luxiaoyu01@baidu.com
@@ -39,18 +39,19 @@ import com.baidu.cafe.utils.ShellExecute.CommandResult;
  */
 public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTestCase2<T> implements
         ExceptionCallBack {
-
-    public static Armser                    remote                       = null;
-    protected static LocalLib               local                        = null;
-
     public final static int                 SCREEN_ORIENTATION_PORTRAIT  = 0;
     public final static int                 SCREEN_ORIENTATION_LANDSCAPE = 1;
     public final static int                 TIMEOUT_GET_ACTIVITY         = 1000 * 10;
 
+    public static Armser                    remote                       = null;
     public static Class<?>                  mActivityClass               = null;
     public static String                    mTargetFilesDir              = "";
 
+    protected static LocalLib               local                        = null;
+
     private final static String             TAG                          = "CafeTestCase";
+    private final static int                TEAR_DOWN_TIMEOUT            = 5000;
+
     private static String                   mPackageName                 = null;
     private Thread.UncaughtExceptionHandler orignal                      = null;
     private TearDownHelper                  mTearDownHelper              = null;
@@ -88,7 +89,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         mTargetFilesDir = getInstrumentation().getTargetContext().getFilesDir().toString();
         remote = new Armser(getInstrumentation().getContext());
         remote.bind(getInstrumentation().getContext());
-        //        launchActivityIfNotAvailable();
+        //launchActivityIfNotAvailable();
         remote.setStatusBarHeight(getStatusBarHeight());
         String command = "chmod 777 " + mTargetFilesDir;
         CommandResult cr = LocalLib.executeOnDevice(command, "/", 1000);
@@ -165,8 +166,7 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         return rect.top;
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    private void cafeTearDown() throws Exception {
         if (mIsViewServerOpen) {
             mTearDownHelper.backToHome();
             mTearDownHelper.killWindowsFromBirthToNow();
@@ -192,6 +192,27 @@ public class CafeTestCase<T extends Activity> extends ActivityInstrumentationTes
         getActivity().finish();
         remote = null;
         super.tearDown();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        CommandResult ret = (CommandResult) ShellExecute.doInTimeout(new CallBack<CommandResult>() {
+            @Override
+            public CommandResult runInTimeout() throws InterruptedException {
+                try {
+                    cafeTearDown();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return new CommandResult();
+            }
+        }, TEAR_DOWN_TIMEOUT);
+
+        if (ret == null) {
+            Log.i("tear down time out!");
+        } else {
+            Log.i("tear down success!");
+        }
     }
 
     /**

@@ -36,15 +36,6 @@ import java.util.concurrent.Future;
 public class ShellExecute {
     private boolean mComplete = false;
 
-    public class CommandResult {
-        public int     ret     = 0;
-        public Strings console = new Strings(new ArrayList<String>());
-
-        public CommandResult() {
-        }
-
-    }
-
     public interface SyncRunnable {
         public void run();
 
