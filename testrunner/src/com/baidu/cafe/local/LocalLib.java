@@ -909,7 +909,7 @@ public class LocalLib extends Solo {
     /**
      * drag on screen to right
      */
-    public void dragScreenToRight(int stepCount) {
+    public void dragScreenToLeft(int stepCount) {
         float x = getDisplayX();
         float y = getDisplayY();
         drag(x - x / 4, x / 4, y / 2, y / 2, stepCount);
@@ -918,7 +918,7 @@ public class LocalLib extends Solo {
     /**
      * drag on screen to Left
      */
-    public void dragScreenToLeft(int stepCount) {
+    public void dragScreenToRight(int stepCount) {
         float x = getDisplayX();
         float y = getDisplayY();
         drag(x / 4, x - x / 4, y / 2, y / 2, stepCount);
@@ -1509,7 +1509,7 @@ public class LocalLib extends Solo {
         return targetViews;
     }
 
-    public void clickViaPerformClick(final View view, final boolean longClick) {
+    public void performClick(final View view, final boolean longClick) {
         Assert.assertTrue("null == view at" + Log.getThreadInfo(), null != view);
 
         view.post(new Runnable() {
@@ -1827,9 +1827,10 @@ public class LocalLib extends Solo {
             try {
                 AdapterView<?> targetView = null;
                 if (args.length == 1) {
-                    targetView = (AdapterView<?>) waitForView("android.widget.AdapterView", args[0]);
+                    targetView = (AdapterView<?>) waitForView("android.widget.AdapterView",
+                            args[0], true);
                 } else if (args.length == 2) {
-                    targetView = (AdapterView<?>) waitForView(args[0], args[1]);
+                    targetView = (AdapterView<?>) waitForView(args[0], args[1], true);
                 } else {
                     print("invalid parameters at clickInList");
                 }
@@ -2059,7 +2060,7 @@ public class LocalLib extends Solo {
          * @param text
          */
         public void waitForTextByFamilyString(String familyString, String text) {
-            View view = waitForView(null, familyString);
+            View view = waitForView(null, familyString, true);
             String actual = getViewText(view);
             Assert.assertTrue(String.format("Except text [%s], Actual text [%s]", text, actual),
                     actual.equals(text));
@@ -2077,7 +2078,7 @@ public class LocalLib extends Solo {
          *            it could be familyString or index
          * @return the view picked
          */
-        public View waitForView(String arg1, String arg2) {
+        public View waitForView(String arg1, String arg2, boolean isAssert) {
             boolean useResId = arg1 != null && arg1.contains("id/") ? true : false;
             long endTime = System.currentTimeMillis() + WAIT_TIMEOUT;
             while (System.currentTimeMillis() < endTime) {
@@ -2101,8 +2102,14 @@ public class LocalLib extends Solo {
             } else {
                 printViews(arg2);
             }
-            Assert.assertTrue(String.format("waitForView failed! arg1[%s] arg2[%s]", arg1, arg2),
-                    false);
+
+            String failMessage = String.format("waitForView failed! arg1[%s] arg2[%s]", arg1, arg2);
+            if (isAssert) {
+                Assert.assertTrue(failMessage, false);
+            } else {
+                print(failMessage);
+            }
+
             return null;
         }
 
@@ -2119,10 +2126,12 @@ public class LocalLib extends Solo {
          * @param longClick
          *            true means long click
          */
-        public void clickOn(String arg1, String arg2, boolean longClick) {
+        public void clickOn(String arg1, String arg2, boolean longClick, boolean isAssert) {
             try {
-                View view = waitForView(arg1, arg2);
-                clickViaPerformClick(view, longClick);
+                View view = waitForView(arg1, arg2, isAssert);
+                if (view != null) {
+                    performClick(view, longClick);
+                }
                 // clickOnView();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -2131,7 +2140,7 @@ public class LocalLib extends Solo {
 
         public void clickOnExpandableListView(final String familyString, final int flatListPosition) {
             final ExpandableListView expandableListView = (ExpandableListView) waitForView(
-                    "android.widget.ExpandableListView", familyString);
+                    "android.widget.ExpandableListView", familyString, true);
             Assert.assertTrue("null == adapterView at" + Log.getThreadInfo(),
                     null != expandableListView);
 
@@ -2150,9 +2159,9 @@ public class LocalLib extends Solo {
         public void scrollListToLine(final int line, String... args) {
             AbsListView targetView = null;
             if (args.length == 1) {
-                targetView = (AbsListView) waitForView("android.widget.AbsListView", args[0]);
+                targetView = (AbsListView) waitForView("android.widget.AbsListView", args[0], true);
             } else if (args.length == 2) {
-                targetView = (AbsListView) waitForView(args[0], args[1]);
+                targetView = (AbsListView) waitForView(args[0], args[1], true);
             } else {
                 print("invalid parameters at clickInList");
             }
@@ -2176,7 +2185,7 @@ public class LocalLib extends Solo {
 
         public void scrollScrollViewTo(final String familyString, final int x, final int y) {
             final ScrollView scrollView = (ScrollView) waitForView("android.widget.ScrollView",
-                    familyString);
+                    familyString, true);
             runOnMainSync(new Runnable() {
                 public void run() {
                     scrollView.scrollBy(x, y);
