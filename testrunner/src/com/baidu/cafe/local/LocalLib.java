@@ -2126,6 +2126,10 @@ public class LocalLib extends Solo {
          * @param longClick
          *            true means long click
          */
+        public void clickOn(String arg1, String arg2, boolean longClick){
+            clickOn(arg1, arg2, longClick, true);
+        }
+
         public void clickOn(String arg1, String arg2, boolean longClick, boolean isAssert) {
             try {
                 View view = waitForView(arg1, arg2, isAssert);
