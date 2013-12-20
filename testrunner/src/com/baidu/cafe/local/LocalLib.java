@@ -1805,9 +1805,10 @@ public class LocalLib extends Solo {
                 if (parent.getChildAt(i).equals(child)) {
                     return i - countInvisible;
                 }
+                /*
                 if (parent.getChildAt(i).getVisibility() != View.VISIBLE) {
                     countInvisible++;
-                }
+                }*/
             }
             return -1;
         }
