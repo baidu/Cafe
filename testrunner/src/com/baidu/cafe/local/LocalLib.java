@@ -44,6 +44,7 @@ import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.AbsListView;
@@ -2127,7 +2128,7 @@ public class LocalLib extends Solo {
          * @param longClick
          *            true means long click
          */
-        public void clickOn(String arg1, String arg2, boolean longClick){
+        public void clickOn(String arg1, String arg2, boolean longClick) {
             clickOn(arg1, arg2, longClick, true);
         }
 
@@ -2364,5 +2365,15 @@ public class LocalLib extends Solo {
 
     public String getStringFromArguments(String key) {
         return CafeTestRunner.mArguments.getString(key);
+    }
+
+    /**
+     * DO NOT USE A WAKE LOCK
+     * 
+     * This will make sure that the screen stays on while your window is in the
+     * foreground, and only while it is in the foreground.
+     */
+    public void keepScreenOn() {
+        mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }
