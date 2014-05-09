@@ -926,3 +926,10 @@ echo "python $file_name"
 python $file_name
 }
 
+#
+# equal to 'adb shell screencap -p | sed 's/\r$//' > screen.png'
+#
+screen2png() # $png_name
+{
+    adb shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > $1.png
+}
