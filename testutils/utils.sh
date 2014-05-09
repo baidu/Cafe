@@ -927,9 +927,22 @@ python $file_name
 }
 
 #
-# equal to 'adb shell screencap -p | sed 's/\r$//' > screen.png'
+# Equal to 'adb shell screencap -p | sed 's/\r$//' > screen.png'
+# An explanation at http://blog.shvetsov.com/2013/02/grab-android-screenshot-to-computer-via.html
 #
-screen2png() # $png_name
+screen2png() # $serial_number $png_name 
 {
-    adb shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > $1.png
+    ADB="adb -s $1"
+    $ADB shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > $1.png
+}
+
+#
+# This command sends the event that unlocks the lockscreen on the device. 
+# It can be combine with the power button command above to turn on and unlock the device.
+# adb shell input keyevent 26
+#
+unlock_screen() # $serial_number
+{
+    ADB="adb -s $1"
+    $ADB shell input keyevent 82
 }
