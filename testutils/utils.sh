@@ -645,17 +645,21 @@ reliable_install() # $SERIAL_NUMBER, $apk, $times
     return 1
 }
 
+#
+# If no need to use su, '$ADB shell am force-stop $name' 
+# is a simple way.
+#
 kill_android_process_by_name() # $serial_number, $name
 {
     ADB="adb -s $1"
     name="$2"
-	pid=`$ADB shell ps | grep "$name" | awk -F " " '{print $2}'`
-	echo "#!/system/bin/sh" > kill_package.sh
-	echo "kill -9 $pid" >> kill_package.sh
-	chmod +x kill_package.sh
-	$ADB push kill_package.sh /data/local/tmp > /dev/null 2>&1
+    pid=`$ADB shell ps | grep "$name" | awk -F " " '{print $2}'`
+    echo "#!/system/bin/sh" > kill_package.sh
+    echo "kill -9 $pid" >> kill_package.sh
+    chmod +x kill_package.sh
+    $ADB push kill_package.sh /data/local/tmp > /dev/null 2>&1
     rm kill_package.sh
-	run_with_timeout "$ADB shell su -c \"/data/local/tmp/kill_package.sh\"" 5
+    run_with_timeout "$ADB shell su -c \"/data/local/tmp/kill_package.sh\"" 5
 }
 
 #
