@@ -21,8 +21,11 @@ compile() # $keystore
         exit 1
     fi
     apk=`cat .install | grep "Install:" | awk '{print $2}'`
-    APK="$ANDROID_TOP/$apk"
-
+	if [ ${apk:0:1} == "/" ];then
+	    APK="$apk"
+	else
+	    APK="$ANDROID_TOP/$apk"
+	fi
     if [ ! -z "$keystore" ];then
         zip -d $APK META-INF/*
         echo "jarsigner -verbose -keystore $keystore -signedjar $APK+_resigned $APK ${keystore##*/}"
