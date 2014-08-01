@@ -11,6 +11,8 @@ HAS_DEVICE=""
 CPU_NUMBER=`cat /proc/cpuinfo | grep processor | wc -l`
 MODE_PROGUARD="false"
 
+#set -o errexit
+
 usage()
 {
 	echo "usage: $0"
@@ -53,7 +55,13 @@ run_testcase()
 make_cafe()
 {
 	# make cafe.jar
-    cafe_intermediates="$ANDROID_TOP/out/target/common/obj/JAVA_LIBRARIES/cafe_intermediates"
+    if [ -z $OUT_DIR_COMMON_BASE ];then
+        OUT_DIR=$ANDROID_TOP/out
+    else
+        OUT_DIR=$OUT_DIR_COMMON_BASE/`echo $ANDROID_TOP | awk -F"/" '{print $(NF-3)}'`
+    fi
+
+    cafe_intermediates="$OUT_DIR/target/common/obj/JAVA_LIBRARIES/cafe_intermediates"
 	cd $SRC/testrunner
 	mm clean-cafe
 	rm -rf $cafe_intermediates
@@ -111,7 +119,11 @@ make_arms()
 do
 	apk=`echo "$LINE"`
 	apkPath=${apk#"Install: "};
-	cp ${ANDROID_TOP}/${apkPath} $SRC/out
+	if [ ${apkPath:0:1} == "/" ];then
+	    cp ${apkPath} $SRC/out
+	else
+	    cp ${ANDROID_TOP}/${apkPath} $SRC/out
+	fi
 done
 	cp $SRC/testutils/cafe_setup.bat $SRC/out
 	cp $SRC/testutils/cafe_setup.sh $SRC/out
